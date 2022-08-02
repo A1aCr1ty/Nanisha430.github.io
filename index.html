@@ -64,6 +64,74 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-c-基础" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/02/c-%E5%9F%BA%E7%A1%80/" class="article-date">
+  <time datetime="2022-08-02T02:00:13.000Z" itemprop="datePublished">2022-08-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/02/c-%E5%9F%BA%E7%A1%80/">c++基础</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="c-运算符运算顺序："><a href="#c-运算符运算顺序：" class="headerlink" title="c++ 运算符运算顺序："></a>c++ 运算符运算顺序：</h2><p>相同优先级从左到右</p>
+<p>逻辑运算符（NOT）&gt; 算数运算符（*，/，%）&gt;算数运算符（+,-）&gt; 相对关系运算符（&gt;,&lt;,&lt;=,&gt;=）&gt;</p>
+<p>相对关系运算符(==,!=) &gt; 逻辑运算符（AND）&gt; 逻辑运算符（OR）&gt; 赋值运算符</p>
+<h2 id="c-文件读写"><a href="#c-文件读写" class="headerlink" title="c++ 文件读写"></a>c++ 文件读写</h2><p>ifstream 读文件</p>
+<p>ofstream 写文件 ， 追加模式 ofstream(“a.txt” , ios_base::app)</p>
+<p>fstream 同时读写文件</p>
+<h2 id="c-模板函数的定义"><a href="#c-模板函数的定义" class="headerlink" title="c++ 模板函数的定义"></a>c++ 模板函数的定义</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> elemType&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">display_message</span><span class="params">(<span class="type">const</span> string &amp;msg,<span class="type">const</span> vector&lt;elemType&gt; &amp;vec)</span></span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">display_message</span><span class="params">(<span class="type">const</span> string &amp;msg,<span class="type">const</span> list&lt;elemType&gt; &amp;lt)</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="C-函数指针"><a href="#C-函数指针" class="headerlink" title="C++ 函数指针"></a>C++ 函数指针</h2><p><em><em>函数指针必须指明函数的返回值和参数表，此外函数指针的定义式必须将</em> 置于某个位置</em>*</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> vector&lt;<span class="type">int</span>&gt; * (*seq_ptr)(<span class="type">int</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>现在seq_ptr可以指向具有所列之返回值类型及参数表的任何一个函数</strong></p>
+<h2 id="泛型编程"><a href="#泛型编程" class="headerlink" title="泛型编程"></a>泛型编程</h2><p><strong>STL(Standard Template Library)由两种组件构成，一种是容器包括 vector , list , set ,map另一种是操作这些容器的泛型算法例如find(),sort()</strong></p>
+<p>list和map 属于序列式容器，set和map属于关联式容器。</p>
+<h3 id="标准容器的iterators"><a href="#标准容器的iterators" class="headerlink" title="标准容器的iterators"></a>标准容器的iterators</h3><p>定义方法 <strong>vector<int>::iterator it;</int></strong></p>
+<p>iterator实际上是一个指针，指向容器中某个元素的指针。</p>
+<p>泛型函数的编写关键在于iterator，它可以是函数不直接操作与容器，而是iterator，这样不同的容器。</p>
+<h3 id="序列式容器的使用"><a href="#序列式容器的使用" class="headerlink" title="序列式容器的使用"></a>序列式容器的使用</h3><p>定义空容器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**list&lt;<span class="type">int</span>&gt;  ilist;**</span><br></pre></td></tr></table></figure>
+
+<p>定义特定大小容器： </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**<span class="function">list&lt;<span class="type">int</span>&gt; <span class="title">ilist</span><span class="params">(<span class="number">1024</span>)</span></span>;**</span><br></pre></td></tr></table></figure>
+
+<p>产生特定大小的容器，并为其赋值：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**<span class="function">list&lt;<span class="type">int</span>&gt; <span class="title">ilist</span><span class="params">(<span class="number">10</span>,<span class="number">-1</span>)</span></span>;**</span><br></pre></td></tr></table></figure>
+
+<p>通过一对iterators产生容器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**<span class="type">int</span>  iA[<span class="number">8</span>]=&#123;<span class="number">1</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">2</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">2</span>&#125;; <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fib</span><span class="params">(ia,ia+<span class="number">8</span>)</span></span>;**</span><br></pre></td></tr></table></figure>
+
+<p>根据已有容器产生新的容器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">list&lt;string&gt; slist;</span><br><span class="line">	</span><br><span class="line"><span class="comment">//填充容器</span></span><br><span class="line"></span><br><span class="line"><span class="function">list&lt;string&gt; <span class="title">slist2</span><span class="params">(slist)</span></span>;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/02/c-%E5%9F%BA%E7%A1%80/" data-id="cl6by4r3i00004swx79hmdpwf" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-文本分析二叉树实现" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/07/29/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90%E4%BA%8C%E5%8F%89%E6%A0%91%E5%AE%9E%E7%8E%B0/" class="article-date">
@@ -526,7 +594,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
     </div>
   </div>
 
@@ -537,6 +605,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/08/02/c-%E5%9F%BA%E7%A1%80/">c++基础</a>
+          </li>
         
           <li>
             <a href="/2022/07/29/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90%E4%BA%8C%E5%8F%89%E6%A0%91%E5%AE%9E%E7%8E%B0/">文本分析二叉树实现</a>
@@ -552,10 +624,6 @@
         
           <li>
             <a href="/2022/07/26/%E9%93%BE%E8%A1%A8%E6%93%8D%E4%BD%9C/">链表操作</a>
-          </li>
-        
-          <li>
-            <a href="/2022/07/26/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90/">文本分析</a>
           </li>
         
       </ul>
