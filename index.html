@@ -64,6 +64,104 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-leecode-15三数之和" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/04/leecode-15%E4%B8%89%E6%95%B0%E4%B9%8B%E5%92%8C/" class="article-date">
+  <time datetime="2022-08-04T06:50:10.000Z" itemprop="datePublished">2022-08-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/04/leecode-15%E4%B8%89%E6%95%B0%E4%B9%8B%E5%92%8C/">leecode#15三数之和</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>给你一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = 0 ？请你找出所有和为 0 且不重复的三元组。</strong></p>
+<p><strong>注意：答案中不可以包含重复的三元组。</strong></p>
+<hr>
+<p><strong>示例 1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [-1,0,1,2,-1,-4]</span><br><span class="line">输出：[[-1,-1,2],[-1,0,1]]</span><br></pre></td></tr></table></figure>
+
+<h3 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h3><p><strong>要找出三个数满足a+b+c=0，可以用两个指针指向连个数，第三个数用c=-a-b来确定，这样遍历得到结果，但是时间复杂度很高，而且用哈希存储去重也比较麻烦</strong></p>
+<p><strong>首先将数组排序，采用一个指针指i向队列前端，一个指针left指向i+1为最后一个指针为right队列尾端的指针。判断三个值相加的结果，如果大于0，则最右边的指针左移，否则left右移</strong></p>
+<p><strong>其次重要的是就是去重： 首先单单对于i来说两次循环若num[i]==nums[i-1] 相等则两次的结果是相同的</strong></p>
+<p><strong>但对于left来说 nums[left] = nums[left+1]是效果相同的，同理nums[right]=nums[right-1]也是一样的</strong></p>
+<h3 id="源代码："><a href="#源代码：" class="headerlink" title="源代码："></a>源代码：</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">threeSum</span>(vector&lt;<span class="type">int</span>&gt;&amp; nums) &#123;</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; res;</span><br><span class="line">        <span class="built_in">sort</span>(nums.<span class="built_in">begin</span>(), nums.<span class="built_in">end</span>());</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;nums.<span class="built_in">size</span>();i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(i&gt;<span class="number">0</span>&amp;&amp;nums[i]==nums[i<span class="number">-1</span>])</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            <span class="type">int</span> left=i+<span class="number">1</span>;</span><br><span class="line">            <span class="type">int</span> right=nums.<span class="built_in">size</span>()<span class="number">-1</span>;</span><br><span class="line">            <span class="keyword">while</span>(left&lt;right)&#123;</span><br><span class="line">                <span class="keyword">if</span>(nums[i]+nums[left]+nums[right]&lt;<span class="number">0</span>)&#123;</span><br><span class="line">                    left++;</span><br><span class="line">                &#125;<span class="keyword">else</span> <span class="keyword">if</span>(nums[i]+nums[left]+nums[right]&gt;<span class="number">0</span>)&#123;</span><br><span class="line">                    right--;</span><br><span class="line">                &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                    res.<span class="built_in">push_back</span>(&#123;nums[i],nums[left],nums[right]&#125;);                 </span><br><span class="line">                    <span class="keyword">while</span>(left&lt;right&amp;&amp;nums[left]==nums[left+<span class="number">1</span>])                         left++;</span><br><span class="line">                    <span class="keyword">while</span>(left&lt;right&amp;&amp;nums[right]==nums[right<span class="number">-1</span>])                         right--;</span><br><span class="line">                    left++;   <span class="comment">// 找到了两个指针同时移动</span></span><br><span class="line">                    right--;       </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">          </span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/04/leecode-15%E4%B8%89%E6%95%B0%E4%B9%8B%E5%92%8C/" data-id="cl6eqawh00000w0wx1sfj25hb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-优先队列堆的实现" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/04/%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97%E5%A0%86%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time datetime="2022-08-04T02:53:25.000Z" itemprop="datePublished">2022-08-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/04/%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97%E5%A0%86%E7%9A%84%E5%AE%9E%E7%8E%B0/">优先队列堆的实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="优先队列堆的实现"><a href="#优先队列堆的实现" class="headerlink" title="优先队列堆的实现"></a>优先队列堆的实现</h2><p><strong>堆的结构如下：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">heap</span>&#123;</span><br><span class="line">    <span class="type">int</span> capacity; <span class="comment">//堆的容量</span></span><br><span class="line">    <span class="type">int</span> size;     <span class="comment">//堆的当前大小</span></span><br><span class="line">    <span class="type">int</span> *ELements;    <span class="comment">//元素从1开始存储</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>堆的操作有：创建堆，销毁堆，判断堆空，堆满，插入一个元素，弹出堆顶元素</strong></p>
+<p><strong>其关键在于插入元素和弹出元素</strong></p>
+<p>插入元素首先是在堆的末尾插入，在插入之后要调整堆的结构，保证它堆的性质。</p>
+<p>从最后往上调整，这个过程称为“上滤”：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">push_pri_queue</span><span class="params">(<span class="type">int</span> X,pri_queue H)</span></span>&#123;</span><br><span class="line">    <span class="comment">// 首先要找到插入的位置</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">is_queue_full</span>(H))&#123;</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;Priority queue is full&quot;</span>&lt;&lt;endl;</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="comment">// 元素从最后往前插入</span></span><br><span class="line">    <span class="keyword">for</span>(i=++(H-&gt;size);H-&gt;ELements[i/<span class="number">2</span>]&gt;X;i=i/<span class="number">2</span>)&#123;</span><br><span class="line">        H-&gt;ELements[i]=H-&gt;ELements[i/<span class="number">2</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    H-&gt;ELements[i]=X;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>删除元素，是删除堆顶元素，然后从堆顶往下调整，这个过程称为“下滤”：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pop_pri_queue</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//弹出堆顶元素</span></span><br><span class="line">    <span class="type">int</span> i,child;</span><br><span class="line">    <span class="type">int</span> minElement,lastElement;</span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">is_queue_empty</span>(H))&#123;</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;The queue is empty!&quot;</span>&lt;&lt;endl;</span><br><span class="line">        <span class="keyword">return</span> H-&gt;ELements[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    minElement=H-&gt;ELements[<span class="number">1</span>];</span><br><span class="line">    lastElement=H-&gt;ELements[H-&gt;size--];</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">1</span>;i*<span class="number">2</span>&lt;=H-&gt;size;i=child)&#123;  <span class="comment">// 一直往下滤找到最后一层或叶子结点</span></span><br><span class="line">        child = i*<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span>(child !=H-&gt;size &amp;&amp; H-&gt;ELements[child+<span class="number">1</span>]&lt;H-&gt;ELements[child]) <span class="comment">//找到两个child中小的那个</span></span><br><span class="line">            child++;</span><br><span class="line">        <span class="comment">//找到最后一个元素上浮的位置</span></span><br><span class="line">        <span class="comment">//最后一个元素要插入到比他大的那个非叶结点</span></span><br><span class="line">        <span class="keyword">if</span>(lastElement&lt;H-&gt;ELements[child])&#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            H-&gt;ELements[i]=H-&gt;ELements[child];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    H-&gt;ELements[i]=lastElement;</span><br><span class="line">    <span class="keyword">return</span> minElement;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="其完整源代码如下："><a href="#其完整源代码如下：" class="headerlink" title="其完整源代码如下："></a>其完整源代码如下：</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MinPQsize (10)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MinData -32767</span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">heap</span>&#123;</span><br><span class="line">    <span class="type">int</span> capacity; <span class="comment">//堆的容量</span></span><br><span class="line">    <span class="type">int</span> size;     <span class="comment">//堆的当前大小</span></span><br><span class="line">    <span class="type">int</span> *ELements;    <span class="comment">//元素从1开始存储</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">heap</span> * pri_queue;</span><br><span class="line"></span><br><span class="line"><span class="function">pri_queue <span class="title">pri_queue_init</span><span class="params">(<span class="type">int</span> MaxElements)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">destroy_queue</span><span class="params">(pri_queue H)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">make_prique_empty</span><span class="params">(pri_queue H)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">push_pri_queue</span><span class="params">(<span class="type">int</span> X, pri_queue H)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">pop_pri_queue</span><span class="params">(pri_queue H)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">find_que_min</span><span class="params">(pri_queue H)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">is_queue_empty</span><span class="params">(pri_queue H)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">is_queue_full</span><span class="params">(pri_queue H)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print_pri_queue</span><span class="params">(pri_queue H)</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function">pri_queue <span class="title">pri_queue_init</span><span class="params">(<span class="type">int</span> MaxElements)</span></span>&#123;</span><br><span class="line">    pri_queue H;</span><br><span class="line">    <span class="keyword">if</span>(MaxElements&lt;MinPQsize)</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;The MaxElements are too small!&quot;</span>&lt;&lt;endl;</span><br><span class="line">    H = (pri_queue)<span class="built_in">malloc</span>(<span class="built_in">sizeof</span>(<span class="keyword">struct</span> heap));</span><br><span class="line">    <span class="keyword">if</span>(H==<span class="literal">NULL</span>)</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;out of spcae&quot;</span>&lt;&lt;endl;</span><br><span class="line">    H-&gt;ELements = (<span class="type">int</span> *)<span class="built_in">malloc</span>(<span class="built_in">sizeof</span>(<span class="type">int</span>)*MaxElements+<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span>(H-&gt;ELements==<span class="literal">NULL</span>)</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;out of space&quot;</span>&lt;&lt;endl;</span><br><span class="line">    H-&gt;capacity = MaxElements;</span><br><span class="line">    H-&gt;size = <span class="number">0</span>;</span><br><span class="line">    H-&gt;ELements[<span class="number">0</span>]=MinData;  <span class="comment">//初试化最小的元素</span></span><br><span class="line">    <span class="keyword">return</span> H;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">destroy_queue</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(H-&gt;ELements);</span><br><span class="line">    <span class="built_in">free</span>(H);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">push_pri_queue</span><span class="params">(<span class="type">int</span> X,pri_queue H)</span></span>&#123;</span><br><span class="line">    <span class="comment">// 首先要找到插入的位置</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">is_queue_full</span>(H))&#123;</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;Priority queue is full&quot;</span>&lt;&lt;endl;</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="comment">// 元素从最后往前插入</span></span><br><span class="line">    <span class="keyword">for</span>(i=++(H-&gt;size);H-&gt;ELements[i/<span class="number">2</span>]&gt;X;i=i/<span class="number">2</span>)&#123;</span><br><span class="line">        H-&gt;ELements[i]=H-&gt;ELements[i/<span class="number">2</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    H-&gt;ELements[i]=X;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">pop_pri_queue</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//弹出堆顶元素</span></span><br><span class="line">    <span class="type">int</span> i,child;</span><br><span class="line">    <span class="type">int</span> minElement,lastElement;</span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">is_queue_empty</span>(H))&#123;</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;The queue is empty!&quot;</span>&lt;&lt;endl;</span><br><span class="line">        <span class="keyword">return</span> H-&gt;ELements[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    minElement=H-&gt;ELements[<span class="number">1</span>];</span><br><span class="line">    lastElement=H-&gt;ELements[H-&gt;size--];</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">1</span>;i*<span class="number">2</span>&lt;=H-&gt;size;i=child)&#123;  <span class="comment">// 一直往下滤找到最后一层或叶子结点</span></span><br><span class="line">        child = i*<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span>(child !=H-&gt;size &amp;&amp; H-&gt;ELements[child+<span class="number">1</span>]&lt;H-&gt;ELements[child]) <span class="comment">//找到两个child中小的那个</span></span><br><span class="line">            child++;</span><br><span class="line">        <span class="comment">//找到最后一个元素上浮的位置</span></span><br><span class="line">        <span class="comment">//最后一个元素要插入到比他大的那个非叶结点</span></span><br><span class="line">        <span class="keyword">if</span>(lastElement&lt;H-&gt;ELements[child])&#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            H-&gt;ELements[i]=H-&gt;ELements[child];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    H-&gt;ELements[i]=lastElement;</span><br><span class="line">    <span class="keyword">return</span> minElement;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">find_que_min</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!<span class="built_in">is_queue_empty</span>(H))&#123;</span><br><span class="line">        <span class="keyword">return</span> H-&gt;ELements[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;queue is Empty!&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">return</span> H-&gt;ELements[<span class="number">0</span>];</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">make_prique_empty</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line">    H-&gt;size=<span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">is_queue_empty</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> H-&gt;size==<span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">is_queue_full</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> H-&gt;size==H-&gt;capacity;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print_pri_queue</span><span class="params">(pri_queue H)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> i=<span class="number">1</span>;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;输出优先队列中的内容&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">for</span>(;i&lt;=H-&gt;size;i++)&#123;</span><br><span class="line">        cout&lt;&lt;H-&gt;ELements[i]&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    pri_queue H =<span class="built_in">pri_queue_init</span>(<span class="number">50</span>);</span><br><span class="line">    <span class="type">int</span> ar[] = &#123;<span class="number">32</span>, <span class="number">21</span>, <span class="number">16</span>, <span class="number">24</span>, <span class="number">31</span>, <span class="number">19</span>, <span class="number">68</span>, <span class="number">65</span>, <span class="number">26</span>, <span class="number">13</span>&#125;;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++)&#123;</span><br><span class="line">        <span class="built_in">push_pri_queue</span>(ar[i],H);</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;endl;</span><br><span class="line">    <span class="built_in">print_pri_queue</span>(H);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++)&#123;</span><br><span class="line">        cout&lt;&lt;<span class="built_in">pop_pri_queue</span>(H)&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/04/%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97%E5%A0%86%E7%9A%84%E5%AE%9E%E7%8E%B0/" data-id="cl6eqawh20001w0wx9ocd0gu6" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-c++基础" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/08/02/c++%E5%9F%BA%E7%A1%80/" class="article-date">
@@ -533,80 +631,12 @@
 
 
   
-    <article id="post-c语言复习day1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/" class="article-date">
-  <time datetime="2022-07-21T09:57:23.000Z" itemprop="datePublished">2022-07-21</time>
-</a>
+
+
+  <nav id="page-nav">
     
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/">c语言复习day1</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="1、c语言的7个使用步骤"><a href="#1、c语言的7个使用步骤" class="headerlink" title="1、c语言的7个使用步骤"></a>1、c语言的7个使用步骤</h2><p>​            1） 定义程序目标</p>
-<p>​            2） 设计程序</p>
-<p>​            3） 编写代码</p>
-<p>​            4） 编译</p>
-<p>​            5） 运行程序</p>
-<p>​            6） 测试与调试程序</p>
-<p>​            7） 维护和修改程续  </p>
-<h2 id="2、编译和链接"><a href="#2、编译和链接" class="headerlink" title="2、编译和链接"></a>2、编译和链接</h2><p>​            编译的过程就是将源代码转换成可执行代码（中间代码），链接器将此中间代码和其他代码相结合来生成可执行文件。</p>
-<h2 id="3、变量的命名规则"><a href="#3、变量的命名规则" class="headerlink" title="3、变量的命名规则"></a>3、变量的命名规则</h2><p>​            可供使用的有小写字母、大写字母、数字、下划线。第一个字符必须是字符和下划线。除此之外还有一些系统保留的关键字：</p>
-<img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100309_be46ff62_8442788.png" class>
-
-<h2 id="4、基本数据类型"><a href="#4、基本数据类型" class="headerlink" title="4、基本数据类型"></a>4、基本数据类型</h2><p>​             int、long、short、unsigned、char、float、double 、_bool、signed、void、_complex、_Imaginary</p>
-<h2 id="5、8进制和16进制"><a href="#5、8进制和16进制" class="headerlink" title="5、8进制和16进制"></a>5、8进制和16进制</h2><p>​        16进制前缀0x,8进制前缀0。输出的格式： 8进制 %#0 16进制 %#0x</p>
-<h2 id="6、long、short，long-long和unsigned"><a href="#6、long、short，long-long和unsigned" class="headerlink" title="6、long、short，long  long和unsigned"></a>6、long、short，long  long和unsigned</h2><p>​            %ld 打印long </p>
-<p>​            %h 打印short </p>
-<p>​            %u 打印unsigned</p>
-<h2 id="7、char类型的定义"><a href="#7、char类型的定义" class="headerlink" title="7、char类型的定义"></a>7、char类型的定义</h2><img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100310_290dc294_8442788.png" class>
-
-<img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100312_790fe6a8_8442788.png" class>
-
-<h2 id="8、转义字符"><a href="#8、转义字符" class="headerlink" title="8、转义字符"></a>8、转义字符</h2><img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100310_0cf16f35_8442788.png" class>
-
-<h2 id="9、浮点数表示范围"><a href="#9、浮点数表示范围" class="headerlink" title="9、浮点数表示范围"></a>9、浮点数表示范围</h2><p>float 至少表示6位有效数字 取值范围至少为10-37到10+37。32位</p>
-<p>double 至少表示10位有效数字 64位</p>
-<p>后缀位f和F 是float 后缀为l或L为long double，没有后缀的浮点常量为double</p>
-<h2 id="10、各个类型的范围"><a href="#10、各个类型的范围" class="headerlink" title="10、各个类型的范围"></a>10、各个类型的范围</h2><img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100313_adb882a2_8442788.png" class>
-
-<img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100317_5d39c0c3_8442788.png" class>
-
-<h2 id="11、各种类型之间的相互转化"><a href="#11、各种类型之间的相互转化" class="headerlink" title="11、各种类型之间的相互转化"></a>11、各种类型之间的相互转化</h2><img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100311_aba367c2_8442788.png" class title="%) ## 12、在c语言中，使用%s只会读取一个单词而不会读取整个句子，所以字符串的输入一般使用gets()等其他输入函数。 ## 13、常量三种声明方式 const ，define以及枚举类型enum ## 14、常见printf()输出转换说明符 {% asset_img 100312_ede2636f_8442788.png">
-
-<h2 id="15、printf-修饰符"><a href="#15、printf-修饰符" class="headerlink" title="15、printf()修饰符"></a>15、printf()修饰符</h2><img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100314_d00cd921_8442788.png" class>
-
-<h2 id="16、字符串分行的三种方法（字符串较长）"><a href="#16、字符串分行的三种方法（字符串较长）" class="headerlink" title="16、字符串分行的三种方法（字符串较长）"></a>16、字符串分行的三种方法（字符串较长）</h2><p>​            1、使用多个printf()</p>
-<p>​            2、使用反斜杠和回车的组合来结束本行</p>
-<p>​            3、使用空白字符连接连个用双引号括起来的字符串</p>
-<img src="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/100311_aba367c2_8442788.png" class>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/" data-id="cl64plclr0000ocwx4wleemty" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+  </nav>
 
 </section>
         
@@ -637,6 +667,14 @@
       <ul>
         
           <li>
+            <a href="/2022/08/04/leecode-15%E4%B8%89%E6%95%B0%E4%B9%8B%E5%92%8C/">leecode#15三数之和</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/04/%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97%E5%A0%86%E7%9A%84%E5%AE%9E%E7%8E%B0/">优先队列堆的实现</a>
+          </li>
+        
+          <li>
             <a href="/2022/08/02/c++%E5%9F%BA%E7%A1%80/">c++基础</a>
           </li>
         
@@ -646,14 +684,6 @@
         
           <li>
             <a href="/2022/07/28/%E4%BA%8C%E5%8F%89%E6%8E%92%E5%BA%8F%E6%A0%91%E7%9A%84%E5%AE%9E%E7%8E%B0/">二叉排序树的实现</a>
-          </li>
-        
-          <li>
-            <a href="/2022/07/28/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90%E9%93%BE%E8%A1%A8%E5%AE%9E%E7%8E%B0/">文本分析链表实现</a>
-          </li>
-        
-          <li>
-            <a href="/2022/07/26/%E9%93%BE%E8%A1%A8%E6%93%8D%E4%BD%9C/">链表操作</a>
           </li>
         
       </ul>
