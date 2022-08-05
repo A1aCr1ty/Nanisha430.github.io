@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>快速排序的实现 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="该方法的基本思想是： 1．先从数列中取出一个数作为****基准数****。 2．分区过程，将比这个数大的数全放到它的右边，小于或等于它的数全放到它的左边。 3．再对左右区间重复第二步，直到各区间只有一个数。 以一个数组作为示例，取区间第一个数为基准数。    0 1 2 3 4 5 6 7 8 9    *72* 6 57 88 60 42 83 73 48 85   初始时，i &#x3D; 0; j &#x3D;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="快速排序的实现">
+<meta property="og:url" content="http://example.com/2022/08/05/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="该方法的基本思想是： 1．先从数列中取出一个数作为****基准数****。 2．分区过程，将比这个数大的数全放到它的右边，小于或等于它的数全放到它的左边。 3．再对左右区间重复第二步，直到各区间只有一个数。 以一个数组作为示例，取区间第一个数为基准数。    0 1 2 3 4 5 6 7 8 9    *72* 6 57 88 60 42 83 73 48 85   初始时，i &#x3D; 0; j &#x3D;">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-08-05T06:11:36.000Z">
+<meta property="article:modified_time" content="2022-08-05T06:16:14.778Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-快速排序的实现" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/05/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time datetime="2022-08-05T06:11:36.000Z" itemprop="datePublished">2022-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      快速排序的实现
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>该方法的基本思想是：</p>
+<p>1．先从数列中取出一个数作为****基准数****。</p>
+<p>2．分区过程，将比这个数大的数全放到它的右边，小于或等于它的数全放到它的左边。</p>
+<p>3．再对左右区间重复第二步，直到各区间只有一个数。</p>
+<p>以一个数组作为示例，<strong>取区间第一个数为基准数</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em><strong>*72*</strong></em></td>
+<td>6</td>
+<td>57</td>
+<td>88</td>
+<td>60</td>
+<td>42</td>
+<td>83</td>
+<td>73</td>
+<td>48</td>
+<td>85</td>
+</tr>
+</tbody></table>
+<p>初始时，i = 0; j =9;  X = a[i] = 72</p>
+<p>由于已经将a[0]中的数保存到X中，可以理解成在数组a[0]上挖了个坑，可以将其它数据填充到这来。</p>
+<p>从j开始向前找一个比X小或等于X的数。当j=8，符合条件，将a[8]挖出再填到上一个坑a[0]中。a[0]=a[8];i++; 这样一个坑a[0]就被搞定了，但又形成了一个新坑a[8]，这怎么办了？简单，再找数字来填a[8]这个坑。这次从i开始向后找一个大于X的数，当i=3，符合条件，将a[3]挖出再填到上一个坑中a[8]=a[3];j–;</p>
+<p>数组变为：</p>
+<table>
+<thead>
+<tr>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>48</td>
+<td>6</td>
+<td>57</td>
+<td>88</td>
+<td>60</td>
+<td>42</td>
+<td>83</td>
+<td>73</td>
+<td>88</td>
+<td>85</td>
+</tr>
+</tbody></table>
+<p> i = 3;  j =7;  X=72</p>
+<p>再重复上面的步骤，<strong>先从后向前找，再从前向后找</strong>。</p>
+<p>从j开始向前找，当j=5，符合条件，将a[5]挖出填到上一个坑中，a[3] = a[5]; i++;</p>
+<p>从i开始向后找，当i=5时，由于i==j退出。</p>
+<p>此时，i = j = 5，而a[5]刚好又是上次挖的坑，因此将X填入a[5]。</p>
+<p>数组变为：</p>
+<table>
+<thead>
+<tr>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>48</td>
+<td>6</td>
+<td>57</td>
+<td>42</td>
+<td>60</td>
+<td>72</td>
+<td>83</td>
+<td>73</td>
+<td>88</td>
+<td>85</td>
+</tr>
+</tbody></table>
+<p>可以看出a[5]前面的数字都小于它，a[5]后面的数字都大于它。因此再对a[0…4]和a[6…9]这二个子区间重复上述步骤就可以了。</p>
+<p>对挖坑填数进行总结</p>
+<p>1、i =L; j = R; 将基准数挖出形成第一个坑a[i]。</p>
+<p>2、j–由后向前找比它小的数，找到后挖出此数填前一个坑a[i]中。</p>
+<p>3、i++由前向后找比它大的数，找到后也挖出此数填到前一个坑a[j]中。</p>
+<p>4、再重复执行2，3二步，直到i==j，将基准数填入a[i]中。</p>
+<h3 id="源代码如下："><a href="#源代码如下：" class="headerlink" title="源代码如下："></a>源代码如下：</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">Qsort</span><span class="params">(<span class="type">int</span> num[],<span class="type">int</span> left,<span class="type">int</span> right)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> temp=num[left];</span><br><span class="line">    <span class="keyword">while</span>(left&lt;right)&#123;</span><br><span class="line">        <span class="keyword">while</span>(num[right]&gt;temp&amp;&amp;left&lt;right)</span><br><span class="line">            right--;</span><br><span class="line">        num[left]=num[right];</span><br><span class="line">        <span class="keyword">while</span>(left&lt;right&amp;&amp;num[left]&lt;temp)</span><br><span class="line">            left++;</span><br><span class="line">        num[right]=num[left];    </span><br><span class="line">    &#125;</span><br><span class="line">    num[left]=temp;</span><br><span class="line">    <span class="keyword">return</span> left;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">QuickSort</span><span class="params">(<span class="type">int</span> num[],<span class="type">int</span> left,<span class="type">int</span> right)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> mid;</span><br><span class="line">    <span class="keyword">if</span>(left&lt;right)&#123;</span><br><span class="line">        mid=<span class="built_in">Qsort</span>(num,left,right);</span><br><span class="line">        <span class="built_in">QuickSort</span>(num,left,mid<span class="number">-1</span>);</span><br><span class="line">        <span class="built_in">QuickSort</span>(num,mid+<span class="number">1</span>,right);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> num[<span class="number">10</span>]=&#123;<span class="number">1</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">232</span>,<span class="number">42</span>,<span class="number">534</span>,<span class="number">53</span>,<span class="number">32</span>,<span class="number">421</span>,<span class="number">3</span>&#125;;</span><br><span class="line">    <span class="built_in">QuickSort</span>(num,<span class="number">0</span>,<span class="number">9</span>);</span><br><span class="line">     <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++)</span><br><span class="line">         cout &lt;&lt; num[i]&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/05/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/" data-id="cl6g2ppkk0000egwx5y2a2mca" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2022/08/05/leecode-18%E5%9B%9B%E6%95%B0%E4%B9%8B%E5%92%8C/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          leecode#18四数之和
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2022/08/04/leecode-16/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">leecode#16</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/05/leecode-18%E5%9B%9B%E6%95%B0%E4%B9%8B%E5%92%8C/">leecode#18四数之和</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/05/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/">快速排序的实现</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/04/leecode-16/">leecode#16</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/04/leecode-15%E4%B8%89%E6%95%B0%E4%B9%8B%E5%92%8C/">leecode#15三数之和</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/04/%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97%E5%A0%86%E7%9A%84%E5%AE%9E%E7%8E%B0/">优先队列堆的实现</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
