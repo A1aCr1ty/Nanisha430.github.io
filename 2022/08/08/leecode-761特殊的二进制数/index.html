@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>leecode#761特殊的二进制数 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="761. 特殊的二进制序列特殊的二进制序列是具有以下两个性质的二进制序列：  0 的数量与 1 的数量相等。 二进制序列的每一个前缀码中 1 的数量要大于等于 0 的数量。  给定一个特殊的二进制序列 S，以字符串形式表示。定义一个操作 为首先选择 S 的两个连续且非空的特殊的子串，然后将它们交换。（两个子串为连续的当且仅当第一个子串的最后一个字符恰好为第二个子串的第一个字符的前一个字符。) 在任">
+<meta property="og:type" content="article">
+<meta property="og:title" content="leecode#761特殊的二进制数">
+<meta property="og:url" content="http://example.com/2022/08/08/leecode-761%E7%89%B9%E6%AE%8A%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="761. 特殊的二进制序列特殊的二进制序列是具有以下两个性质的二进制序列：  0 的数量与 1 的数量相等。 二进制序列的每一个前缀码中 1 的数量要大于等于 0 的数量。  给定一个特殊的二进制序列 S，以字符串形式表示。定义一个操作 为首先选择 S 的两个连续且非空的特殊的子串，然后将它们交换。（两个子串为连续的当且仅当第一个子串的最后一个字符恰好为第二个子串的第一个字符的前一个字符。) 在任">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-08-08T07:36:00.000Z">
+<meta property="article:modified_time" content="2022-08-08T07:54:00.297Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-leecode-761特殊的二进制数" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/08/leecode-761%E7%89%B9%E6%AE%8A%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B0/" class="article-date">
+  <time datetime="2022-08-08T07:36:00.000Z" itemprop="datePublished">2022-08-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      leecode#761特殊的二进制数
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="761-特殊的二进制序列"><a href="#761-特殊的二进制序列" class="headerlink" title="761. 特殊的二进制序列"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/special-binary-string/">761. 特殊的二进制序列</a></h2><p><strong>特殊的二进制序列是具有以下两个性质的二进制序列：</strong></p>
+<ul>
+<li><strong>0 的数量与 1 的数量相等。</strong></li>
+<li><strong>二进制序列的每一个前缀码中 1 的数量要大于等于 0 的数量。</strong></li>
+</ul>
+<p><strong>给定一个特殊的二进制序列 <code>S</code>，以字符串形式表示。定义一个<em>操作</em> 为首先选择 <code>S</code> 的两个连续且非空的特殊的子串，然后将它们交换。（两个子串为连续的当且仅当第一个子串的最后一个字符恰好为第二个子串的第一个字符的前一个字符。)</strong></p>
+<p><strong>在任意次数的操作之后，交换后的字符串按照字典序排列的最大的结果是什么？</strong></p>
+<p><strong>示例 1:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入: S = &quot;11011000&quot;</span><br><span class="line">输出: &quot;11100100&quot;</span><br><span class="line">解释:</span><br><span class="line">将子串 &quot;10&quot; （在S[1]出现） 和 &quot;1100&quot; （在S[3]出现）进行交换。</span><br><span class="line">这是在进行若干次操作后按字典序排列最大的结果。</span><br></pre></td></tr></table></figure>
+
+<h2 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h2><p>​    <strong>在这个特殊的二进制数中，1可以看成是”(“。分析，每一个前缀码中的1数量要多于0，当前缀码长度为1时，前缀只能为1。因为前缀中1的数量要大于等于0的数量，而总的字符串中的1和0的数量要相等，所以字符串的末尾只能时0.</strong></p>
+<p>​    <strong>假设这个字符串不可再分的字符串，那么首位和末尾的1和0不会参与交换。（如果前缀中1可以交换，那么前缀这个字符串中既要满足1的数量大于等于0，同时又要满足1和0数量相等，那么剩余的字符串中1和0的字符串的数量也想等，从而也是一个特殊字符串，与假设不符）</strong></p>
+<p>​    <strong>所以我们可以把首位和末尾的1移除，只考虑中间的字符串。</strong></p>
+<p>​    <strong>把中间的字符串分成一个个不可再分的特殊字符，及把一个特殊字符串移除首位1和0后，继续递归拆分。</strong></p>
+<p>​    <strong>最后通过字典序降序排列，拼接成一个字符串。</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">string <span class="title">makeLargestSpecial</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(s.<span class="built_in">size</span>()&lt;=<span class="number">2</span>)</span><br><span class="line">            <span class="keyword">return</span> s;</span><br><span class="line">        <span class="type">int</span> cnt=<span class="number">0</span>,left=<span class="number">0</span>;</span><br><span class="line">        vector&lt;string&gt; sub;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;s.<span class="built_in">size</span>();i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(s[i]==<span class="string">&#x27;1&#x27;</span>)&#123;</span><br><span class="line">                cnt++;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                cnt--;</span><br><span class="line">                <span class="keyword">if</span>(cnt==<span class="number">0</span>)&#123;</span><br><span class="line">                    sub.<span class="built_in">push_back</span>(<span class="string">&#x27;1&#x27;</span>+<span class="built_in">makeLargestSpecial</span>(s.<span class="built_in">substr</span>(left+<span class="number">1</span>,i-left<span class="number">-1</span>))+<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">                    left=i+<span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">sort</span>(sub.<span class="built_in">begin</span>(),sub.<span class="built_in">end</span>(),greater&lt;string&gt;&#123;&#125;);</span><br><span class="line">        string ans = <span class="built_in">accumulate</span>(sub.<span class="built_in">begin</span>(),sub.<span class="built_in">end</span>(),<span class="string">&quot;&quot;</span>s);</span><br><span class="line">        <span class="keyword">return</span> ans;        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/08/leecode-761%E7%89%B9%E6%AE%8A%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B0/" data-id="cl6kl6x1j0001j8wx0cwbh7e8" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2022/08/08/leecode-25K%E4%B8%AA%E4%B8%80%E7%BB%84%E9%93%BE%E8%A1%A8%E7%BF%BB%E8%BD%AC/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          leecode#25K个一组链表翻转
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2022/08/08/%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E9%95%BF%E5%BA%A6%E9%97%AE%E9%A2%98/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">最短路径长度问题</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/08/leecode-25K%E4%B8%AA%E4%B8%80%E7%BB%84%E9%93%BE%E8%A1%A8%E7%BF%BB%E8%BD%AC/">leecode#25K个一组链表翻转</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/08/leecode-761%E7%89%B9%E6%AE%8A%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B0/">leecode#761特殊的二进制数</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/08/%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E9%95%BF%E5%BA%A6%E9%97%AE%E9%A2%98/">最短路径长度问题</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/08/%E6%9C%89%E5%90%91%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%B8%8E%E9%81%8D%E5%8E%86/">有向图的实现与遍历</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/">leecode在二叉树中增加一行</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
