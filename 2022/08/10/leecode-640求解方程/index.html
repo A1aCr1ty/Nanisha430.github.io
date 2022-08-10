@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>leecode#640求解方程 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="640. 求解方程求解一个给定的方程，将x以字符串 &quot;x&#x3D;#value&quot; 的形式返回。该方程仅包含 &#39;+&#39; ， &#39;-&#39; 操作，变量 x 和其对应系数。 如果方程没有解，请返回 &quot;No solution&quot; 。如果方程有无限解，则返回 “Infinite solutions” 。 题目保证，如果方程中只有一个解，则 ‘x’ 的值是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="leecode#640求解方程">
+<meta property="og:url" content="http://example.com/2022/08/10/leecode-640%E6%B1%82%E8%A7%A3%E6%96%B9%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="640. 求解方程求解一个给定的方程，将x以字符串 &quot;x&#x3D;#value&quot; 的形式返回。该方程仅包含 &#39;+&#39; ， &#39;-&#39; 操作，变量 x 和其对应系数。 如果方程没有解，请返回 &quot;No solution&quot; 。如果方程有无限解，则返回 “Infinite solutions” 。 题目保证，如果方程中只有一个解，则 ‘x’ 的值是">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-08-10T08:42:56.000Z">
+<meta property="article:modified_time" content="2022-08-10T09:08:21.151Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-leecode-640求解方程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/10/leecode-640%E6%B1%82%E8%A7%A3%E6%96%B9%E7%A8%8B/" class="article-date">
+  <time datetime="2022-08-10T08:42:56.000Z" itemprop="datePublished">2022-08-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      leecode#640求解方程
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="640-求解方程"><a href="#640-求解方程" class="headerlink" title="640. 求解方程"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/solve-the-equation/">640. 求解方程</a></h2><p><strong>求解一个给定的方程，将<code>x</code>以字符串 <code>&quot;x=#value&quot;</code> 的形式返回。该方程仅包含 <code>&#39;+&#39;</code> ， <code>&#39;-&#39;</code> 操作，变量 <code>x</code> 和其对应系数。</strong></p>
+<p><strong>如果方程没有解，请返回 <code>&quot;No solution&quot;</code> 。如果方程有无限解，则返回 <code>“Infinite solutions”</code> 。</strong></p>
+<p><strong>题目保证，如果方程中只有一个解，则 ‘x’ 的值是一个整数。</strong></p>
+<p><strong>示例 1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: equation = &quot;x+5-3+x=6+x-2&quot;</span><br><span class="line">输出: &quot;x=2&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 2:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: equation = &quot;x=x&quot;</span><br><span class="line">输出: &quot;Infinite solutions&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 3:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: equation = &quot;2x=x&quot;</span><br><span class="line">输出: &quot;x=0&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h2><p>​    <strong>将等式右边的数据和x移动到等式左边，等式中的项的符号用sign1表示，默认为1.则等式右边的符号默认为-1，用sign2来表示+或-，最后得到x项和常数项。将他们的系数相除就能得到结果。</strong></p>
+<p>​    <strong>其中要特别注意0x=0这种情况！！！！</strong> </p>
+<p>​    </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">string <span class="title">solveEquation</span><span class="params">(string equation)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> factor =<span class="number">0</span> ,sign1=<span class="number">1</span>; </span><br><span class="line">        <span class="type">int</span> n=equation.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> val=<span class="number">0</span>,index=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span>(index&lt;n)&#123;</span><br><span class="line">            <span class="keyword">if</span>(equation[index]==<span class="string">&#x27;=&#x27;</span>)&#123;</span><br><span class="line">                sign1=<span class="number">-1</span>;</span><br><span class="line">                index++;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">int</span> sign2=sign1,number=<span class="number">0</span>;</span><br><span class="line">            <span class="type">bool</span> valid=<span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span>(equation[index]==<span class="string">&#x27;-&#x27;</span>||equation[index]==<span class="string">&#x27;+&#x27;</span>)&#123;</span><br><span class="line">                sign2=(equation[index]==<span class="string">&#x27;-&#x27;</span>)?-sign1:sign1;</span><br><span class="line">                index++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span>(index&lt;n&amp;&amp;<span class="built_in">isdigit</span>(equation[index]))&#123; <span class="comment">//从字符串中得到具体数字</span></span><br><span class="line">                number = number*<span class="number">10</span>+(equation[index]-<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">                index++;</span><br><span class="line">                valid=<span class="literal">true</span>;<span class="comment">//用来判断是数字还是x</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(index&lt;n&amp;&amp;equation[index]==<span class="string">&#x27;x&#x27;</span>)&#123;</span><br><span class="line">                factor+=valid?sign2*number:sign2;</span><br><span class="line">                index++;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                val+=sign2*number;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">if</span> (factor == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> val == <span class="number">0</span> ? <span class="string">&quot;Infinite solutions&quot;</span> : <span class="string">&quot;No solution&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">string</span>(<span class="string">&quot;x=&quot;</span>) + <span class="built_in">to_string</span>(-val / factor);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/10/leecode-640%E6%B1%82%E8%A7%A3%E6%96%B9%E7%A8%8B/" data-id="cl6ne35sr0001pkmj5xvg74kq" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/08/10/leecode-636/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">leecode#636</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/08/10/leecode-640%E6%B1%82%E8%A7%A3%E6%96%B9%E7%A8%8B/">leecode#640求解方程</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/10/leecode-636/">leecode#636</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/09/%E6%90%AD%E5%BB%BAriscv%E7%8E%AF%E5%A2%83/">搭建riscv环境</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/08/leecode-25K%E4%B8%AA%E4%B8%80%E7%BB%84%E9%93%BE%E8%A1%A8%E7%BF%BB%E8%BD%AC/">leecode#25K个一组链表翻转</a>
+          </li>
+        
+          <li>
+            <a href="/2022/08/08/leecode-761%E7%89%B9%E6%AE%8A%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B0/">leecode#761特殊的二进制数</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
