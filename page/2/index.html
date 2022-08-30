@@ -64,6 +64,59 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-leecode-640求解方程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/10/leecode-640%E6%B1%82%E8%A7%A3%E6%96%B9%E7%A8%8B/" class="article-date">
+  <time datetime="2022-08-10T08:42:56.000Z" itemprop="datePublished">2022-08-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/10/leecode-640%E6%B1%82%E8%A7%A3%E6%96%B9%E7%A8%8B/">leecode#640求解方程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="640-求解方程"><a href="#640-求解方程" class="headerlink" title="640. 求解方程"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/solve-the-equation/">640. 求解方程</a></h2><p><strong>求解一个给定的方程，将<code>x</code>以字符串 <code>&quot;x=#value&quot;</code> 的形式返回。该方程仅包含 <code>&#39;+&#39;</code> ， <code>&#39;-&#39;</code> 操作，变量 <code>x</code> 和其对应系数。</strong></p>
+<p><strong>如果方程没有解，请返回 <code>&quot;No solution&quot;</code> 。如果方程有无限解，则返回 <code>“Infinite solutions”</code> 。</strong></p>
+<p><strong>题目保证，如果方程中只有一个解，则 ‘x’ 的值是一个整数。</strong></p>
+<p><strong>示例 1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: equation = &quot;x+5-3+x=6+x-2&quot;</span><br><span class="line">输出: &quot;x=2&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 2:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: equation = &quot;x=x&quot;</span><br><span class="line">输出: &quot;Infinite solutions&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 3:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: equation = &quot;2x=x&quot;</span><br><span class="line">输出: &quot;x=0&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h2><p>​    <strong>将等式右边的数据和x移动到等式左边，等式中的项的符号用sign1表示，默认为1.则等式右边的符号默认为-1，用sign2来表示+或-，最后得到x项和常数项。将他们的系数相除就能得到结果。</strong></p>
+<p>​    <strong>其中要特别注意0x=0这种情况！！！！</strong> </p>
+<p>​    </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">string <span class="title">solveEquation</span><span class="params">(string equation)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> factor =<span class="number">0</span> ,sign1=<span class="number">1</span>; </span><br><span class="line">        <span class="type">int</span> n=equation.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> val=<span class="number">0</span>,index=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span>(index&lt;n)&#123;</span><br><span class="line">            <span class="keyword">if</span>(equation[index]==<span class="string">&#x27;=&#x27;</span>)&#123;</span><br><span class="line">                sign1=<span class="number">-1</span>;</span><br><span class="line">                index++;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">int</span> sign2=sign1,number=<span class="number">0</span>;</span><br><span class="line">            <span class="type">bool</span> valid=<span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span>(equation[index]==<span class="string">&#x27;-&#x27;</span>||equation[index]==<span class="string">&#x27;+&#x27;</span>)&#123;</span><br><span class="line">                sign2=(equation[index]==<span class="string">&#x27;-&#x27;</span>)?-sign1:sign1;</span><br><span class="line">                index++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span>(index&lt;n&amp;&amp;<span class="built_in">isdigit</span>(equation[index]))&#123; <span class="comment">//从字符串中得到具体数字</span></span><br><span class="line">                number = number*<span class="number">10</span>+(equation[index]-<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">                index++;</span><br><span class="line">                valid=<span class="literal">true</span>;<span class="comment">//用来判断是数字还是x</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(index&lt;n&amp;&amp;equation[index]==<span class="string">&#x27;x&#x27;</span>)&#123;</span><br><span class="line">                factor+=valid?sign2*number:sign2;</span><br><span class="line">                index++;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                val+=sign2*number;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">if</span> (factor == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> val == <span class="number">0</span> ? <span class="string">&quot;Infinite solutions&quot;</span> : <span class="string">&quot;No solution&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">string</span>(<span class="string">&quot;x=&quot;</span>) + <span class="built_in">to_string</span>(-val / factor);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/10/leecode-640%E6%B1%82%E8%A7%A3%E6%96%B9%E7%A8%8B/" data-id="cl6ossnmw000a4omj0a3mh0v0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-leecode-636" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/08/10/leecode-636/" class="article-date">
@@ -162,7 +215,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd riscv-gnu-toolchian</span><br><span class="line">./configure --prefix=/opt/riscv64</span><br><span class="line">sudo make</span><br></pre></td></tr></table></figure>
 
 <p><strong>最后添加环境变量</strong>：（<strong>才能在任何路径下使用该应用</strong>/<strong>软件</strong>）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">进入~/.bashrc</span></span><br><span class="line">vim ~/.bashrc</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">然后添加语句</span></span><br><span class="line">export RISCV=/opt/riscv64</span><br><span class="line">export PATH=&quot;$RISCV/bin:$PATH&quot;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">保存并更新环境</span></span><br><span class="line">:wq</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">进入~/.bashrc</span></span><br><span class="line">vim ~/.bashrc</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">然后添加语句</span></span><br><span class="line">export RISCV=/opt/riscv64</span><br><span class="line">export PATH=&quot;$RISCV/bin:$PATH&quot;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">保存并更新环境</span></span><br><span class="line">:wq </span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>测试是否安装成功：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">riscv64-unknown-elf-gcc --version</span><br></pre></td></tr></table></figure>
@@ -645,53 +698,6 @@
 
 
   
-    <article id="post-leecode-16" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/04/leecode-16/" class="article-date">
-  <time datetime="2022-08-04T08:19:33.000Z" itemprop="datePublished">2022-08-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/04/leecode-16/">leecode#16</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="16-最接近的三数之和"><a href="#16-最接近的三数之和" class="headerlink" title="16. 最接近的三数之和"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/3sum-closest/">16. 最接近的三数之和</a></h4><p><strong>给你一个长度为 <code>n</code> 的整数数组 <code>nums</code> 和 一个目标值 <code>target</code>。请你从 <code>nums</code> 中选出三个整数，使它们的和与 <code>target</code> 最接近。</strong></p>
-<p><strong>返回这三个数的和。</strong></p>
-<p><strong>假定每组输入只存在恰好一个解。</strong></p>
-<hr>
-<p><strong>示例 1：</strong></p>
-<p><strong>输入：nums = [-1,2,1,-4], target = 1</strong><br><strong>输出：2</strong><br><strong>解释：与 target 最接近的和是 2 (-1 + 2 + 1 = 2) 。</strong></p>
-<p><strong>示例 2：</strong></p>
-<p><strong>输入：nums = [0,0,0], target = 1</strong><br><strong>输出：0</strong></p>
-<h3 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h3><p><strong>与15题类似，排序后用双指针遍历整个数组，找出和与目标值插值最小的三个数之和</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">threeSumClosest</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> target)</span> </span>&#123;</span><br><span class="line">         <span class="type">int</span> res,min=<span class="number">-1111111111</span>,sum;</span><br><span class="line">        <span class="built_in">sort</span>(nums.<span class="built_in">begin</span>(),nums.<span class="built_in">end</span>());</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> a=<span class="number">0</span>;a&lt;nums.<span class="built_in">size</span>()<span class="number">-2</span>;a++)&#123;</span><br><span class="line">            <span class="type">int</span> left = a+<span class="number">1</span>;</span><br><span class="line">            <span class="type">int</span> right= nums.<span class="built_in">size</span>()<span class="number">-1</span>;</span><br><span class="line">            <span class="keyword">while</span>(left&lt;right)&#123;</span><br><span class="line">                sum=nums[a]+nums[left]+nums[right];</span><br><span class="line">                <span class="keyword">if</span>(sum&lt;target)&#123;</span><br><span class="line">                    <span class="keyword">if</span>(<span class="built_in">abs</span>(min)&gt;<span class="built_in">abs</span>(target-sum))&#123;</span><br><span class="line">                        min=<span class="built_in">abs</span>(target-sum);</span><br><span class="line">                        res = sum;</span><br><span class="line">                    &#125; </span><br><span class="line">                    left++;</span><br><span class="line">                &#125;<span class="keyword">else</span> <span class="keyword">if</span>(sum&gt;target)&#123;</span><br><span class="line">                     <span class="keyword">if</span>(<span class="built_in">abs</span>(min)&gt;<span class="built_in">abs</span>(target-sum))&#123;</span><br><span class="line">                        min=<span class="built_in">abs</span>(target-sum);</span><br><span class="line">                        res = sum ;</span><br><span class="line">                    &#125; </span><br><span class="line">                    right--;</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                    res = target;</span><br><span class="line">                    <span class="keyword">return</span> res;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/04/leecode-16/" data-id="cl6ossnmt00064omj2vd8guzf" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -728,6 +734,10 @@
       <ul>
         
           <li>
+            <a href="/2022/08/29/cmake%E5%AD%A6%E4%B9%A0/">cmake学习</a>
+          </li>
+        
+          <li>
             <a href="/2022/08/26/socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8Bday1/">socket网络编程day1</a>
           </li>
         
@@ -741,10 +751,6 @@
         
           <li>
             <a href="/2022/08/22/c++%E7%BA%BF%E7%A8%8B/">c++线程</a>
-          </li>
-        
-          <li>
-            <a href="/2022/08/16/%E5%8D%8F%E7%A8%8B%E5%BA%93%E5%AD%A6%E4%B9%A0/">协程库学习</a>
           </li>
         
       </ul>
