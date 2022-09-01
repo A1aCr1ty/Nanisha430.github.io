@@ -64,6 +64,72 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-leecode-28实现strStr" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/12/leecode-28%E5%AE%9E%E7%8E%B0strStr/" class="article-date">
+  <time datetime="2022-08-12T06:36:07.000Z" itemprop="datePublished">2022-08-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/12/leecode-28%E5%AE%9E%E7%8E%B0strStr/">leecode_28实现strStr</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="28-实现-strStr"><a href="#28-实现-strStr" class="headerlink" title="28. 实现 strStr()"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/implement-strstr/">28. 实现 strStr()</a></h2><p>实现 <a target="_blank" rel="noopener" href="https://baike.baidu.com/item/strstr/811469">strStr()</a> 函数。</p>
+<p>给你两个字符串 <code>haystack</code> 和 <code>needle</code> ，请你在 <code>haystack</code> 字符串中找出 <code>needle</code> 字符串出现的第一个位置（下标从 0 开始）。如果不存在，则返回 <code>-1</code> 。</p>
+<p><strong>说明：</strong></p>
+<p>当 <code>needle</code> 是空字符串时，我们应当返回什么值呢？这是一个在面试中很好的问题。</p>
+<p>对于本题而言，当 <code>needle</code> 是空字符串时我们应当返回 0 。这与 C 语言的 <a target="_blank" rel="noopener" href="https://baike.baidu.com/item/strstr/811469">strstr()</a> 以及 Java 的 <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/7/docs/api/java/lang/String.html#indexOf(java.lang.String)">indexOf()</a> 定义相符。</p>
+<p><strong>示例 1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：haystack = &quot;hello&quot;, needle = &quot;ll&quot;</span><br><span class="line">输出：2</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 2：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：haystack = &quot;aaaaa&quot;, needle = &quot;bba&quot;</span><br><span class="line">输出：-1</span><br></pre></td></tr></table></figure>
+
+<h2 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h2><p>​    实现kmp算法，kmp与朴素暴力方法不同的地方，原串的指针不回溯，而要比较的串，找相同的最长前缀和后缀，匹配失败后，指针回到前缀的后一位。</p>
+<p>​    构建next数组：</p>
+<pre><code>接下来，我们看看 next 数组是如何在 O(m)O(m) 的复杂度内被预处理出来的。
+</code></pre>
+<p>假设有匹配串 aaabbab，我们来看看对应的 next 是如何被构建出来的。</p>
+<img src="/2022/08/12/leecode-28%E5%AE%9E%E7%8E%B0strStr/image-20220812155831188.png" class>
+
+<img src="/2022/08/12/leecode-28%E5%AE%9E%E7%8E%B0strStr/image-20220812155913250.png" class>
+
+<img src="/2022/08/12/leecode-28%E5%AE%9E%E7%8E%B0strStr/image-20220812155923413.png" class>
+
+<img src="/2022/08/12/leecode-28%E5%AE%9E%E7%8E%B0strStr/image-20220812155938839.png" class>
+
+<p>这就是整个 next 数组的构建过程，时空复杂度均为 O(m)O(m)。</p>
+<p>至此整个 KMP 匹配过程复杂度是 O(m + n)O(m+n) 的。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>,j=<span class="number">1</span>;j&lt;m;j++)&#123;</span><br><span class="line">	<span class="keyword">while</span>(i&gt;<span class="number">0</span> &amp;&amp; needle[i]!=needle[j]) i=next[i<span class="number">-1</span>];</span><br><span class="line">	<span class="keyword">if</span>(needle[i]==needle[j]) i++;</span><br><span class="line">	next[j]=i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="总的KMP源代码："><a href="#总的KMP源代码：" class="headerlink" title="总的KMP源代码："></a>总的KMP源代码：</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">strStr</span><span class="params">(string haystack, string needle)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n= haystack.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> m = needle.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> ans=<span class="number">0</span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">next</span><span class="params">(m+<span class="number">1</span>)</span></span>;</span><br><span class="line">        <span class="keyword">if</span>(m==<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>,j=<span class="number">1</span>;i&lt;m,j&lt;m;j++)&#123;</span><br><span class="line">            <span class="keyword">while</span>(i &amp;&amp; needle[i]!=needle[j]) i=next[i<span class="number">-1</span>];</span><br><span class="line">            <span class="keyword">if</span>(needle[i]==needle[j]) i++; </span><br><span class="line">            next[j]=i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;m;i++)&#123;</span><br><span class="line">            cout&lt;&lt;next[i];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>,j=<span class="number">0</span>;i&lt;n;i++)&#123;</span><br><span class="line">            <span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; haystack[i] != needle[j]) &#123;</span><br><span class="line">                j = next[j - <span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (haystack[i] == needle[j]) &#123;</span><br><span class="line">                j++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (j == m) &#123;</span><br><span class="line">                <span class="keyword">return</span> i - m + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/12/leecode-28%E5%AE%9E%E7%8E%B0strStr/" data-id="cl7iuzc7f000d5smjds9z6ifc" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-leecode-1282用户分组" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/08/12/leecode-1282%E7%94%A8%E6%88%B7%E5%88%86%E7%BB%84/" class="article-date">
@@ -558,61 +624,6 @@
 
 
   
-    <article id="post-有向图的实现与遍历" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/08/%E6%9C%89%E5%90%91%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%B8%8E%E9%81%8D%E5%8E%86/" class="article-date">
-  <time datetime="2022-08-08T02:34:16.000Z" itemprop="datePublished">2022-08-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/08/%E6%9C%89%E5%90%91%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%B8%8E%E9%81%8D%E5%8E%86/">有向图的实现与遍历</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="有向图的结构"><a href="#有向图的结构" class="headerlink" title="有向图的结构"></a>有向图的结构</h2><p><strong>图的存储可以用邻接矩阵和邻接表两种方式实现：</strong></p>
-<p>邻接矩阵：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">char</span> VexData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">VexNode</span>&#123;</span><br><span class="line">    <span class="type">int</span> adjvex; <span class="comment">//结点序号</span></span><br><span class="line">    VexData data;   <span class="comment">//结点的值</span></span><br><span class="line">&#125;VexNode;</span><br><span class="line"></span><br><span class="line"><span class="comment">//用邻接矩阵描述一个无向图， 必备的要素： 边数，顶点数，顶点集，边集</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">Graph1</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> n , e; <span class="comment">// n: 顶点数， e:边数</span></span><br><span class="line">    VexNode vexs[MAX]; <span class="comment">//顶点集</span></span><br><span class="line">    <span class="type">int</span> edges[MAX][MAX]; <span class="comment">//边集</span></span><br><span class="line">&#125; Graph1;</span><br></pre></td></tr></table></figure>
-
-<p>邻接表：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//用邻接表来描述一个有向图</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">ArcNode</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> adjvex;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ArcNode</span> * next; </span><br><span class="line">&#125;ArcNode;  <span class="comment">//单链表中结点的类型</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">HeadNode</span>&#123;</span><br><span class="line">    VexData data;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">ArcNode</span> *firstArc;</span><br><span class="line">&#125;HeadNode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">Graph2</span>&#123;</span><br><span class="line">    <span class="type">int</span> n,e;</span><br><span class="line">    HeadNode adjList[MAX];</span><br><span class="line">&#125;Graph2;</span><br></pre></td></tr></table></figure>
-
-<p>邻接矩阵的创建：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Graph1 *<span class="title">createGraph1</span><span class="params">(<span class="type">int</span> n,<span class="type">int</span> e)</span></span>&#123;</span><br><span class="line">    Graph1 *graph1 = (Graph1* )<span class="built_in">malloc</span>(<span class="built_in">sizeof</span>(Graph1));</span><br><span class="line">    <span class="type">int</span> i,j,choice,a,b;</span><br><span class="line">    graph1-&gt;n=n;</span><br><span class="line">    graph1-&gt;e=e;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;请输入&quot;</span>&lt;&lt;n&lt;&lt;<span class="string">&quot;个结点的值&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;graph1-&gt;n;i++)&#123;</span><br><span class="line">        cin&gt;&gt;graph1-&gt;vexs[i].data;</span><br><span class="line">        graph1-&gt;vexs[i].adjvex=i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;graph1-&gt;n;i++)</span><br><span class="line">        <span class="keyword">for</span>(j=<span class="number">0</span>;j&lt;graph1-&gt;n;j++)</span><br><span class="line">            graph1-&gt;edges[i][j]=<span class="number">0</span>;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;请输入&quot;</span>&lt;&lt;e&lt;&lt;<span class="string">&quot;个边的值&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;graph1-&gt;e;i++)&#123;</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;请输入第&quot;</span>&lt;&lt;i+<span class="number">1</span>&lt;&lt;<span class="string">&quot;边的顶点&quot;</span>&lt;&lt;endl;</span><br><span class="line">        cin &gt;&gt; a &gt;&gt; b;</span><br><span class="line">        graph1-&gt;edges[a][b]=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;创建的邻接矩阵如下&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;graph1-&gt;n;i++)&#123;</span><br><span class="line">        <span class="keyword">for</span>(j=<span class="number">0</span>;j&lt;graph1-&gt;n;j++)&#123;</span><br><span class="line">            cout&lt;&lt;graph1-&gt;edges[i][j]&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        cout&lt;&lt;endl;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> graph1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>邻接表的创建：<strong>根据邻接矩阵来创建</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Graph2 *<span class="title">createGraph2</span><span class="params">(Graph1* G1)</span></span>&#123;  <span class="comment">//根据邻接矩阵来创建邻接矩阵</span></span><br><span class="line">    Graph2 *G2=(Graph2 *)<span class="built_in">malloc</span>(<span class="built_in">sizeof</span>(Graph2));</span><br><span class="line">    G2-&gt;n=G1-&gt;n;</span><br><span class="line">    G2-&gt;e=G1-&gt;e;</span><br><span class="line">    ArcNode *p;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;G1-&gt;n;i++)&#123;    <span class="comment">//初始化邻接表的头结点</span></span><br><span class="line">        G2-&gt;adjList[i].data=G1-&gt;vexs[i].data;</span><br><span class="line">        G2-&gt;adjList[i].firstArc = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;G2-&gt;n;i++)&#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> j=G2-&gt;n<span class="number">-1</span>;j&gt;i;j--)&#123;</span><br><span class="line">            <span class="keyword">if</span>(G1-&gt;edges[i][j]==<span class="number">1</span>)&#123;</span><br><span class="line">                p=(ArcNode *)<span class="built_in">malloc</span>(<span class="built_in">sizeof</span>(ArcNode));</span><br><span class="line">                p -&gt;adjvex = j;</span><br><span class="line">                p -&gt;next = G2-&gt;adjList[i].firstArc;</span><br><span class="line">                G2-&gt;adjList[i].firstArc=p;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;生成的邻接表如下：&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;G2-&gt;n;i++)&#123;</span><br><span class="line">        cout&lt;&lt;G2-&gt;adjList[i].data&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">        p=G2-&gt;adjList[i].firstArc;</span><br><span class="line">        <span class="keyword">while</span>(p)&#123;</span><br><span class="line">            cout&lt;&lt;p-&gt;adjvex&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">            p=p-&gt;next;</span><br><span class="line">        &#125;</span><br><span class="line">        cout&lt;&lt;endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>深度优先遍历： 访问顺序为首先访问一个结点及所有与它相连的结点，其次才访问其他结点。使用队列的数据结构，采用非递归的方式实现。</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">BFS</span><span class="params">(Graph1* G1,<span class="type">int</span> v)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> i,j;</span><br><span class="line">    queue&lt;<span class="type">int</span>&gt; qe;</span><br><span class="line">    <span class="type">int</span> visited[MAX];</span><br><span class="line">    qe.<span class="built_in">push</span>(v);</span><br><span class="line">    <span class="keyword">while</span>(!qe.<span class="built_in">empty</span>())&#123;</span><br><span class="line">        <span class="type">int</span> n = qe.<span class="built_in">front</span>();</span><br><span class="line">        qe.<span class="built_in">pop</span>();</span><br><span class="line">        cout &lt;&lt; G1-&gt;vexs[n].data&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">        <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;G1-&gt;n;i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(G1-&gt;edges[n][i]==<span class="number">1</span>)&#123;</span><br><span class="line">                qe.<span class="built_in">push</span>(i);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>深度优先遍历：访问顺序为访问一个结点和第一个与他相连的结点，层层递进直到没有与他相连的结点在返回，访问其他结点。使用栈的数据结构，或者使用递归的方式可以实现。</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">DFS</span><span class="params">(Graph2* G2,<span class="type">int</span> v)</span></span>&#123;</span><br><span class="line">    stack&lt;<span class="type">int</span>&gt; st;</span><br><span class="line">    <span class="type">int</span> visited[MAX]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">    ArcNode *p;</span><br><span class="line">    visited[v]=<span class="number">1</span>;</span><br><span class="line">    st.<span class="built_in">push</span>(v);</span><br><span class="line">    cout&lt;&lt;G2-&gt;adjList[v].data&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">    <span class="keyword">while</span>(!st.<span class="built_in">empty</span>())&#123;</span><br><span class="line">        <span class="type">int</span> w=st.<span class="built_in">top</span>();</span><br><span class="line">        p=G2-&gt;adjList[w].firstArc;</span><br><span class="line">        <span class="keyword">while</span>(p)&#123;</span><br><span class="line">            <span class="keyword">if</span>(visited[p-&gt;adjvex]!=<span class="number">1</span>)&#123;</span><br><span class="line">                cout&lt;&lt;G2-&gt;adjList[p-&gt;adjvex].data&lt;&lt;<span class="string">&quot; &quot;</span>;</span><br><span class="line">                visited[p-&gt;adjvex]=<span class="number">1</span>;</span><br><span class="line">                st.<span class="built_in">push</span>(p-&gt;adjvex);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                p=p-&gt;next;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(p==<span class="literal">NULL</span>)</span><br><span class="line">            st.<span class="built_in">pop</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/08/%E6%9C%89%E5%90%91%E5%9B%BE%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%B8%8E%E9%81%8D%E5%8E%86/" data-id="cl7iuzc7o000w5smjfurj7yud" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -661,11 +672,11 @@
           </li>
         
           <li>
-            <a href="/2022/08/29/cmake%E5%AD%A6%E4%B9%A0/">cmake学习</a>
+            <a href="/2022/08/30/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B001/">rvcc学习笔记01</a>
           </li>
         
           <li>
-            <a href="/2022/08/26/socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8Bday1/">socket网络编程day1</a>
+            <a href="/2022/08/29/cmake%E5%AD%A6%E4%B9%A0/">cmake学习</a>
           </li>
         
       </ul>
