@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>rvcc学习笔记08 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="支持；运算符​      程序是由多个表达式构成，各个表达式用；分隔。 增加AST节点种类1234567891011121314&#x2F;&#x2F; AST的节点种类typedef enum &amp;#123;  ND_ADD, &#x2F;&#x2F; +  ND_SUB, &#x2F;&#x2F; -  ND_MUL, &#x2F;&#x2F; *  ND_DIV, &#x2F;&#x2F; &#x2F;  ND_NEG, &#x2F;&#x2F; 负号-  ND_EQ,  &#x2F;&#x2F; &#x3D;&#x3D;  ND_NE,  &#x2F;&#x2F; !&#x3D;  ND">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rvcc学习笔记08">
+<meta property="og:url" content="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="支持；运算符​      程序是由多个表达式构成，各个表达式用；分隔。 增加AST节点种类1234567891011121314&#x2F;&#x2F; AST的节点种类typedef enum &amp;#123;  ND_ADD, &#x2F;&#x2F; +  ND_SUB, &#x2F;&#x2F; -  ND_MUL, &#x2F;&#x2F; *  ND_DIV, &#x2F;&#x2F; &#x2F;  ND_NEG, &#x2F;&#x2F; 负号-  ND_EQ,  &#x2F;&#x2F; &#x3D;&#x3D;  ND_NE,  &#x2F;&#x2F; !&#x3D;  ND">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png">
+<meta property="article:published_time" content="2022-09-06T07:54:11.000Z">
+<meta property="article:modified_time" content="2022-09-06T09:11:51.317Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rvcc学习笔记08" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" class="article-date">
+  <time datetime="2022-09-06T07:54:11.000Z" itemprop="datePublished">2022-09-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rvcc学习笔记08
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持；运算符"><a href="#支持；运算符" class="headerlink" title="支持；运算符"></a>支持；运算符</h2><p>​      程序是由多个表达式构成，各个表达式用；分隔。</p>
+<h3 id="增加AST节点种类"><a href="#增加AST节点种类" class="headerlink" title="增加AST节点种类"></a>增加AST节点种类</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AST的节点种类</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  ND_ADD, <span class="comment">// +</span></span><br><span class="line">  ND_SUB, <span class="comment">// -</span></span><br><span class="line">  ND_MUL, <span class="comment">// *</span></span><br><span class="line">  ND_DIV, <span class="comment">// /</span></span><br><span class="line">  ND_NEG, <span class="comment">// 负号-</span></span><br><span class="line">  ND_EQ,  <span class="comment">// ==</span></span><br><span class="line">  ND_NE,  <span class="comment">// !=</span></span><br><span class="line">  ND_LT,  <span class="comment">// &lt;</span></span><br><span class="line">  ND_LE,  <span class="comment">// &lt;=</span></span><br><span class="line">  ND_EXPR_STMT, <span class="comment">//表达式语句类型</span></span><br><span class="line">  ND_NUM, <span class="comment">// 整形</span></span><br><span class="line">&#125; NodeKind;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AST中二叉树节点</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Node</span> <span class="title">Node</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span></span><br><span class="line">  NodeKind Kind; <span class="comment">// 节点种类</span></span><br><span class="line">  Node *Next;    <span class="comment">// ;分隔语句 下一个语句</span></span><br><span class="line">  Node *LHS;     <span class="comment">// 左部，left-hand side</span></span><br><span class="line">  Node *RHS;     <span class="comment">// 右部，right-hand side</span></span><br><span class="line">  <span class="type">int</span> Val;       <span class="comment">// 存储ND_NUM种类的值</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="采用和token一样的链表结构"><a href="#采用和token一样的链表结构" class="headerlink" title="采用和token一样的链表结构"></a>采用和token一样的链表结构</h3><img src="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png" class>
+
+<h3 id="修改文法"><a href="#修改文法" class="headerlink" title="修改文法"></a>修改文法</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">*<span class="comment">// program = stmt** </span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// stmt = exprStmt*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// exprStmt = expr&quot;;&quot;*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// expr = equality*</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">expr</span><span class="params">(Token **Rest, Token *Tok)</span>;</span><br><span class="line"><span class="comment">//解析语句</span></span><br><span class="line"><span class="comment">// stmt = exprStmt</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> exprStmt(Rest,Tok);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//解析表达式语句</span></span><br><span class="line"><span class="comment">// exprStmt = expr&quot;;&quot;</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">   Node *Nd = newUnary(ND_EXPR_STMT,expr(&amp;Tok,Tok));</span><br><span class="line">   *Rest = skip(Tok,<span class="string">&quot;;&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span> Nd; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 语法解析入口函数</span></span><br><span class="line"><span class="comment">// program = stmt*</span></span><br><span class="line">Node *<span class="title function_">parse</span><span class="params">(Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// 这里使用了和词法分析类似的单向链表结构</span></span><br><span class="line">  Node Head = &#123;&#125;;</span><br><span class="line">  Node* Cur = &amp;Head;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//stmt*</span></span><br><span class="line">  <span class="keyword">while</span>(Tok-&gt;Kind != TK_EOF)&#123;</span><br><span class="line">    Cur-&gt;Next = stmt(&amp;Tok,Tok);</span><br><span class="line">    Cur=Cur-&gt;Next;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> Head.Next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 生成语句</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">genStmt</span><span class="params">(Node *Nd)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (Nd-&gt;Kind == ND_EXPR_STMT) &#123;</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  error(<span class="string">&quot;invalid statement&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 代码生成入口函数，包含代码块的基础信息</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">codegen</span><span class="params">(Node *Nd)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;  .globl main\n&quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;main:\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 循环遍历所有的语句</span></span><br><span class="line">  <span class="keyword">for</span> (Node *N = Nd; N; N = N-&gt;Next) &#123;</span><br><span class="line">    genStmt(N);</span><br><span class="line">    assert(Depth == <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;  ret\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; =&gt; <span class="number">3</span></span><br><span class="line"><span class="number">12</span>+<span class="number">23</span>;<span class="number">12</span>+<span class="number">99</span>/<span class="number">3</span>;<span class="number">78</span><span class="number">-66</span>; =&gt; <span class="number">12</span></span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" data-id="cl7pz1bbe0000aomj801g4r5j" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B007/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rvcc学习笔记07</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/">rvcc学习笔记08</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B007/">rvcc学习笔记07</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/05/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B006/">rvcc学习笔记06</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/02/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B005/">rvcc学习笔记05</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/01/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B004/">rvcc学习笔记04</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
