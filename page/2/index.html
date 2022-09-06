@@ -64,6 +64,55 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-fiber实现协程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/24/fiber%E5%AE%9E%E7%8E%B0%E5%8D%8F%E7%A8%8B/" class="article-date">
+  <time datetime="2022-08-24T12:31:04.000Z" itemprop="datePublished">2022-08-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/24/fiber%E5%AE%9E%E7%8E%B0%E5%8D%8F%E7%A8%8B/">fiber实现协程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="纤程（Fiber-简述"><a href="#纤程（Fiber-简述" class="headerlink" title="纤程（Fiber)简述"></a><a target="_blank" rel="noopener" href="https://www.cnblogs.com/fwycmengsoft/p/3495628.html">纤程（Fiber)简述</a></h1><p>​    纤程（Fiber），是微软加入到Windows中，使得UNIX服务器应用程序更好地移植到Windows中。所以本篇真正没有多少应用价值，只是为了使得笔记更加完整。</p>
+<p>　<strong>要使用纤程，首先要做的就是把当前线程转换为纤程：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">PVOID <span class="title">ConvertThreadToFiber</span><span class="params">(PVOID pvParam)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>​    在coroutine定义一个线程</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"> <span class="type">static</span> <span class="keyword">constexpr</span> <span class="type">int</span> ERR_NOT_EXIST_CO = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">enum</span> <span class="title class_">Status</span> &#123;</span><br><span class="line">        READY,  <span class="comment">// Set up to READY when fco::newco() called</span></span><br><span class="line">        AWAIT,  <span class="comment">// Set up to AWAIT when fco::yield() called</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Coroutine</span> &#123;</span><br><span class="line">        <span class="built_in">void</span> (*task)(Scheduler*, <span class="type">void</span>*);</span><br><span class="line">        <span class="type">void</span>* userData;</span><br><span class="line">        <span class="type">char</span> status;</span><br><span class="line">        LPVOID winFiber;   <span class="comment">//线程winFiber</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Scheduler</span> &#123;  <span class="comment">// 调度器</span></span><br><span class="line">        std::map&lt;<span class="type">int</span>, Coroutine*&gt; coroutines;</span><br><span class="line">        <span class="type">int</span> currentIdx;</span><br><span class="line">        LPVOID main;</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>协程的操作：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">destroy</span><span class="params">(Scheduler* s)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">newco</span><span class="params">(Scheduler* scheduler, <span class="type">void</span> (*task)(Scheduler*, <span class="type">void</span>*),</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">void</span>* userData)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">resume</span><span class="params">(Scheduler* s, <span class="type">int</span> coid)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">yield</span><span class="params">(Scheduler* scheduler)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">current</span><span class="params">(Scheduler* scheduler)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;fco.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Initialize fco library, return a global scheduler</span></span><br><span class="line"><span class="function">fco::Scheduler* <span class="title">fco::initialize</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Scheduler* sched = <span class="keyword">new</span> Scheduler;</span><br><span class="line">    sched-&gt;currentIdx = ERR_NOT_EXIST_CO;</span><br><span class="line">    sched-&gt;main = <span class="built_in">ConvertThreadToFiber</span>(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> sched;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Release all resources</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">fco::destroy</span><span class="params">(Scheduler* s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; c : s-&gt;coroutines) &#123;</span><br><span class="line">        <span class="built_in">DeleteFiber</span>(c.second-&gt;winFiber);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">delete</span> s;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// This is should NEVER BE called on user land</span></span><br><span class="line"><span class="type">void</span> __stdcall fco::__entry(LPVOID lpParameter) &#123;</span><br><span class="line">    <span class="comment">// Execute the task of current coroutine</span></span><br><span class="line">    Scheduler* s = (Scheduler*)lpParameter;</span><br><span class="line">    Coroutine* currentCo = s-&gt;coroutines[s-&gt;currentIdx];</span><br><span class="line">    (currentCo-&gt;task)(s, currentCo-&gt;userData);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Clean up executed task</span></span><br><span class="line">    s-&gt;coroutines.<span class="built_in">erase</span>(s-&gt;coroutines.<span class="built_in">find</span>(s-&gt;currentIdx));</span><br><span class="line">    s-&gt;currentIdx = ERR_NOT_EXIST_CO;</span><br><span class="line">    currentCo-&gt;status = Status::READY;</span><br><span class="line">    <span class="built_in">DeleteFiber</span>(currentCo-&gt;winFiber);</span><br><span class="line">    <span class="keyword">delete</span> currentCo;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Switch to entry function</span></span><br><span class="line">    <span class="built_in">SwitchToFiber</span>(s-&gt;main);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create new coroutine and return an unique identity</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fco::newco</span><span class="params">(Scheduler* scheduler, <span class="type">void</span> (*task)(fco::Scheduler*, <span class="type">void</span>*),</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">void</span>* userData)</span> </span>&#123;</span><br><span class="line">    Coroutine* co = <span class="keyword">new</span> Coroutine;</span><br><span class="line">    co-&gt;task = task;</span><br><span class="line">    co-&gt;userData = userData;</span><br><span class="line">    co-&gt;winFiber = <span class="built_in">CreateFiber</span>(<span class="number">0</span>, __entry, scheduler);</span><br><span class="line">    <span class="keyword">if</span> (co-&gt;winFiber == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> ERR_NOT_EXIST_CO;</span><br><span class="line">    &#125;</span><br><span class="line">    co-&gt;status = Status::READY; <span class="comment">//初始化的协程都是ready状态</span></span><br><span class="line">    <span class="type">int</span> newCoId =</span><br><span class="line">        scheduler-&gt;coroutines.<span class="built_in">size</span>() != <span class="number">0</span></span><br><span class="line">        ? scheduler-&gt;coroutines.<span class="built_in">end</span>().<span class="keyword">operator</span>--().<span class="keyword">operator</span>*().first + <span class="number">1</span></span><br><span class="line">        : <span class="number">0</span>;</span><br><span class="line">    scheduler-&gt;coroutines.<span class="built_in">insert</span>(std::<span class="built_in">make_pair</span>(newCoId, co));</span><br><span class="line">    <span class="keyword">return</span> newCoId;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Resume suspended coroutine by given coid</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">fco::resume</span><span class="params">(fco::Scheduler* scheduler, <span class="type">int</span> coid)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (coid &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Coroutine* co = scheduler-&gt;coroutines[coid];</span><br><span class="line">    <span class="keyword">if</span> (co-&gt;status == Status::READY || co-&gt;status == Status::AWAIT) &#123;</span><br><span class="line">        scheduler-&gt;currentIdx = coid;</span><br><span class="line">        scheduler-&gt;coroutines[scheduler-&gt;currentIdx]-&gt;status = Status::AWAIT;</span><br><span class="line">        co-&gt;status = Status::READY;</span><br><span class="line">        <span class="built_in">SwitchToFiber</span>(co-&gt;winFiber);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Yield CPU time to main coroutine</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">fco::yield</span><span class="params">(fco::Scheduler* scheduler)</span> </span>&#123;</span><br><span class="line">    Coroutine* co = scheduler-&gt;coroutines[scheduler-&gt;currentIdx];</span><br><span class="line">    co-&gt;status = Status::AWAIT;</span><br><span class="line"></span><br><span class="line">    scheduler-&gt;currentIdx = ERR_NOT_EXIST_CO;</span><br><span class="line">    <span class="built_in">SwitchToFiber</span>(scheduler-&gt;main);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Get current running coroutine identity</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fco::current</span><span class="params">(Scheduler* scheduler)</span> </span>&#123; <span class="keyword">return</span> scheduler-&gt;currentIdx; &#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/24/fiber%E5%AE%9E%E7%8E%B0%E5%8D%8F%E7%A8%8B/" data-id="cl7iuzc7a00065smj1f3eetss" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-c++线程" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/08/22/c++%E7%BA%BF%E7%A8%8B/" class="article-date">
@@ -592,63 +641,6 @@
 
 
   
-    <article id="post-leecode-25K个一组链表翻转" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/08/leecode-25K%E4%B8%AA%E4%B8%80%E7%BB%84%E9%93%BE%E8%A1%A8%E7%BF%BB%E8%BD%AC/" class="article-date">
-  <time datetime="2022-08-08T08:40:43.000Z" itemprop="datePublished">2022-08-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/08/leecode-25K%E4%B8%AA%E4%B8%80%E7%BB%84%E9%93%BE%E8%A1%A8%E7%BF%BB%E8%BD%AC/">leecode#25K个一组链表翻转</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="25-K-个一组翻转链表"><a href="#25-K-个一组翻转链表" class="headerlink" title="25. K 个一组翻转链表"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/reverse-nodes-in-k-group/">25. K 个一组翻转链表</a></h2><p><strong>给你链表的头节点 <code>head</code> ，每 <code>k</code> 个节点一组进行翻转，请你返回修改后的链表。</strong></p>
-<p><strong><code>k</code> 是一个正整数，它的值小于或等于链表的长度。如果节点总数不是 <code>k</code> 的整数倍，那么请将最后剩余的节点保持原有顺序。</strong></p>
-<p><strong>你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。</strong></p>
-<p><strong>示例 1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：head = [1,2,3,4,5], k = 2</span><br><span class="line">输出：[2,1,4,3,5]</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：head = [1,2,3,4,5], k = 3</span><br><span class="line">输出：[3,2,1,4,5]</span><br></pre></td></tr></table></figure>
-
-<p><strong>提示：</strong></p>
-<ul>
-<li>链表中的节点数目为 <code>n</code></li>
-<li><code>1 &lt;= k &lt;= n &lt;= 5000</code></li>
-<li><code>0 &lt;= Node.val &lt;= 1000</code></li>
-</ul>
-<h2 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h2><p>​    首先拆分成连个问题： 链表翻转，链表分段</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ListNode* <span class="title">reverse</span><span class="params">(ListNode* head)</span></span>&#123;</span><br><span class="line">       ListNode *pre=<span class="literal">nullptr</span>;</span><br><span class="line">       ListNode *curr=head;</span><br><span class="line">       <span class="keyword">while</span>(curr!=<span class="literal">nullptr</span>)&#123;</span><br><span class="line">           ListNode *next = curr-&gt;next;</span><br><span class="line">           curr-&gt;next= pre;</span><br><span class="line">           pre = curr;</span><br><span class="line">           curr = next;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> pre;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-
-<p>​    其次需要两个指针，其中start为每一段的头指针，end每次在翻转前要遍历到最后，若没有k长则不需要翻转，若有则end-&gt;next指向下一段的头指针。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ListNode* <span class="title">reverseKGroup</span><span class="params">(ListNode* head, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">       ListNode *dummy = <span class="keyword">new</span> <span class="built_in">ListNode</span>(<span class="number">0</span>);</span><br><span class="line">       dummy-&gt;next = head;</span><br><span class="line">       <span class="comment">/*pre指向每次要翻转的结点的上一个结点 */</span></span><br><span class="line">    	ListNode *pre = dummy;</span><br><span class="line">       ListNode *end = pre;</span><br><span class="line">       <span class="keyword">while</span>(end-&gt;next)&#123;</span><br><span class="line">           <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;k&amp;&amp;end!=<span class="literal">nullptr</span>;i++) end=end-&gt;next;</span><br><span class="line">           <span class="keyword">if</span>(end==<span class="literal">nullptr</span>) <span class="keyword">break</span>;</span><br><span class="line">           <span class="comment">/*start 每次指向要翻转的结点*/</span></span><br><span class="line">           ListNode *start = pre-&gt;next;</span><br><span class="line">           ListNode *next = end-&gt;next;</span><br><span class="line">           end-&gt;next = <span class="literal">nullptr</span>; </span><br><span class="line">           pre-&gt;next=<span class="built_in">reverse</span>(start);</span><br><span class="line">           start-&gt;next = next;</span><br><span class="line">           pre = start;</span><br><span class="line">           end = pre;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> dummy-&gt;next;</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/08/leecode-25K%E4%B8%AA%E4%B8%80%E7%BB%84%E9%93%BE%E8%A1%A8%E7%BF%BB%E8%BD%AC/" data-id="cl7iuzc7f000c5smj9jjg2xpu" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -685,6 +677,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B007/">rvcc学习笔记07</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/05/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B006/">rvcc学习笔记06</a>
           </li>
         
@@ -698,10 +694,6 @@
         
           <li>
             <a href="/2022/08/31/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B003/">rvcc学习笔记03</a>
-          </li>
-        
-          <li>
-            <a href="/2022/08/31/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B002/">rvcc学习笔记02</a>
           </li>
         
       </ul>
