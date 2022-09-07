@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>rvcc学习笔记09 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="支持单字母变量和赋值终结符​        新增终结符种类TK_IDENT,用来表示变量和函数名等 123456typedef enum &amp;#123;  TK_IDENT, &#x2F;&#x2F; 标记符，可以为变量名、函数名等  TK_PUNCT, &#x2F;&#x2F; 操作符如： + -  TK_NUM,   &#x2F;&#x2F; 数字  TK_EOF,   &#x2F;&#x2F; 文件终止符，即文件的最后&amp;#125; TokenKind;  语法分析​">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rvcc学习笔记09">
+<meta property="og:url" content="http://example.com/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="支持单字母变量和赋值终结符​        新增终结符种类TK_IDENT,用来表示变量和函数名等 123456typedef enum &amp;#123;  TK_IDENT, &#x2F;&#x2F; 标记符，可以为变量名、函数名等  TK_PUNCT, &#x2F;&#x2F; 操作符如： + -  TK_NUM,   &#x2F;&#x2F; 数字  TK_EOF,   &#x2F;&#x2F; 文件终止符，即文件的最后&amp;#125; TokenKind;  语法分析​">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-07T07:10:20.000Z">
+<meta property="article:modified_time" content="2022-09-07T08:25:41.743Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rvcc学习笔记09" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/" class="article-date">
+  <time datetime="2022-09-07T07:10:20.000Z" itemprop="datePublished">2022-09-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rvcc学习笔记09
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持单字母变量和赋值"><a href="#支持单字母变量和赋值" class="headerlink" title="支持单字母变量和赋值"></a>支持单字母变量和赋值</h2><h3 id="终结符"><a href="#终结符" class="headerlink" title="终结符"></a>终结符</h3><p>​        新增终结符种类TK_IDENT,用来表示变量和函数名等</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  TK_IDENT, <span class="comment">// 标记符，可以为变量名、函数名等</span></span><br><span class="line">  TK_PUNCT, <span class="comment">// 操作符如： + -</span></span><br><span class="line">  TK_NUM,   <span class="comment">// 数字</span></span><br><span class="line">  TK_EOF,   <span class="comment">// 文件终止符，即文件的最后</span></span><br><span class="line">&#125; TokenKind;</span><br></pre></td></tr></table></figure>
+
+<h2 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h2><p>​        抽象语法树AST结点的种类增加两种，分别为ND_VAR,ND_ASSIGN。结点的结构也要发生改变，增加一个Name属性，用来存储ND_VAR类型的字符串。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  ND_ADD,       <span class="comment">// +</span></span><br><span class="line">  ND_SUB,       <span class="comment">// -</span></span><br><span class="line">  ND_MUL,       <span class="comment">// *</span></span><br><span class="line">  ND_DIV,       <span class="comment">// /</span></span><br><span class="line">  ND_NEG,       <span class="comment">// 负号-</span></span><br><span class="line">  ND_EQ,        <span class="comment">// ==</span></span><br><span class="line">  ND_NE,        <span class="comment">// !=</span></span><br><span class="line">  ND_LT,        <span class="comment">// &lt;</span></span><br><span class="line">  ND_LE,        <span class="comment">// &lt;=</span></span><br><span class="line">  ND_ASSIGN,    <span class="comment">// 赋值</span></span><br><span class="line">  ND_EXPR_STMT, <span class="comment">// 表达式语句</span></span><br><span class="line">  ND_VAR,       <span class="comment">// 变量</span></span><br><span class="line">  ND_NUM,       <span class="comment">// 数字</span></span><br><span class="line">&#125; NodeKind;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span></span><br><span class="line">  NodeKind Kind; <span class="comment">// 节点种类</span></span><br><span class="line">  Node *Next;    <span class="comment">// 下一节点，指代下一语句</span></span><br><span class="line">  Node *LHS;     <span class="comment">// 左部，left-hand side</span></span><br><span class="line">  Node *RHS;     <span class="comment">// 右部，right-hand side</span></span><br><span class="line">  <span class="type">char</span> Name;     <span class="comment">// 存储ND_VAR的字符串</span></span><br><span class="line">  <span class="type">int</span> Val;       <span class="comment">// 存储ND_NUM种类的值</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​        暂时只能解析单字母变量，也就是从a~z26个小写字母所代表的变量。所以在终结符解析的过程中添加一个标识符解析步骤：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析标记符</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&#x27;a&#x27;</span> &lt;= *P &amp;&amp; *P &lt;= <span class="string">&#x27;z&#x27;</span>) &#123;</span><br><span class="line">      Cur-&gt;Next = newToken(TK_IDENT, P, P + <span class="number">1</span>);</span><br><span class="line">      Cur = Cur-&gt;Next;</span><br><span class="line">      ++P;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="语义分析"><a href="#语义分析" class="headerlink" title="语义分析"></a>语义分析</h3><p>​        增加文法定义，添加赋值式 expr = assign  , assign = equality（“=” assign)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// program = stmt*</span><br><span class="line">// stmt = exprStmt</span><br><span class="line">// exprStmt = expr &quot;;&quot;</span><br><span class="line">// expr = equality</span><br><span class="line">// expr = assign</span><br><span class="line">// assign = equality (&quot;=&quot; assign)?</span><br><span class="line">// equality = relational (&quot;==&quot; relational | &quot;!=&quot; relational)*</span><br><span class="line">// relational = add (&quot;&lt;&quot; add | &quot;&lt;=&quot; add | &quot;&gt;&quot; add | &quot;&gt;=&quot; add)*</span><br><span class="line">// add = mul (&quot;+&quot; mul | &quot;-&quot; mul)*</span><br><span class="line">// mul = unary (&quot;*&quot; unary | &quot;/&quot; unary)*</span><br><span class="line">// unary = (&quot;+&quot; | &quot;-&quot;) unary | primary</span><br><span class="line">// primary = &quot;(&quot; expr &quot;)&quot; | ident｜ num</span><br><span class="line">static Node *expr(Token **Rest, Token *Tok) &#123; return assign(Rest, Tok); &#125;</span><br><span class="line"></span><br><span class="line">// 解析赋值</span><br><span class="line">// assign = equality (&quot;=&quot; assign)?</span><br><span class="line">static Node *assign(Token **Rest, Token *Tok) &#123;</span><br><span class="line">  // equality</span><br><span class="line">  Node *Nd = equality(&amp;Tok, Tok);</span><br><span class="line"></span><br><span class="line">  // 可能存在递归赋值，如a=b=1</span><br><span class="line">  // (&quot;=&quot; assign)?</span><br><span class="line">  if (equal(Tok, &quot;=&quot;))</span><br><span class="line">    Nd = newBinary(ND_ASSIGN, Nd, assign(&amp;Tok, Tok-&gt;Next));</span><br><span class="line">  *Rest = Tok;</span><br><span class="line">  return Nd;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a=3; a; =&gt; 3</span><br><span class="line">a=3; z=5; a+z; =&gt; 8</span><br><span class="line">a=b=3; a+b; =&gt; 6</span><br><span class="line">a=3;b=4;a=1;a+b; =&gt; 5</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/" data-id="cl7rcw9e8000018mjdccihp0a" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rvcc学习笔记08</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/">rvcc学习笔记09</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/">rvcc学习笔记08</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B007/">rvcc学习笔记07</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/05/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B006/">rvcc学习笔记06</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/02/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B005/">rvcc学习笔记05</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

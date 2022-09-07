@@ -64,6 +64,56 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rvcc学习笔记09" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/" class="article-date">
+  <time datetime="2022-09-07T07:10:20.000Z" itemprop="datePublished">2022-09-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/">rvcc学习笔记09</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持单字母变量和赋值"><a href="#支持单字母变量和赋值" class="headerlink" title="支持单字母变量和赋值"></a>支持单字母变量和赋值</h2><h3 id="终结符"><a href="#终结符" class="headerlink" title="终结符"></a>终结符</h3><p>​        新增终结符种类TK_IDENT,用来表示变量和函数名等</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  TK_IDENT, <span class="comment">// 标记符，可以为变量名、函数名等</span></span><br><span class="line">  TK_PUNCT, <span class="comment">// 操作符如： + -</span></span><br><span class="line">  TK_NUM,   <span class="comment">// 数字</span></span><br><span class="line">  TK_EOF,   <span class="comment">// 文件终止符，即文件的最后</span></span><br><span class="line">&#125; TokenKind;</span><br></pre></td></tr></table></figure>
+
+<h2 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h2><p>​        抽象语法树AST结点的种类增加两种，分别为ND_VAR,ND_ASSIGN。结点的结构也要发生改变，增加一个Name属性，用来存储ND_VAR类型的字符串。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  ND_ADD,       <span class="comment">// +</span></span><br><span class="line">  ND_SUB,       <span class="comment">// -</span></span><br><span class="line">  ND_MUL,       <span class="comment">// *</span></span><br><span class="line">  ND_DIV,       <span class="comment">// /</span></span><br><span class="line">  ND_NEG,       <span class="comment">// 负号-</span></span><br><span class="line">  ND_EQ,        <span class="comment">// ==</span></span><br><span class="line">  ND_NE,        <span class="comment">// !=</span></span><br><span class="line">  ND_LT,        <span class="comment">// &lt;</span></span><br><span class="line">  ND_LE,        <span class="comment">// &lt;=</span></span><br><span class="line">  ND_ASSIGN,    <span class="comment">// 赋值</span></span><br><span class="line">  ND_EXPR_STMT, <span class="comment">// 表达式语句</span></span><br><span class="line">  ND_VAR,       <span class="comment">// 变量</span></span><br><span class="line">  ND_NUM,       <span class="comment">// 数字</span></span><br><span class="line">&#125; NodeKind;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span></span><br><span class="line">  NodeKind Kind; <span class="comment">// 节点种类</span></span><br><span class="line">  Node *Next;    <span class="comment">// 下一节点，指代下一语句</span></span><br><span class="line">  Node *LHS;     <span class="comment">// 左部，left-hand side</span></span><br><span class="line">  Node *RHS;     <span class="comment">// 右部，right-hand side</span></span><br><span class="line">  <span class="type">char</span> Name;     <span class="comment">// 存储ND_VAR的字符串</span></span><br><span class="line">  <span class="type">int</span> Val;       <span class="comment">// 存储ND_NUM种类的值</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​        暂时只能解析单字母变量，也就是从a~z26个小写字母所代表的变量。所以在终结符解析的过程中添加一个标识符解析步骤：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析标记符</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&#x27;a&#x27;</span> &lt;= *P &amp;&amp; *P &lt;= <span class="string">&#x27;z&#x27;</span>) &#123;</span><br><span class="line">      Cur-&gt;Next = newToken(TK_IDENT, P, P + <span class="number">1</span>);</span><br><span class="line">      Cur = Cur-&gt;Next;</span><br><span class="line">      ++P;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="语义分析"><a href="#语义分析" class="headerlink" title="语义分析"></a>语义分析</h3><p>​        增加文法定义，添加赋值式 expr = assign  , assign = equality（“=” assign)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// program = stmt*</span><br><span class="line">// stmt = exprStmt</span><br><span class="line">// exprStmt = expr &quot;;&quot;</span><br><span class="line">// expr = equality</span><br><span class="line">// expr = assign</span><br><span class="line">// assign = equality (&quot;=&quot; assign)?</span><br><span class="line">// equality = relational (&quot;==&quot; relational | &quot;!=&quot; relational)*</span><br><span class="line">// relational = add (&quot;&lt;&quot; add | &quot;&lt;=&quot; add | &quot;&gt;&quot; add | &quot;&gt;=&quot; add)*</span><br><span class="line">// add = mul (&quot;+&quot; mul | &quot;-&quot; mul)*</span><br><span class="line">// mul = unary (&quot;*&quot; unary | &quot;/&quot; unary)*</span><br><span class="line">// unary = (&quot;+&quot; | &quot;-&quot;) unary | primary</span><br><span class="line">// primary = &quot;(&quot; expr &quot;)&quot; | ident｜ num</span><br><span class="line">static Node *expr(Token **Rest, Token *Tok) &#123; return assign(Rest, Tok); &#125;</span><br><span class="line"></span><br><span class="line">// 解析赋值</span><br><span class="line">// assign = equality (&quot;=&quot; assign)?</span><br><span class="line">static Node *assign(Token **Rest, Token *Tok) &#123;</span><br><span class="line">  // equality</span><br><span class="line">  Node *Nd = equality(&amp;Tok, Tok);</span><br><span class="line"></span><br><span class="line">  // 可能存在递归赋值，如a=b=1</span><br><span class="line">  // (&quot;=&quot; assign)?</span><br><span class="line">  if (equal(Tok, &quot;=&quot;))</span><br><span class="line">    Nd = newBinary(ND_ASSIGN, Nd, assign(&amp;Tok, Tok-&gt;Next));</span><br><span class="line">  *Rest = Tok;</span><br><span class="line">  return Nd;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a=3; a; =&gt; 3</span><br><span class="line">a=3; z=5; a+z; =&gt; 8</span><br><span class="line">a=b=3; a+b; =&gt; 6</span><br><span class="line">a=3;b=4;a=1;a+b; =&gt; 5</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/" data-id="cl7rcw9e8000018mjdccihp0a" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记08" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" class="article-date">
@@ -595,58 +645,11 @@
 
 
   
-    <article id="post-socket网络编程day1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/26/socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8Bday1/" class="article-date">
-  <time datetime="2022-08-26T09:13:24.000Z" itemprop="datePublished">2022-08-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/26/socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8Bday1/">socket网络编程day1</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="实现一个简单的echo-server"><a href="#实现一个简单的echo-server" class="headerlink" title="实现一个简单的echo_server"></a>实现一个简单的echo_server</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实现一个echo_server</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ctype.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SERVER_PORT 666</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line">    <span class="type">int</span> sock;  <span class="comment">//信箱</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">server_addr</span>;</span></span><br><span class="line">    sock=socket(AF_INET,SOCK_STREAM,<span class="number">0</span>);</span><br><span class="line"><span class="comment">//标签清除，写上地址信息</span></span><br><span class="line">bzero(&amp;server_addr,<span class="keyword">sizeof</span>(server_addr));</span><br><span class="line"><span class="comment">//使用ipv4 地址</span></span><br><span class="line">server_addr.sin_family=AF_INET;</span><br><span class="line"><span class="comment">//客户端地址 所有地址</span></span><br><span class="line">server_addr.sin_addr.s_addr=htonl(INADDR_ANY);</span><br><span class="line"><span class="comment">//端口号</span></span><br><span class="line">server_addr.sin_port=htons(SERVER_PORT);</span><br><span class="line"><span class="comment">// 将信箱挂起</span></span><br><span class="line">bind(sock,(<span class="keyword">struct</span> sockaddr *)&amp;server_addr,<span class="keyword">sizeof</span>(server_addr));</span><br><span class="line"><span class="comment">//开始可以接受 书信</span></span><br><span class="line">listen(sock,<span class="number">128</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;等待客户端的连接..\n&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> done=<span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span>(done)&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">client</span>;</span></span><br><span class="line">    <span class="type">int</span> client_sock;</span><br><span class="line">    <span class="type">char</span> client_ip[<span class="number">64</span>];</span><br><span class="line">    <span class="type">socklen_t</span> client_addr_len;</span><br><span class="line">    client_addr_len=<span class="keyword">sizeof</span>(client);</span><br><span class="line">    accept(sock,(<span class="keyword">struct</span> sockaddr *)&amp;client,&amp;client_addr_len);  <span class="comment">// 接受客户端的连接</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;client ip:%s\n port :%d\n&quot;</span>,</span><br><span class="line">            inet_ntop(AF_INET,&amp;client.sin_addr.s_addr,client_ip,<span class="keyword">sizeof</span>(client_ip)),</span><br><span class="line">            ntohs(client.sin_port));</span><br><span class="line">    <span class="comment">// 输出客户端的ip 和端口号</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在linux环境下用gcc编译</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc echo_server.c -o echo_server</span><br></pre></td></tr></table></figure>
-
-<p>执行：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./echo_server</span><br></pre></td></tr></table></figure>
-
-<p>在用另一个终端使用telnet连接测试：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">telnet 192.168.153.128 666</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/26/socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8Bday1/" data-id="cl7iuzc7k000m5smjgqyd7rms" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
     
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
   </nav>
 
 </section>
@@ -678,6 +681,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/">rvcc学习笔记09</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/">rvcc学习笔记08</a>
           </li>
         
@@ -691,10 +698,6 @@
         
           <li>
             <a href="/2022/09/02/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B005/">rvcc学习笔记05</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/01/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B004/">rvcc学习笔记04</a>
           </li>
         
       </ul>
