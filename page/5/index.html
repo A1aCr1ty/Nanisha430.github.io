@@ -64,6 +64,68 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-c语言复习day2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/07/22/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day2/" class="article-date">
+  <time datetime="2022-07-22T02:54:07.000Z" itemprop="datePublished">2022-07-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/07/22/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day2/">c语言复习day2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1、C语言文件操作"><a href="#1、C语言文件操作" class="headerlink" title="1、C语言文件操作"></a>1、C语言文件操作</h2><p><code> FILE *fp=fopen(&quot;a.txt&quot;,&quot;rw&quot;);</code>  <em>打开文件,rw是对文件进行读写操作。</em></p>
+<p> <code>while((ch=(getc(fp)))!=EOF)&#123;</code></p>
+<p>​    <code>putchar(ch);</code></p>
+<p>  <code>&#125;</code>  <em>打开文件从文件中一个字符一个字符的读取并打印</em></p>
+<h2 id="2、函数递归"><a href="#2、函数递归" class="headerlink" title="2、函数递归"></a>2、函数递归</h2><p>​    一个函数自身调用自身的过程叫做递归。层层执行，逐级返回。函数中必须包括能终止递归调用的语句。</p>
+<h3 id="2-1-尾递归"><a href="#2-1-尾递归" class="headerlink" title="2.1 尾递归"></a>2.1 尾递归</h3><p>​        把递归调用语句放到函数结尾即恰好在return语句之前。</p>
+<h3 id="2-2-递归的四项基本法则"><a href="#2-2-递归的四项基本法则" class="headerlink" title="2.2 递归的四项基本法则"></a>2.2 递归的四项基本法则</h3><p>​        <strong>1、基本情形，不用递归也能解出</strong></p>
+<p>​        <strong>2、不断推进，对于那些需要递归求解的情形，每一次递归调用都必须要使求解状况朝接近基准情形的方向推进。</strong></p>
+<p>​        <strong>3、设计法则，假设所有的递归调用都能运行。</strong></p>
+<p>​        <strong>4、合成效益法则，在求解一个问题的同一实例时，切勿在不同的递归调用中做重复性的工作。</strong></p>
+<h2 id="3、指针"><a href="#3、指针" class="headerlink" title="3、指针"></a>3、指针</h2><p>​    <strong>一个其数值为地址的变量。</strong></p>
+<p>​    <code>ptr = &amp;pooh /*把pooh的地址赋给ptr*/ </code></p>
+<p>​    <code>val = * ptr /*得到ptr的值*/</code></p>
+<p>​    <code>int sh[20]</code> 定义一个数组，sh=&amp;sh[0], 数组名是数组首元素的地址，sh+index是元素sh[index]的地址，*(sh+index)是这个元素的值，等价于sh[index]。</p>
+<p>​    在设计一个函数时，传递的参数是数组，则其函数声明如下所示:</p>
+<p>​    <code>int sum(int * mar);</code> mar是一个指针变量，发生调用是被赋值为数组的首地址</p>
+<p>​    调用的形式 <code>total = sum(marbles)</code></p>
+<p>以下的形式是等价的：</p>
+<p><code>int sum(int *ar,int n);</code></p>
+<p><code>int sum(int *,int );</code></p>
+<p><code>int sum(int ar[],int n);</code></p>
+<p><code>int sum(int [],int );</code></p>
+<p>指针的常见操作：<strong>赋值，求值或取值，去指针地址，将一个整数加给指针，增加指针的值，从一个指针中减去一个整数，减小指针的值，求差值。</strong></p>
+<h2 id="4、最大子序列和问题"><a href="#4、最大子序列和问题" class="headerlink" title="4、最大子序列和问题"></a>4、最大子序列和问题</h2><p>​    <strong>采用分治思想，使用递归来实现。将主问题划分为三个子问题，最大子序列和可能出现在前半部分，也可能出现在后半部分，还有可能出现在中间。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span>`</span></span><br><span class="line"></span><br><span class="line">`<span class="meta">#<span class="keyword">include</span><span class="string">&lt;math.h&gt;</span>`</span></span><br><span class="line"></span><br><span class="line">`<span class="type">int</span> <span class="title function_">MaxSubSum</span><span class="params">(<span class="type">const</span> <span class="type">int</span> A[],<span class="type">int</span> left,<span class="type">int</span> right)</span>;`</span><br><span class="line"></span><br><span class="line">`<span class="type">int</span> <span class="title function_">Max3</span><span class="params">(<span class="type">int</span> a,<span class="type">int</span> b,<span class="type">int</span> c)</span>;`</span><br><span class="line"></span><br><span class="line">`<span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;`</span><br><span class="line"></span><br><span class="line">  `<span class="type">int</span> A[<span class="number">8</span>]=&#123;<span class="number">4</span>,<span class="number">-3</span>,<span class="number">5</span>,<span class="number">-2</span>,<span class="number">-1</span>,<span class="number">2</span>,<span class="number">6</span>,<span class="number">-2</span>&#125;;`</span><br><span class="line"></span><br><span class="line">  `<span class="type">int</span> sum = MaxSubSum(A,<span class="number">0</span>,<span class="number">7</span>);`</span><br><span class="line"></span><br><span class="line">  `<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,sum);`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">return</span> <span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">`&#125;`</span><br><span class="line"></span><br><span class="line">`<span class="type">int</span> <span class="title function_">MaxSubSum</span><span class="params">(<span class="type">const</span> <span class="type">int</span> A[],<span class="type">int</span> left,<span class="type">int</span> right)</span>&#123;`</span><br><span class="line"></span><br><span class="line">  `<span class="comment">//将问题分为三个子问题，最大子序列和可能出现在前半部分`</span></span><br><span class="line"></span><br><span class="line">  `<span class="comment">//也可能出现在后半部分，也可能出现在包含前半部分和后半部分的中间`</span></span><br><span class="line"></span><br><span class="line">  `<span class="type">int</span> MaxLeftSum=<span class="number">0</span>,MaxRightSum=<span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">  `<span class="comment">//包含前半部分最后一个元素的最大序列，以及包含后半部分第一个元素的最大值`</span></span><br><span class="line"></span><br><span class="line">  `<span class="type">int</span> MaxLeftBorderSum=<span class="number">0</span>,MaxRightBorderSum=<span class="number">0</span>;` </span><br><span class="line"></span><br><span class="line">  `<span class="type">int</span> LeftBorderSum=<span class="number">0</span>,RightBorderSum=<span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">  `<span class="type">int</span> center,i;`</span><br><span class="line"></span><br><span class="line">  `<span class="comment">//当只有一个元素的情况`</span></span><br><span class="line"></span><br><span class="line">  `<span class="keyword">if</span>(left==right)&#123;`</span><br><span class="line"></span><br><span class="line">​    `<span class="keyword">if</span>(A[left]&gt;<span class="number">0</span>)`</span><br><span class="line"></span><br><span class="line">​      `<span class="keyword">return</span> A[left];`</span><br><span class="line"></span><br><span class="line">​    `<span class="keyword">else</span>` </span><br><span class="line"></span><br><span class="line">​      `<span class="keyword">return</span> <span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">  `&#125;`</span><br><span class="line"></span><br><span class="line">  `center = (left+right)/<span class="number">2</span>;`</span><br><span class="line"></span><br><span class="line">  `MaxLeftSum=MaxSubSum(A,left,center);`</span><br><span class="line"></span><br><span class="line">  `MaxRightSum-MaxSubSum(A,center+<span class="number">1</span>,right);`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">for</span>(i=center;i&gt;=left;i--)&#123;`</span><br><span class="line"></span><br><span class="line">​    `LeftBorderSum+=A[i];`</span><br><span class="line"></span><br><span class="line">​    `<span class="keyword">if</span>(MaxLeftBorderSum&lt;LeftBorderSum)`</span><br><span class="line"></span><br><span class="line">​      `MaxLeftBorderSum=LeftBorderSum;`</span><br><span class="line"></span><br><span class="line">  `&#125;`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">for</span>(i=center+<span class="number">1</span>;i&lt;=right;i++)&#123;`</span><br><span class="line"></span><br><span class="line">​    `RightBorderSum+=A[i];`</span><br><span class="line"></span><br><span class="line">​    `<span class="keyword">if</span>(MaxRightBorderSum&lt;RightBorderSum)`</span><br><span class="line"></span><br><span class="line">​      `MaxRightBorderSum=RightBorderSum;`</span><br><span class="line"></span><br><span class="line">  `&#125;`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">return</span> Max3(MaxLeftSum,MaxRightSum,MaxLeftBorderSum+MaxRightBorderSum);`</span><br><span class="line"></span><br><span class="line">`&#125;`</span><br><span class="line"></span><br><span class="line">`<span class="type">int</span> <span class="title function_">Max3</span><span class="params">(<span class="type">int</span> a,<span class="type">int</span> b,<span class="type">int</span> c)</span>&#123;`</span><br><span class="line"></span><br><span class="line">  `<span class="type">int</span> max1,max2;`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">if</span>(a&gt;b)`</span><br><span class="line"></span><br><span class="line">​    `max1=a;`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">else</span>`</span><br><span class="line"></span><br><span class="line">​    `max1=b;`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">if</span>(max1&gt;c)`</span><br><span class="line"></span><br><span class="line">​    `max2=max1;`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">else</span>`</span><br><span class="line"></span><br><span class="line">​    `max2=c;`</span><br><span class="line"></span><br><span class="line">  `<span class="keyword">return</span> max2;`</span><br><span class="line"></span><br><span class="line">`&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/07/22/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day2/" data-id="cl7iuzc7800035smj6m909of9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-c语言复习day1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/07/21/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day1/" class="article-date">
@@ -173,6 +235,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/">rvcc学习笔记10</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/">rvcc学习笔记09</a>
           </li>
         
@@ -186,10 +252,6 @@
         
           <li>
             <a href="/2022/09/05/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B006/">rvcc学习笔记06</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/02/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B005/">rvcc学习笔记05</a>
           </li>
         
       </ul>
