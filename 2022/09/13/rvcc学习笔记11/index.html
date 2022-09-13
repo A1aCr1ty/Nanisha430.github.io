@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>rvcc学习笔记11 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="支持return语句​    return是一个关键字，用来返回具体值。在终结符的数据结构种类中，增加一个关键字终结符TK_KEYWORD，同时AST节点的种类也要增加一种ND_RETURN。 词法分析​        词法分析针对新增的关键字终结符，在完成终结符解析后，循环遍历将为关键字的终结符设为TK_KEYWORD。 1234567&#x2F;&#x2F; 将名为“return”的终结符转为KEYWORDsta">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rvcc学习笔记11">
+<meta property="og:url" content="http://example.com/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="支持return语句​    return是一个关键字，用来返回具体值。在终结符的数据结构种类中，增加一个关键字终结符TK_KEYWORD，同时AST节点的种类也要增加一种ND_RETURN。 词法分析​        词法分析针对新增的关键字终结符，在完成终结符解析后，循环遍历将为关键字的终结符设为TK_KEYWORD。 1234567&#x2F;&#x2F; 将名为“return”的终结符转为KEYWORDsta">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-13T04:58:28.000Z">
+<meta property="article:modified_time" content="2022-09-13T10:01:18.407Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rvcc学习笔记11" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/" class="article-date">
+  <time datetime="2022-09-13T04:58:28.000Z" itemprop="datePublished">2022-09-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rvcc学习笔记11
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持return语句"><a href="#支持return语句" class="headerlink" title="支持return语句"></a>支持return语句</h2><p>​    return是一个关键字，用来返回具体值。在终结符的数据结构种类中，增加一个关键字终结符TK_KEYWORD，同时AST节点的种类也要增加一种ND_RETURN。</p>
+<h3 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h3><p>​        词法分析针对新增的关键字终结符，在完成终结符解析后，循环遍历将为关键字的终结符设为TK_KEYWORD。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将名为“return”的终结符转为KEYWORD</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">convertKeywords</span><span class="params">(Token *Tok)</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (Token *T = Tok; T-&gt;Kind != TK_EOF; T = T-&gt;Next) &#123;</span><br><span class="line">    <span class="keyword">if</span> (equal(T, <span class="string">&quot;return&quot;</span>))</span><br><span class="line">      T-&gt;Kind = TK_KEYWORD;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h3><p>​        文法改变，主要是stmt  = “return” expr “;” | exprStmt。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// stmt = &quot;return&quot; expr &quot;;&quot; | exprStmt</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// &quot;return&quot; expr &quot;;&quot;</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;return&quot;</span>)) &#123;</span><br><span class="line">    Node *Nd = newUnary(ND_RETURN, expr(&amp;Tok, Tok-&gt;Next));</span><br><span class="line">    *Rest = skip(Tok, <span class="string">&quot;;&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> Nd;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// exprStmt</span></span><br><span class="line">  <span class="keyword">return</span> exprStmt(Rest, Tok);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h3><p>​        .L return: 设置return段标签。此后遇到return语句，用j offset无条件跳转指令跳转到return段。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (Nd-&gt;Kind) &#123;</span><br><span class="line">  <span class="comment">// 生成return语句</span></span><br><span class="line">  <span class="keyword">case</span> ND_RETURN:</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="comment">// 无条件跳转语句，跳转到.L.return段</span></span><br><span class="line">    <span class="comment">// j offset是 jal x0, offset的别名指令</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;  j .L.return\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="comment">// 生成表达式语句</span></span><br><span class="line">  <span class="keyword">case</span> ND_EXPR_STMT:</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p><strong>测试用例：</strong></p>
+<p>assert 3 ‘a=3;return a;’</p>
+<p>assert 8 ‘a=3; z=5;return a+z;’<br>assert 6 ‘a=b=3;return a+b;’<br>assert 5 ‘a=3;b=4;a=1;return a+b;’</p>
+<p>assert 3 ‘foo=3; foo;’<br>assert 74 ‘foo2=70; bar4=4; foo2+bar4;’<br>assert 3 ‘foo=3;return foo;’<br>assert 74 ‘foo2=70; bar4=4;return foo2+bar4;’</p>
+<p>assert 1 ‘return 1; 2; 3;’<br>assert 2 ‘1; return 2; 3;’<br>assert 3 ‘1; 2; return 3;’</p>
+<p><strong>结果：</strong></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">a=3; <span class="built_in">return</span> a; =&gt; 3</span><br><span class="line">a=3; z=5; <span class="built_in">return</span> a+z; =&gt; 8</span><br><span class="line">a=b=3;<span class="built_in">return</span> a+b; =&gt; 6</span><br><span class="line">a=3;b=4;a=1;<span class="built_in">return</span> a+b; =&gt; 5</span><br><span class="line">foo=3;<span class="built_in">return</span> foo; =&gt; 3</span><br><span class="line">foo2=70; bar4=4;<span class="built_in">return</span> foo2+bar4; =&gt; 74</span><br><span class="line"><span class="built_in">return</span> 1; 2; 3; =&gt; 1</span><br><span class="line">1; <span class="built_in">return</span> 2; 3; =&gt; 2</span><br><span class="line">1; 2; <span class="built_in">return</span> 3; =&gt; 3</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/" data-id="cl8034c1m00007smjfgqdg3vz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          汇编相关
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rvcc学习笔记10</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/">汇编相关</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/">rvcc学习笔记11</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/">rvcc学习笔记10</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/">rvcc学习笔记09</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/">rvcc学习笔记08</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
