@@ -64,6 +64,70 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rvcc学习笔记10" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/" class="article-date">
+  <time datetime="2022-09-08T13:06:55.000Z" itemprop="datePublished">2022-09-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/">rvcc学习笔记10</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持多字母本地变量"><a href="#支持多字母本地变量" class="headerlink" title="支持多字母本地变量"></a>支持多字母本地变量</h2><p>​    增加一个新的数据结构，专门来存储本地变量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Obj</span> <span class="title">Obj</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Obj</span> &#123;</span></span><br><span class="line">  Obj *Next;  <span class="comment">// 指向下一对象</span></span><br><span class="line">  <span class="type">char</span> *Name; <span class="comment">// 变量名</span></span><br><span class="line">  <span class="type">int</span> Offset; <span class="comment">// fp的偏移量</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​    定义多字母本地变量的命名规则：[a-zA-Z_] [a-zA-Z0-9_]*</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 判断标记符的首字母规则</span></span><br><span class="line"><span class="comment">// [a-zA-Z_]</span></span><br><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">isIdent1</span><span class="params">(<span class="type">char</span> C)</span> &#123;</span><br><span class="line">  <span class="comment">// a-z与A-Z在ASCII中不相连，所以需要分别判断</span></span><br><span class="line">  <span class="keyword">return</span> (<span class="string">&#x27;a&#x27;</span> &lt;= C &amp;&amp; C &lt;= <span class="string">&#x27;z&#x27;</span>) || (<span class="string">&#x27;A&#x27;</span> &lt;= C &amp;&amp; C &lt;= <span class="string">&#x27;Z&#x27;</span>) || C == <span class="string">&#x27;_&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断标记符的非首字母的规则</span></span><br><span class="line"><span class="comment">// [a-zA-Z0-9_]</span></span><br><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">isIdent2</span><span class="params">(<span class="type">char</span> C)</span> &#123; <span class="keyword">return</span> isIdent1(C) || (<span class="string">&#x27;0&#x27;</span> &lt;= C &amp;&amp; C &lt;= <span class="string">&#x27;9&#x27;</span>); &#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    解析标记符：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [a-zA-Z_][a-zA-Z0-9_]*</span></span><br><span class="line">   <span class="keyword">if</span> (isIdent1(*P)) &#123;</span><br><span class="line">     <span class="type">char</span> *Start = P;</span><br><span class="line">     <span class="keyword">do</span> &#123;</span><br><span class="line">       ++P;</span><br><span class="line">     &#125; <span class="keyword">while</span> (isIdent2(*P));</span><br><span class="line">     Cur-&gt;Next = newToken(TK_IDENT, Start, P);</span><br><span class="line">     Cur = Cur-&gt;Next;</span><br><span class="line">     <span class="keyword">continue</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    新增一个函数的结构体，用来存储函数的语句和变量，而函数的变量链表Locals中的变量都是唯一的，相同名字的变量只有一个。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 函数</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Function</span> &#123;</span></span><br><span class="line">  Node *Body;    <span class="comment">// 函数体</span></span><br><span class="line">  Obj *Locals;   <span class="comment">// 本地变量</span></span><br><span class="line">  <span class="type">int</span> StackSize; <span class="comment">// 栈大小</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<pre><code> 语法分析： parse.c
+</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在解析时，全部的变量实例都被累加到这个列表里。</span></span><br><span class="line">Obj *Locals;</span><br></pre></td></tr></table></figure>
+
+<p>​    语法分析入口：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Function *<span class="title function_">parse</span><span class="params">(Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// 这里使用了和词法分析类似的单向链表结构</span></span><br><span class="line">  Node Head = &#123;&#125;;</span><br><span class="line">  Node *Cur = &amp;Head;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// stmt*</span></span><br><span class="line">  <span class="keyword">while</span> (Tok-&gt;Kind != TK_EOF) &#123;</span><br><span class="line">    Cur-&gt;Next = stmt(&amp;Tok, Tok);</span><br><span class="line">    Cur = Cur-&gt;Next;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 函数体存储语句的AST，Locals存储变量</span></span><br><span class="line">  Function *Prog = <span class="built_in">calloc</span>(<span class="number">1</span>, <span class="keyword">sizeof</span>(Function));</span><br><span class="line">  Prog-&gt;Body = Head.Next;</span><br><span class="line">  Prog-&gt;Locals = Locals;</span><br><span class="line">  <span class="keyword">return</span> Prog;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    语句解析，相对于单字母变量来说，主要修改的就是 primary = “(“ expr “)” | ident｜ num，主要判断是变量，还是一个数字。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过名称，查找一个本地变量</span></span><br><span class="line"><span class="type">static</span> Obj *<span class="title function_">findVar</span><span class="params">(Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// 查找Locals变量中是否存在同名变量</span></span><br><span class="line">  <span class="keyword">for</span> (Obj *Var = Locals; Var; Var = Var-&gt;Next)</span><br><span class="line">    <span class="comment">// 判断变量名是否和终结符名长度一致，然后逐字比较。</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">strlen</span>(Var-&gt;Name) == Tok-&gt;Len &amp;&amp;</span><br><span class="line">        !<span class="built_in">strncmp</span>(Tok-&gt;Loc, Var-&gt;Name, Tok-&gt;Len))</span><br><span class="line">      <span class="keyword">return</span> Var;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">newVarNode</span><span class="params">(Obj *Var)</span> &#123;</span><br><span class="line">  Node *Nd = newNode(ND_VAR);</span><br><span class="line">  Nd-&gt;Var = Var;</span><br><span class="line">  <span class="keyword">return</span> Nd;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 在链表中新增一个变量</span></span><br><span class="line"><span class="type">static</span> Obj *<span class="title function_">newLVar</span><span class="params">(<span class="type">char</span> *Name)</span> &#123;</span><br><span class="line">  Obj *Var = <span class="built_in">calloc</span>(<span class="number">1</span>, <span class="keyword">sizeof</span>(Obj));</span><br><span class="line">  Var-&gt;Name = Name;</span><br><span class="line">  <span class="comment">// 将变量插入头部</span></span><br><span class="line">  Var-&gt;Next = Locals;</span><br><span class="line">  Locals = Var;</span><br><span class="line">  <span class="keyword">return</span> Var;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 解析括号、数字、变量</span></span><br><span class="line"><span class="comment">// primary = &quot;(&quot; expr &quot;)&quot; | ident｜ num</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">primary</span><span class="params">(Token **Rest, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// &quot;(&quot; expr &quot;)&quot;</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;(&quot;</span>)) &#123;</span><br><span class="line">    Node *Nd = expr(&amp;Tok, Tok-&gt;Next);</span><br><span class="line">    *Rest = skip(Tok, <span class="string">&quot;)&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> Nd;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ident</span></span><br><span class="line">  <span class="keyword">if</span> (Tok-&gt;Kind == TK_IDENT) &#123;</span><br><span class="line">    <span class="comment">// 查找变量</span></span><br><span class="line">    Obj *Var = findVar(Tok);</span><br><span class="line">    <span class="comment">// 如果变量不存在，就在链表中新增一个变量</span></span><br><span class="line">    <span class="keyword">if</span> (!Var)</span><br><span class="line">      <span class="comment">// strndup复制N个字符</span></span><br><span class="line">      Var = newLVar(strndup(Tok-&gt;Loc, Tok-&gt;Len));</span><br><span class="line">    *Rest = Tok-&gt;Next;</span><br><span class="line">    <span class="keyword">return</span> newVarNode(Var);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// num</span></span><br><span class="line">  <span class="keyword">if</span> (Tok-&gt;Kind == TK_NUM) &#123;</span><br><span class="line">    Node *Nd = newNum(Tok-&gt;Val);</span><br><span class="line">    *Rest = Tok-&gt;Next;</span><br><span class="line">    <span class="keyword">return</span> Nd;</span><br><span class="line">  &#125;</span><br><span class="line">  errorTok(Tok, <span class="string">&quot;expected an expression&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    代码生成：相对于单字母本地变量，栈的布局固定，空间造成了很大浪费，本次改进，是根据变量的链表来动态确定栈空间大小。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//             栈布局</span></span><br><span class="line"><span class="comment">//-------------------------------// sp</span></span><br><span class="line"><span class="comment">//              fp</span></span><br><span class="line"><span class="comment">//-------------------------------// fp = sp-8</span></span><br><span class="line"><span class="comment">//             变量</span></span><br><span class="line"><span class="comment">//-------------------------------// sp = sp-8-StackSize</span></span><br><span class="line"><span class="comment">//           表达式计算</span></span><br><span class="line"><span class="comment">//-------------------------------//</span></span><br></pre></td></tr></table></figure>
+
+<p>​    根据变量的链表来计算出偏移量：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据变量的链表计算出偏移量</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">assignLVarOffsets</span><span class="params">(Function *Prog)</span> &#123;</span><br><span class="line">  <span class="type">int</span> Offset = <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// 读取所有变量</span></span><br><span class="line">  <span class="keyword">for</span> (Obj *Var = Prog-&gt;Locals; Var; Var = Var-&gt;Next) &#123;</span><br><span class="line">    <span class="comment">// 每个变量分配8字节</span></span><br><span class="line">    Offset += <span class="number">8</span>;</span><br><span class="line">    <span class="comment">// 为每个变量赋一个偏移量，或者说是栈中地址</span></span><br><span class="line">    Var-&gt;Offset = -Offset;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 将栈对齐到16字节</span></span><br><span class="line">  Prog-&gt;StackSize = alignTo(Offset, <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/" data-id="cl7t3ruau0000lsmj81ms8kdy" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记09" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/" class="article-date">
@@ -528,123 +592,6 @@
 
 
   
-    <article id="post-cmake学习" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/29/cmake%E5%AD%A6%E4%B9%A0/" class="article-date">
-  <time datetime="2022-08-29T09:55:24.000Z" itemprop="datePublished">2022-08-29</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/29/cmake%E5%AD%A6%E4%B9%A0/">cmake学习</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="CMake-使用方法"><a href="#CMake-使用方法" class="headerlink" title="CMake 使用方法"></a>CMake 使用方法</h2><p>  CMake的所有的语句都写在一个叫:CMakeLists.txt的文件中。当CMakeLists.txt文件确定后,可以用ccmake命令对相关 的变量值进行配置。这个命令必须指向CMakeLists.txt所在的目录。配置完成之后,应用cmake命令生成相应的makefile（在Unix like系统下）或者 project文件（指定用window下的相应编程工具编译时）。</p>
-<p>  其基本操作流程为：</p>
-<ol>
-<li>$&gt; ccmake directory</li>
-<li>$&gt; cmake directory</li>
-<li>$&gt; make</li>
-</ol>
-<p> 其中directory为CMakeList.txt所在目录；</p>
-<ul>
-<li>第一条语句用于配置编译选项，如VTK_DIR目录 ，一般这一步不需要配置，直接执行第二条语句即可，但当出现错误时，这里就需要认为配置了，这一步才真正派上用场；</li>
-<li>第二条命令用于根据CMakeLists.txt生成Makefile文件；</li>
-<li>第三条命令用于执行Makefile文件，编译程序，生成可执行文件；</li>
-</ul>
-<h2 id="命令"><a href="#命令" class="headerlink" title="命令"></a>命令</h2><p><strong>project</strong> (HELLO)  #指定项目名称，生成的VC项目的名称；</p>
-<p>&gt;&gt;使用${HELLO_SOURCE_DIR}表示项目根目录</p>
-<p><strong>include_directories</strong>：指定头文件的搜索路径，相当于指定gcc的-I参数</p>
-<p>&gt;&gt; include_directories (${HELLO_SOURCE_DIR}/Hello) #增加Hello为include目录</p>
-<p><strong>link_directories</strong>：动态链接库或静态链接库的搜索路径，相当于gcc的-L参数</p>
-<p>​    &gt;&gt; link_directories (${HELLO_BINARY_DIR}/Hello)   #增加Hello为link目录</p>
-<p><strong>add_subdirectory</strong>：包含子目录</p>
-<p>​    &gt;&gt; add_subdirectory (Hello)</p>
-<p><strong>add_executable</strong>：编译可执行程序，指定编译，好像也可以添加.o文件</p>
-<p>​    &gt;&gt; add_executable (helloDemo demo.cxx demo_b.cxx)  #将cxx编译成可执行文件——</p>
-<p><strong>add_definitions</strong>：添加编译参数</p>
-<p>&gt;&gt; add_definitions(-DDEBUG)将在gcc命令行添加DEBUG宏定义；</p>
-<p>&gt;&gt; add_definitions( “-Wall -ansi –pedantic –g”)</p>
-<p><strong>target_link_libraries</strong>：添加链接库,相同于指定-l参数</p>
-<p>&gt;&gt; target_link_libraries(demo Hello) #将可执行文件与Hello连接成最终文件demo</p>
-<p><strong>add_library</strong>:</p>
-<p>&gt;&gt; add_library(Hello hello.cxx) #将hello.cxx编译成静态库如libHello.a</p>
-<p><strong>add_custom_target</strong>:</p>
-<p><strong>message</strong>( status|fatal_error, “message”):</p>
-<p><strong>set_target_properties</strong>( … ): lots of properties… OUTPUT_NAME, VERSION, ….</p>
-<p><strong>link_libraries</strong>( lib1 lib2 …): All targets link with the same set of libs</p>
-<h2 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h2><h3 id="1）-怎样获得一个目录下的所有源文件"><a href="#1）-怎样获得一个目录下的所有源文件" class="headerlink" title="1） 怎样获得一个目录下的所有源文件"></a>1） 怎样获得一个目录下的所有源文件</h3><p>&gt;&gt; aux_source_directory(<dir> <variable>)</variable></dir></p>
-<p>&gt;&gt; 将dir中所有源文件（不包括头文件）保存到变量variable中，然后可以add_executable (ss7gw ${variable})这样使用。</p>
-<h3 id="2）-怎样指定项目编译目标"><a href="#2）-怎样指定项目编译目标" class="headerlink" title="2） 怎样指定项目编译目标"></a>2） 怎样指定项目编译目标</h3><p>&gt;&gt; project命令指定</p>
-<h3 id="3）-怎样添加动态库和静态库"><a href="#3）-怎样添加动态库和静态库" class="headerlink" title="3） 怎样添加动态库和静态库"></a>3） 怎样添加动态库和静态库</h3><p>&gt;&gt; target_link_libraries命令添加即可</p>
-<h3 id="4）-怎样在执行CMAKE时打印消息"><a href="#4）-怎样在执行CMAKE时打印消息" class="headerlink" title="4） 怎样在执行CMAKE时打印消息"></a>4） 怎样在执行CMAKE时打印消息</h3><p>&gt;&gt; message([SEND_ERROR | STATUS | FATAL_ERROR] “message to display” …)</p>
-<p>&gt;&gt; 注意大小写</p>
-<h3 id="5）-怎样指定头文件与库文件路径"><a href="#5）-怎样指定头文件与库文件路径" class="headerlink" title="5） 怎样指定头文件与库文件路径"></a>5） 怎样指定头文件与库文件路径</h3><p>&gt;&gt; include_directories与link_directories</p>
-<p>&gt;&gt;可以多次调用以设置多个路径</p>
-<p><strong>&gt;&gt; link_directories仅对其后面的targets起作用</strong></p>
-<h3 id="6）-怎样区分debug、release版本"><a href="#6）-怎样区分debug、release版本" class="headerlink" title="6） 怎样区分debug、release版本"></a>6） 怎样区分debug、release版本</h3><p>&gt;&gt;建立debug/release两目录，分别在其中执行cmake -DCMAKE_BUILD_TYPE=Debug（或Release），需要编译不同版本时进入不同目录执行make即可；</p>
-<p><strong>Debug版会使用参数-g；Release版使用-O3 –DNDEBUG</strong></p>
-<p>&gt;&gt; 另一种设置方法——例如DEBUG版设置编译参数DDEBUG</p>
-<p><em>IF(DEBUG_mode)</em></p>
-<p>  <em>add_definitions(-DDEBUG)</em></p>
-<p><em>ENDIF()</em></p>
-<p>在执行cmake时增加参数即可，例如cmake -D DEBUG_mode=ON</p>
-<h3 id="7）-怎样设置条件编译"><a href="#7）-怎样设置条件编译" class="headerlink" title="7） 怎样设置条件编译"></a>7） 怎样设置条件编译</h3><p>例如<strong>debug版设置编译选项DEBUG</strong>，并且更改不应改变CMakelist.txt</p>
-<p>&gt;&gt; 使用option command，eg：</p>
-<p>option(DEBUG_mode “ON for debug or OFF for release” ON)</p>
-<p><em>IF(DEBUG_mode)</em></p>
-<p>  <em>add_definitions(-DDEBUG)</em></p>
-<p><em>ENDIF()</em></p>
-<p>&gt;&gt; 使其生效的方法：首先cmake生成makefile，然后make edit_cache编辑编译选项；<a target="_blank" rel="noopener" href="http://lib.csdn.net/base/linux">Linux</a>下会打开一个文本框，可以更改，该完后再make生成目标文件——emacs不支持make edit_cache；</p>
-<p>&gt;&gt; 局限：这种方法不能直接设置生成的makefile，而是必须使用命令在make前设置参数；对于debug、release版本，相当于需要两个目录，分别先cmake一次，然后分别make edit_cache一次；</p>
-<p>&gt;&gt; 期望的效果：在执行cmake时直接通过参数指定一个开关项，生成相应的makefile——可以这样做，例如cmake –DDEBUGVERSION=ON</p>
-<h3 id="8）-怎样添加编译宏定义"><a href="#8）-怎样添加编译宏定义" class="headerlink" title="8） 怎样添加编译宏定义"></a>8） 怎样添加编译宏定义</h3><p>&gt;&gt; 使用add_definitions命令，见命令部分说明</p>
-<h3 id="9）-怎样添加编译依赖项"><a href="#9）-怎样添加编译依赖项" class="headerlink" title="9） 怎样添加编译依赖项"></a>9） 怎样添加编译依赖项</h3><p>用于确保编译目标项目前依赖项必须先构建好</p>
-<p>&gt;&gt;add_dependencies</p>
-<h3 id="10）-怎样指定目标文件目录"><a href="#10）-怎样指定目标文件目录" class="headerlink" title="10）    怎样指定目标文件目录"></a>10）    怎样指定目标文件目录</h3><p>&gt;&gt; 建立一个新的目录，在该目录中执行cmake生成Makefile文件，这样编译结果会保存在该目录——类似</p>
-<p>&gt;&gt; SET_TARGET_PROPERTIES(ss7gw PROPERTIES</p>
-<p>​           RUNTIME_OUTPUT_DIRECTORY “${BIN_DIR}”)</p>
-<h3 id="11）-很多文件夹，难道需要把每个文件夹编译成一个库文件？"><a href="#11）-很多文件夹，难道需要把每个文件夹编译成一个库文件？" class="headerlink" title="11）    很多文件夹，难道需要把每个文件夹编译成一个库文件？"></a>11）    很多文件夹，难道需要把每个文件夹编译成一个库文件？</h3><p>&gt;&gt; 可以不在子目录中使用CMakeList.txt，直接在上层目录中指定子目录</p>
-<h3 id="12）-怎样设定依赖的cmake版本"><a href="#12）-怎样设定依赖的cmake版本" class="headerlink" title="12）    怎样设定依赖的cmake版本"></a>12）    怎样设定依赖的cmake版本</h3><p>&gt;&gt;cmake_minimum_required(VERSION 2.6)</p>
-<h3 id="13）-相对路径怎么指定"><a href="#13）-相对路径怎么指定" class="headerlink" title="13）    相对路径怎么指定"></a>13）    相对路径怎么指定</h3><p>&gt;&gt; ${projectname_SOURCE_DIR}表示根源文件目录，${ projectname _BINARY_DIR}表示根二进制文件目录？</p>
-<h3 id="14）-怎样设置编译中间文件的目录"><a href="#14）-怎样设置编译中间文件的目录" class="headerlink" title="14）    怎样设置编译中间文件的目录"></a>14）    怎样设置编译中间文件的目录</h3><p>&gt;&gt; TBD</p>
-<h3 id="15）-怎样在IF语句中使用字串或数字比较"><a href="#15）-怎样在IF语句中使用字串或数字比较" class="headerlink" title="15）    怎样在IF语句中使用字串或数字比较"></a>15）    怎样在IF语句中使用字串或数字比较</h3><p>&gt;&gt;数字比较LESS、GREATER、EQUAL，字串比STRLESS、STRGREATER、STREQUAL，</p>
-<p>&gt;&gt; Eg：</p>
-<p><em>set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)</em></p>
-<p><em>set(AAA abc)</em></p>
-<p><em>IF(AAA STREQUAL abc)</em></p>
-<p>  <em>message(STATUS “true”)  #应该打印true</em></p>
-<p><em>ENDIF()</em></p>
-<h3 id="16）-更改h文件时是否只编译必须的cpp文件"><a href="#16）-更改h文件时是否只编译必须的cpp文件" class="headerlink" title="16）    更改h文件时是否只编译必须的cpp文件"></a>16）    更改h文件时是否只编译必须的cpp文件</h3><p>&gt;&gt; 是</p>
-<h3 id="17）-机器上安装了VC7和VC8，CMAKE会自动搜索编译器，但是怎样指定某个版本？"><a href="#17）-机器上安装了VC7和VC8，CMAKE会自动搜索编译器，但是怎样指定某个版本？" class="headerlink" title="17）    机器上安装了VC7和VC8，CMAKE会自动搜索编译器，但是怎样指定某个版本？"></a>17）    机器上安装了VC7和VC8，CMAKE会自动搜索编译器，但是怎样指定某个版本？</h3><p>&gt;&gt; TBD</p>
-<h3 id="18）-怎样根据OS指定编译选项"><a href="#18）-怎样根据OS指定编译选项" class="headerlink" title="18）    怎样根据OS指定编译选项"></a>18）    怎样根据OS指定编译选项</h3><p>&gt;&gt; IF( APPLE ); IF( UNIX ); IF( WIN32 )</p>
-<h3 id="19）-能否自动执行某些编译前、后命令？"><a href="#19）-能否自动执行某些编译前、后命令？" class="headerlink" title="19）    能否自动执行某些编译前、后命令？"></a>19）    能否自动执行某些编译前、后命令？</h3><p>&gt;&gt; 可以，TBD</p>
-<h3 id="20）-怎样打印make的输出"><a href="#20）-怎样打印make的输出" class="headerlink" title="20）    怎样打印make的输出"></a>20）    怎样打印make的输出</h3><p>make VERBOSE=1</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/29/cmake%E5%AD%A6%E4%B9%A0/" data-id="cl7iuzc7700025smjftbyfark" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -681,6 +628,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/16/leetcode-850/">leetcode#850</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B017/">rvcc学习笔记17</a>
           </li>
         
@@ -694,10 +645,6 @@
         
           <li>
             <a href="/2022/09/15/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B014/">rvcc学习笔记14</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B013/">rvcc学习笔记13</a>
           </li>
         
       </ul>
