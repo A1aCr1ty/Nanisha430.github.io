@@ -64,6 +64,59 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rvcc学习笔记08" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" class="article-date">
+  <time datetime="2022-09-06T07:54:11.000Z" itemprop="datePublished">2022-09-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/">rvcc学习笔记08</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持；运算符"><a href="#支持；运算符" class="headerlink" title="支持；运算符"></a>支持；运算符</h2><p>​      程序是由多个表达式构成，各个表达式用；分隔。</p>
+<h3 id="增加AST节点种类"><a href="#增加AST节点种类" class="headerlink" title="增加AST节点种类"></a>增加AST节点种类</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AST的节点种类</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  ND_ADD, <span class="comment">// +</span></span><br><span class="line">  ND_SUB, <span class="comment">// -</span></span><br><span class="line">  ND_MUL, <span class="comment">// *</span></span><br><span class="line">  ND_DIV, <span class="comment">// /</span></span><br><span class="line">  ND_NEG, <span class="comment">// 负号-</span></span><br><span class="line">  ND_EQ,  <span class="comment">// ==</span></span><br><span class="line">  ND_NE,  <span class="comment">// !=</span></span><br><span class="line">  ND_LT,  <span class="comment">// &lt;</span></span><br><span class="line">  ND_LE,  <span class="comment">// &lt;=</span></span><br><span class="line">  ND_EXPR_STMT, <span class="comment">//表达式语句类型</span></span><br><span class="line">  ND_NUM, <span class="comment">// 整形</span></span><br><span class="line">&#125; NodeKind;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AST中二叉树节点</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Node</span> <span class="title">Node</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span></span><br><span class="line">  NodeKind Kind; <span class="comment">// 节点种类</span></span><br><span class="line">  Node *Next;    <span class="comment">// ;分隔语句 下一个语句</span></span><br><span class="line">  Node *LHS;     <span class="comment">// 左部，left-hand side</span></span><br><span class="line">  Node *RHS;     <span class="comment">// 右部，right-hand side</span></span><br><span class="line">  <span class="type">int</span> Val;       <span class="comment">// 存储ND_NUM种类的值</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="采用和token一样的链表结构"><a href="#采用和token一样的链表结构" class="headerlink" title="采用和token一样的链表结构"></a>采用和token一样的链表结构</h3><img src="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png" class>
+
+<h3 id="修改文法"><a href="#修改文法" class="headerlink" title="修改文法"></a>修改文法</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">*<span class="comment">// program = stmt** </span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// stmt = exprStmt*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// exprStmt = expr&quot;;&quot;*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// expr = equality*</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">expr</span><span class="params">(Token **Rest, Token *Tok)</span>;</span><br><span class="line"><span class="comment">//解析语句</span></span><br><span class="line"><span class="comment">// stmt = exprStmt</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> exprStmt(Rest,Tok);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//解析表达式语句</span></span><br><span class="line"><span class="comment">// exprStmt = expr&quot;;&quot;</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">   Node *Nd = newUnary(ND_EXPR_STMT,expr(&amp;Tok,Tok));</span><br><span class="line">   *Rest = skip(Tok,<span class="string">&quot;;&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span> Nd; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 语法解析入口函数</span></span><br><span class="line"><span class="comment">// program = stmt*</span></span><br><span class="line">Node *<span class="title function_">parse</span><span class="params">(Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// 这里使用了和词法分析类似的单向链表结构</span></span><br><span class="line">  Node Head = &#123;&#125;;</span><br><span class="line">  Node* Cur = &amp;Head;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//stmt*</span></span><br><span class="line">  <span class="keyword">while</span>(Tok-&gt;Kind != TK_EOF)&#123;</span><br><span class="line">    Cur-&gt;Next = stmt(&amp;Tok,Tok);</span><br><span class="line">    Cur=Cur-&gt;Next;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> Head.Next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 生成语句</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">genStmt</span><span class="params">(Node *Nd)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (Nd-&gt;Kind == ND_EXPR_STMT) &#123;</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  error(<span class="string">&quot;invalid statement&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 代码生成入口函数，包含代码块的基础信息</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">codegen</span><span class="params">(Node *Nd)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;  .globl main\n&quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;main:\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 循环遍历所有的语句</span></span><br><span class="line">  <span class="keyword">for</span> (Node *N = Nd; N; N = N-&gt;Next) &#123;</span><br><span class="line">    genStmt(N);</span><br><span class="line">    assert(Depth == <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;  ret\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; =&gt; <span class="number">3</span></span><br><span class="line"><span class="number">12</span>+<span class="number">23</span>;<span class="number">12</span>+<span class="number">99</span>/<span class="number">3</span>;<span class="number">78</span><span class="number">-66</span>; =&gt; <span class="number">12</span></span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" data-id="cl7pz1bbe0000aomj801g4r5j" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记07" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B007/" class="article-date">
@@ -589,72 +642,6 @@
 
 
   
-    <article id="post-leecode-658" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/26/leecode-658/" class="article-date">
-  <time datetime="2022-08-26T05:36:35.000Z" itemprop="datePublished">2022-08-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/26/leecode-658/">leecode_658</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="658-找到-K-个最接近的元素"><a href="#658-找到-K-个最接近的元素" class="headerlink" title="658. 找到 K 个最接近的元素"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/find-k-closest-elements/">658. 找到 K 个最接近的元素</a></h2><p>给定一个 <strong>排序好</strong> 的数组 <code>arr</code> ，两个整数 <code>k</code> 和 <code>x</code> ，从数组中找到最靠近 <code>x</code>（两数之差最小）的 <code>k</code> 个数。返回的结果必须要是按升序排好的。</p>
-<p>整数 <code>a</code> 比整数 <code>b</code> 更接近 <code>x</code> 需要满足：</p>
-<ul>
-<li><code>|a - x| &lt; |b - x|</code> 或者</li>
-<li><code>|a - x| == |b - x|</code> 且 <code>a &lt; b</code></li>
-</ul>
-<p><strong>示例 1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [1,2,3,4,5], k = 4, x = 3</span><br><span class="line">输出：[1,2,3,4]</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [1,2,3,4,5], k = 4, x = -1</span><br><span class="line">输出：[1,2,3,4]</span><br></pre></td></tr></table></figure>
-
-<h2 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h2><p>​    按照与x的绝对值差大小给数组进行排序，再给前面k个数据按大小排序，最后就能得到结果。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">findClosestElements</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; arr, <span class="type">int</span> k, <span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">       <span class="built_in">sort</span>(arr.<span class="built_in">begin</span>(),arr.<span class="built_in">end</span>(),[x](<span class="type">int</span> a,<span class="type">int</span> b)&#123;<span class="keyword">return</span> <span class="built_in">abs</span>(a-x)&lt;<span class="built_in">abs</span>(b-x)||<span class="built_in">abs</span>(a-x)==<span class="built_in">abs</span>(b-x)&amp;&amp;(a&lt;b);&#125;);</span><br><span class="line">       <span class="built_in">sort</span>(arr.<span class="built_in">begin</span>(),arr.<span class="built_in">begin</span>()+k);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;(arr.<span class="built_in">begin</span>(), arr.<span class="built_in">begin</span>() + k);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>其中lambda表达式：</p>
-<p><strong>一、声明Lambda表达式</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[capture list] (params list) mutable exception-&gt; return type &#123; function body &#125;</span><br><span class="line">各项具体含义如下</span><br></pre></td></tr></table></figure>
-
-<p><strong>capture list：捕获外部变量列表</strong><br><strong>params list：形参列表</strong><br><strong>mutable指示符：用来说用是否可以修改捕获的变量</strong><br><strong>exception：异常设定</strong><br><strong>return type：返回类型</strong><br><strong>function body：函数体</strong><br>此外，我们还可以省略其中的某些成分来声明“不完整”的Lambda表达式，常见的有以下几种：</p>
-<p>序号    格式<br><strong>1    [capture list] (params list) -&gt; return type {function body}</strong></p>
-<p><strong>2    [capture list] (params list) {function body}</strong></p>
-<p><strong>3    [capture list] {function body}</strong><br>其中：</p>
-<p>格式1声明了const类型的表达式，这种类型的表达式不能修改捕获列表中的值。<br>格式2省略了返回值类型，但编译器可以根据以下规则推断出Lambda表达式的返回类型：<br>（1）：如果function body中存在return语句，则该Lambda表达式的返回类型由return语句的返回类型确定；<br>（2）：如果function body中没有return语句，则返回值为void类型。<br>格式3中省略了参数列表，类似普通函数中的无参函数。</p>
-<p>二、外部变量捕获</p>
-<p>到这里，我们来总结一下：C++11中的Lambda表达式捕获外部变量主要有以下形式：</p>
-<p>捕获形式    说明<br><strong>[]    不捕获任何外部变量</strong><br><strong>[变量名, …]    默认以值得形式捕获指定的多个外部变量（用逗号分隔），如果引用捕获，需要显示声明（使用&amp;说明符）</strong><br><strong>[this]    以值的形式捕获this指针</strong><br><strong>[=]    以值的形式捕获所有外部变量</strong><br><strong>[&amp;]    以引用形式捕获所有外部变量</strong><br><strong>[=, &amp;x]    变量x以引用形式捕获，其余变量以传值形式捕获</strong><br><strong>[&amp;, x]    变量x以值的形式捕获，其余变量以引用形式捕获</strong><br>三、修改捕获变量</p>
-<p>​    前面我们提到过，在Lambda表达式中，如果以传值方式捕获外部变量，则函数体中不能修改该外部变量，否则会引发编译错误。那么有没有办法可以修改值捕获的外部变量呢？这是就需要使用mutable关键字，该关键字用以说明表达式体内的代码可以修改值捕获的变量，</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">123</span>;</span><br><span class="line">    <span class="keyword">auto</span> f = [a]()<span class="keyword">mutable</span> &#123; cout &lt;&lt; ++a; &#125;; <span class="comment">// 不会报错</span></span><br><span class="line">    cout &lt;&lt; a &lt;&lt; endl; <span class="comment">// 输出：123</span></span><br><span class="line">    <span class="built_in">f</span>(); <span class="comment">// 输出：124</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/26/leecode-658/" data-id="cl7iuzc7h000g5smjf6jj2ph9" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -691,6 +678,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B016/">rvcc学习笔记16</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B015/">rvcc学习笔记15</a>
           </li>
         
@@ -704,10 +695,6 @@
         
           <li>
             <a href="/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B012/">rvcc学习笔记12</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/13/leecode-670/">leecode#670</a>
           </li>
         
       </ul>
