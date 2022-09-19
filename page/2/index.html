@@ -64,6 +64,60 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rvcc学习笔记11" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/" class="article-date">
+  <time datetime="2022-09-13T04:58:28.000Z" itemprop="datePublished">2022-09-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/">rvcc学习笔记11</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持return语句"><a href="#支持return语句" class="headerlink" title="支持return语句"></a>支持return语句</h2><p>​    return是一个关键字，用来返回具体值。在终结符的数据结构种类中，增加一个关键字终结符TK_KEYWORD，同时AST节点的种类也要增加一种ND_RETURN。</p>
+<h3 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h3><p>​        词法分析针对新增的关键字终结符，在完成终结符解析后，循环遍历将为关键字的终结符设为TK_KEYWORD。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将名为“return”的终结符转为KEYWORD</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">convertKeywords</span><span class="params">(Token *Tok)</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (Token *T = Tok; T-&gt;Kind != TK_EOF; T = T-&gt;Next) &#123;</span><br><span class="line">    <span class="keyword">if</span> (equal(T, <span class="string">&quot;return&quot;</span>))</span><br><span class="line">      T-&gt;Kind = TK_KEYWORD;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h3><p>​        文法改变，主要是stmt  = “return” expr “;” | exprStmt。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// stmt = &quot;return&quot; expr &quot;;&quot; | exprStmt</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// &quot;return&quot; expr &quot;;&quot;</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;return&quot;</span>)) &#123;</span><br><span class="line">    Node *Nd = newUnary(ND_RETURN, expr(&amp;Tok, Tok-&gt;Next));</span><br><span class="line">    *Rest = skip(Tok, <span class="string">&quot;;&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> Nd;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// exprStmt</span></span><br><span class="line">  <span class="keyword">return</span> exprStmt(Rest, Tok);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h3><p>​        .L return: 设置return段标签。此后遇到return语句，用j offset无条件跳转指令跳转到return段。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (Nd-&gt;Kind) &#123;</span><br><span class="line">  <span class="comment">// 生成return语句</span></span><br><span class="line">  <span class="keyword">case</span> ND_RETURN:</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="comment">// 无条件跳转语句，跳转到.L.return段</span></span><br><span class="line">    <span class="comment">// j offset是 jal x0, offset的别名指令</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;  j .L.return\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="comment">// 生成表达式语句</span></span><br><span class="line">  <span class="keyword">case</span> ND_EXPR_STMT:</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p><strong>测试用例：</strong></p>
+<p>assert 3 ‘a=3;return a;’</p>
+<p>assert 8 ‘a=3; z=5;return a+z;’<br>assert 6 ‘a=b=3;return a+b;’<br>assert 5 ‘a=3;b=4;a=1;return a+b;’</p>
+<p>assert 3 ‘foo=3; foo;’<br>assert 74 ‘foo2=70; bar4=4; foo2+bar4;’<br>assert 3 ‘foo=3;return foo;’<br>assert 74 ‘foo2=70; bar4=4;return foo2+bar4;’</p>
+<p>assert 1 ‘return 1; 2; 3;’<br>assert 2 ‘1; return 2; 3;’<br>assert 3 ‘1; 2; return 3;’</p>
+<p><strong>结果：</strong></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">a=3; <span class="built_in">return</span> a; =&gt; 3</span><br><span class="line">a=3; z=5; <span class="built_in">return</span> a+z; =&gt; 8</span><br><span class="line">a=b=3;<span class="built_in">return</span> a+b; =&gt; 6</span><br><span class="line">a=3;b=4;a=1;<span class="built_in">return</span> a+b; =&gt; 5</span><br><span class="line">foo=3;<span class="built_in">return</span> foo; =&gt; 3</span><br><span class="line">foo2=70; bar4=4;<span class="built_in">return</span> foo2+bar4; =&gt; 74</span><br><span class="line"><span class="built_in">return</span> 1; 2; 3; =&gt; 1</span><br><span class="line">1; <span class="built_in">return</span> 2; 3; =&gt; 2</span><br><span class="line">1; 2; <span class="built_in">return</span> 3; =&gt; 3</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/" data-id="cl8034c1m00007smjfgqdg3vz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记10" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/" class="article-date">
@@ -538,60 +592,6 @@
 
 
   
-    <article id="post-rvcc学习笔记01" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/30/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B001/" class="article-date">
-  <time datetime="2022-08-30T09:34:22.000Z" itemprop="datePublished">2022-08-30</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/30/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B001/">rvcc学习笔记01</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="基于RISC-V的gcc编译器"><a href="#基于RISC-V的gcc编译器" class="headerlink" title="基于RISC-V的gcc编译器"></a>基于RISC-V的gcc编译器</h2><h3 id="1、首先准备好linux环境以及riscv编译工具链以及qemu模拟器环境"><a href="#1、首先准备好linux环境以及riscv编译工具链以及qemu模拟器环境" class="headerlink" title="1、首先准备好linux环境以及riscv编译工具链以及qemu模拟器环境"></a>1、首先准备好linux环境以及riscv编译工具链以及qemu模拟器环境</h3><p>​    具体可见risc-v环境搭建</p>
-<h3 id="2、创建工程"><a href="#2、创建工程" class="headerlink" title="2、创建工程"></a>2、创建工程</h3><p>​    共三个文件</p>
-<p>​    <strong>main.c</strong>: 编译器源文件</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(argc!=<span class="number">2</span>)&#123;</span><br><span class="line">                <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">&quot;%s: invalid number of arguments&quot;</span>,argv[<span class="number">0</span>]);</span><br><span class="line">                <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">char</span> *P = argv[<span class="number">1</span>];</span><br><span class="line">        <span class="built_in">printf</span> (<span class="string">&quot;       .globl main\n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span> (<span class="string">&quot;main: \n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span> (<span class="string">&quot;       li a0, %ld\n&quot;</span>,strtol(P,&amp;P,<span class="number">10</span>));</span><br><span class="line">        <span class="keyword">while</span>(*P)&#123;</span><br><span class="line">                <span class="keyword">if</span>(*P==<span class="string">&#x27;+&#x27;</span>)&#123;</span><br><span class="line">                        ++P;</span><br><span class="line">                        <span class="built_in">printf</span>(<span class="string">&quot;        addi a0, a0, %ld\n&quot;</span>,strtol(P,&amp;P,<span class="number">10</span>));</span><br><span class="line">                        <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span>(*P==<span class="string">&#x27;-&#x27;</span>)&#123;</span><br><span class="line">                        ++P;</span><br><span class="line">                        <span class="built_in">printf</span>(<span class="string">&quot;        addi a0, a0,-%ld\n&quot;</span>,strtol(P,&amp;P,<span class="number">10</span>));</span><br><span class="line">                        <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span> (<span class="string">&quot;       ret\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;                  </span><br></pre></td></tr></table></figure>
-
-<p>Makefile: 项目构建文件 </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">CFLAGS=-std=c11 -g -fno-common</span><br><span class="line">CC=gcc</span><br><span class="line"></span><br><span class="line">rvcc: main.o</span><br><span class="line">        $(CC) -o rvcc $(CFLAGs) main.o</span><br><span class="line">test: rvcc</span><br><span class="line">        ./test.sh</span><br><span class="line">clean:</span><br><span class="line">        rm -f rvcc *.o *.s tmp.* a.out</span><br><span class="line">.PHONY:test clean                        </span><br></pre></td></tr></table></figure>
-
-<p>test.sh: 测试脚本</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">assert()&#123;</span><br><span class="line"></span><br><span class="line">        expected=&quot;$1&quot;</span><br><span class="line"></span><br><span class="line">        input=&quot;$2&quot;</span><br><span class="line"></span><br><span class="line">        ./rvcc $input &gt; tmp.s || exit</span><br><span class="line"></span><br><span class="line">        riscv64-unknown-elf-gcc -static tmp.s -o tmp</span><br><span class="line"></span><br><span class="line">        qemu-riscv64 tmp</span><br><span class="line"></span><br><span class="line">        actual=&quot;$?&quot;</span><br><span class="line"></span><br><span class="line">        if [ &quot;$actual&quot; = &quot;$expected&quot; ] ;then</span><br><span class="line">                echo &quot;$input =&gt; $actual&quot;</span><br><span class="line">        else</span><br><span class="line">                echo &quot;$input =&gt; $expected expected ,but got $actual&quot;</span><br><span class="line">                exit 1</span><br><span class="line">        fi</span><br><span class="line">&#125;</span><br><span class="line">assert 1 1</span><br><span class="line">assert 0 1+2-3</span><br><span class="line">echo OK</span><br><span class="line">~                </span><br></pre></td></tr></table></figure>
-
-<p>运行</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make rvcc</span><br><span class="line">make test</span><br></pre></td></tr></table></figure>
-
-<p>最后执行</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make clean</span><br></pre></td></tr></table></figure>
-
-<p>清除产生的中间文件</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/30/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B001/" data-id="cl7iv52ln00005wmj1lb81e76" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -628,6 +628,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B018/">rvcc学习笔记18</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/16/leetcode-850/">leetcode#850</a>
           </li>
         
@@ -641,10 +645,6 @@
         
           <li>
             <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B015/">rvcc学习笔记15</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/15/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B014/">rvcc学习笔记14</a>
           </li>
         
       </ul>
