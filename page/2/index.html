@@ -64,6 +64,99 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-汇编相关" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" class="article-date">
+  <time datetime="2022-09-13T09:48:22.000Z" itemprop="datePublished">2022-09-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/">汇编相关</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>cpu对存储器进行读写，是通过地址总线，数据总线，控制总线来进行的。</strong></p>
+<p>地址总线的宽度决定了存储单元的数量，一个地址对应一个存储单元，一个存储单元大小为1字节。地址总线数量为32，则存储单元的数量为2的32次方。</p>
+<p>数据总线的宽度决定了数据传输的速率，8根数据总线传输1110H要两次而，16位数据总线只要一次。</p>
+<p>控制总线的数量决定控制的读写设备的数量。</p>
+<p><strong>汇编指令是机器指令的助记符，同机器指令一一对应。</strong></p>
+<p><strong>每一中cpu都有自己的汇编指令集。</strong></p>
+<p><strong>cpu可以直接使用的信息在内存中存放。</strong></p>
+<p><strong>在存储器中的指令和数据没有任何区别，都是二进制信息。</strong></p>
+<p><strong>在RISC-V中有32个32bit寄存器：</strong></p>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220913190127022.png" class>
+
+
+
+<p><strong>RV32I指令集有47条指令，能够满足现代操作系统运行的基本要求，47条指令按照功能可以分为如下几类。</strong></p>
+<p>整数运算指令：实现算术、逻辑、比较等运算。<br>分支转移指令：实现条件转移、无条件转移等运算，并且没有延迟槽。<br>加载存储指令：实现字节、半字、字的加载、存储操作，采用的都是寄存器相对寻址方式。<br>控制与状态寄存器访问指令：实现对系统控制与状态寄存器的原子读-写、原子读-修改、原子读-清零等操作。<br>系统调用指令：实现系统调用、调试等功能。</p>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105039186.png" class>
+
+<h3 id="R-类型指令"><a href="#R-类型指令" class="headerlink" title="R 类型指令"></a>R 类型指令</h3><ul>
+<li><strong>opcode是操作码，占了7bit，在指令格式的0-6bit位上</strong></li>
+<li><strong>rd (Destination Register)是目的寄存器，占了5bit，在指令格式的7-11bit位上</strong>  </li>
+<li><strong>funct3+funct7是两个操作字段。funct3占了3bit，在指令格式的12-14bit位上；funct7占了7bit，在指令格式的25-31bit位上。</strong>  </li>
+<li><strong>rs1 (Source Register #1)是第一个源操作数寄存器，占了5bit，在指令格式的15-19bit位上。</strong>  </li>
+<li><strong>rs2 (Source Register #2)是第二个源操作数寄存器，占了5bit，在指令格式的25-31bit位上。</strong></li>
+</ul>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919104651373.png" class>
+
+<h3 id="I类型指令"><a href="#I类型指令" class="headerlink" title="I类型指令"></a>I类型指令</h3><ul>
+<li><p>opcode是操作码，占了7bit，在指令格式的0-6bit位上</p>
+</li>
+<li><p>rd (Destination Register)是目的寄存器，占了5bit，在指令格式的7-11bit位上</p>
+</li>
+<li><p>funct3是操作字段。funct3占了3bit，在指令格式的12-14bit位上。</p>
+</li>
+<li><p>rs1 (Source Register #1)是第一个源操作数寄存器，占了5bit，在指令格式的15-19bit位上。</p>
+</li>
+<li><p>存放12位的立即数——imm[11:0]，在指令格式的20-31bit位上。</p>
+</li>
+</ul>
+<p>​    <strong>I类型指令可以用于：</strong></p>
+<ul>
+<li><p>寄存器-立即数的运算</p>
+</li>
+<li><p>加载指令</p>
+</li>
+</ul>
+<p>​        格式上只有一个字段不同于r格式，rs2和funct7替换为12位符号立即数（immediate字）imm[11：0]。immediate字段为补码值，所以它可以表示从-2”到2”-1之间的整数。当I型格式用于加载指令时，immediate字段表示一个字节偏移量，所以加载双字指令可以取相对于基址寄存器rd中基地址偏移±（2”或2048)字节(±(2或256）个双字)的任何双字</p>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105824873.png" class>
+
+<p>I类型的指令算术展示：</p>
+<p>注：其中画圈表示位移方向0表示向左移，1表示向右移</p>
+<ul>
+<li>SLLI：是逻辑左移，低位补零</li>
+<li>SRLI：是逻辑右移, 高位补零</li>
+<li>SRAI：是算术右移，高位补原来高位。</li>
+</ul>
+<p>注：RV32I 支持加载有符号和无符号字节和半字（lb，lbu，lh，lhu）</p>
+<p>原文：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38915354/article/details/115696721">https://blog.csdn.net/qq_38915354/article/details/115696721</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" data-id="cl8034c1p00017smj5scab1gb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记11" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/" class="article-date">
@@ -539,59 +632,6 @@
 
 
   
-    <article id="post-rvcc学习笔记02" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/08/31/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B002/" class="article-date">
-  <time datetime="2022-08-31T03:59:11.000Z" itemprop="datePublished">2022-08-31</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/08/31/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B002/">rvcc学习笔记02</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="加一个终结符解析器，解析终结符间的空格"><a href="#加一个终结符解析器，解析终结符间的空格" class="headerlink" title="加一个终结符解析器，解析终结符间的空格"></a>加一个终结符解析器，解析终结符间的空格</h2><p>首先将错误信息输出函数提取出来</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 输出错误信息</span></span><br><span class="line"><span class="comment">// static文件内可以访问的函数</span></span><br><span class="line"><span class="comment">// Fmt为传入的字符串， ... 为可变参数，表示Fmt后面所有的参数</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">error</span><span class="params">(<span class="type">char</span> *Fmt, ...)</span> &#123;</span><br><span class="line">  <span class="comment">// 定义一个va_list变量</span></span><br><span class="line">  va_list VA;</span><br><span class="line">  <span class="comment">// VA获取Fmt后面的所有参数</span></span><br><span class="line">  va_start(VA, Fmt);</span><br><span class="line">  <span class="comment">// vfprintf可以输出va_list类型的参数</span></span><br><span class="line">  <span class="built_in">vfprintf</span>(<span class="built_in">stderr</span>, Fmt, VA);</span><br><span class="line">  <span class="comment">// 在结尾加上一个换行符</span></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">  <span class="comment">// 清除VA</span></span><br><span class="line">  va_end(VA);</span><br><span class="line">  <span class="comment">// 终止程序</span></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>定义一个终结符的种类：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  为每个终结符设置种类来表示</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  TK_PUNCT, <span class="comment">// 操作符如： + -</span></span><br><span class="line">  TK_NUM,   <span class="comment">// 数字</span></span><br><span class="line">  TK_EOF,   <span class="comment">// 文件终止符，即文件的最后</span></span><br><span class="line">&#125; TokenKind;</span><br></pre></td></tr></table></figure>
-
-<p>终结符结构体：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 终结符结构体</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Token</span> <span class="title">Token</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Token</span> &#123;</span></span><br><span class="line">  TokenKind Kind; <span class="comment">// 种类</span></span><br><span class="line">  Token *Next;    <span class="comment">// 指向下一终结符</span></span><br><span class="line">  <span class="type">int</span> Val;        <span class="comment">// 值</span></span><br><span class="line">  <span class="type">char</span> *Loc;      <span class="comment">// 在解析的字符串内的位置</span></span><br><span class="line">  <span class="type">int</span> Len;        <span class="comment">// 长度</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>解析终结符：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">static Token *newToken(TokenKind Kind, char *Start, char *End) &#123;</span><br><span class="line">  // 分配1个Token的内存空间</span><br><span class="line">  Token *Tok = calloc(1, sizeof(Token));</span><br><span class="line">  Tok-&gt;Kind = Kind;</span><br><span class="line">  Tok-&gt;Loc = Start;</span><br><span class="line">  Tok-&gt;Len = End - Start;</span><br><span class="line">  return Tok;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 终结符解析</span><br><span class="line">static Token *tokenize(char *P) &#123;</span><br><span class="line">  Token Head = &#123;&#125;;</span><br><span class="line">  Token *Cur = &amp;Head;</span><br><span class="line"></span><br><span class="line">  while (*P) &#123;</span><br><span class="line">    // 跳过所有空白符如：空格、回车</span><br><span class="line">    if (isspace(*P)) &#123;</span><br><span class="line">      ++P;</span><br><span class="line">      continue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 解析数字</span><br><span class="line">    if (isdigit(*P)) &#123;</span><br><span class="line">      // 初始化，类似于C++的构造函数</span><br><span class="line">      // 我们不使用Head来存储信息，仅用来表示链表入口，这样每次都是存储在Cur-&gt;Next</span><br><span class="line">      // 否则下述操作将使第一个Token的地址不在Head中。</span><br><span class="line">      Cur-&gt;Next = newToken(TK_NUM, P, P);</span><br><span class="line">      // 指针前进</span><br><span class="line">      Cur = Cur-&gt;Next;</span><br><span class="line">      const char *OldPtr = P;</span><br><span class="line">      Cur-&gt;Val = strtoul(P, &amp;P, 10);</span><br><span class="line">      Cur-&gt;Len = P - OldPtr;</span><br><span class="line">      continue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 解析操作符</span><br><span class="line">    if (*P == &#x27;+&#x27; || *P == &#x27;-&#x27;) &#123;</span><br><span class="line">      // 操作符长度都为1</span><br><span class="line">      Cur-&gt;Next = newToken(TK_PUNCT, P, P + 1);</span><br><span class="line">      Cur = Cur-&gt;Next;</span><br><span class="line">      ++P;</span><br><span class="line">      continue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 处理无法识别的字符</span><br><span class="line">    error(&quot;invalid token: %c&quot;, *P);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  // 解析结束，增加一个EOF，表示终止符。</span><br><span class="line">  Cur-&gt;Next = newToken(TK_EOF, P, P);</span><br><span class="line">  // Head无内容，所以直接返回Next</span><br><span class="line">  return Head.Next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>解析表达式：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span>(Tok-&gt;Kind !=TK_EOF)&#123;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 判断为加号</span></span><br><span class="line">   <span class="keyword">if</span>(equal(Tok,<span class="string">&quot;+&quot;</span>))&#123;</span><br><span class="line">     Tok=Tok-&gt;Next;</span><br><span class="line">     <span class="built_in">printf</span>(<span class="string">&quot;  addi a0, a0, %d\n&quot;</span>,getNumber(Tok));</span><br><span class="line">     Tok = Tok -&gt;Next;</span><br><span class="line">     <span class="keyword">continue</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 不是+，则判断-</span></span><br><span class="line">   <span class="comment">// 没有subi指令，但是addi支持有符号数，所以直接对num取反</span></span><br><span class="line">   Tok = skip(Tok, <span class="string">&quot;-&quot;</span>);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  addi a0, a0, -%d\n&quot;</span>, getNumber(Tok));</span><br><span class="line">   Tok = Tok-&gt;Next;</span><br><span class="line"> &#125;</span><br><span class="line">   <span class="comment">// ret为jalr x0, x1, 0别名指令，用于返回子程序</span></span><br><span class="line">   <span class="comment">// 返回的为a0的值</span></span><br><span class="line"> <span class="built_in">printf</span>(<span class="string">&quot;  ret\n&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="项目源代码"><a href="#项目源代码" class="headerlink" title="项目源代码"></a>项目源代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ctype.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdarg.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdbool.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//  为每个终结符设置种类来表示</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">  TK_PUNCT, <span class="comment">// 操作符如： + -</span></span><br><span class="line">  TK_NUM,   <span class="comment">// 数字</span></span><br><span class="line">  TK_EOF,   <span class="comment">// 文件终止符，即文件的最后</span></span><br><span class="line">&#125; TokenKind;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">error</span><span class="params">(<span class="type">char</span> *Fmt, ...)</span> &#123;</span><br><span class="line">  <span class="comment">// 定义一个va_list变量</span></span><br><span class="line">  va_list VA;</span><br><span class="line">  <span class="comment">// VA获取Fmt后面的所有参数</span></span><br><span class="line">  va_start(VA, Fmt);</span><br><span class="line">  <span class="comment">// vfprintf可以输出va_list类型的参数</span></span><br><span class="line">  <span class="built_in">vfprintf</span>(<span class="built_in">stderr</span>, Fmt, VA);</span><br><span class="line">  <span class="comment">// 在结尾加上一个换行符</span></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">  <span class="comment">// 清除VA</span></span><br><span class="line">  va_end(VA);</span><br><span class="line">  <span class="comment">// 终止程序</span></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Token</span> <span class="title">Token</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Token</span>&#123;</span></span><br><span class="line">  TokenKind Kind; <span class="comment">//种类</span></span><br><span class="line">  Token *Next; <span class="comment">//指向下一个终结符</span></span><br><span class="line">  <span class="type">int</span> Val; <span class="comment">//值</span></span><br><span class="line">  <span class="type">char</span> *Loc; <span class="comment">//在解析的字符串位置</span></span><br><span class="line">  <span class="type">int</span> Len; <span class="comment">//长度</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断Tok的值是否等于指定值，没有用char，是为了后续拓展</span></span><br><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">equal</span><span class="params">(Token *Tok, <span class="type">char</span> *Str)</span> &#123;</span><br><span class="line">  <span class="comment">// 比较字符串LHS（左部），RHS（右部）的前N位，S2的长度应大于等于N.</span></span><br><span class="line">  <span class="comment">// 比较按照字典序，LHS&lt;RHS回负值，LHS=RHS返回0，LHS&gt;RHS返回正值</span></span><br><span class="line">  <span class="comment">// 同时确保，此处的Op位数=N</span></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">memcmp</span>(Tok-&gt;Loc, Str, Tok-&gt;Len) == <span class="number">0</span> &amp;&amp; Str[Tok-&gt;Len] == <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//跳过指定的str</span></span><br><span class="line"><span class="type">static</span> Token *<span class="title function_">skip</span><span class="params">(Token *Tok,<span class="type">char</span> *str)</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(!equal(Tok,str))&#123;</span><br><span class="line">    error(<span class="string">&quot;expect %s&quot;</span>,str);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> Tok-&gt;Next;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回数字的值 TK_NUM的值</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">getNumber</span><span class="params">(Token *Tok)</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(Tok-&gt;Kind != TK_NUM)&#123;</span><br><span class="line">    error(<span class="string">&quot;expect a number\n&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> Tok-&gt;Val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//生成新的Token</span></span><br><span class="line"><span class="type">static</span> Token *<span class="title function_">newToken</span><span class="params">(TokenKind Kind,<span class="type">char</span> *Start,<span class="type">char</span> *End)</span>&#123;</span><br><span class="line">  <span class="comment">//分配一个Token的内存空间</span></span><br><span class="line">  Token *Tok = <span class="built_in">calloc</span>(<span class="number">1</span>,<span class="keyword">sizeof</span>(Token));</span><br><span class="line">  Tok-&gt;Kind = Kind;</span><br><span class="line">  Tok-&gt;Loc = Start;</span><br><span class="line">  Tok-&gt;Len = End - Start;</span><br><span class="line">  <span class="keyword">return</span> Tok;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//终结符解析</span></span><br><span class="line"><span class="type">static</span> Token *<span class="title function_">tokenize</span><span class="params">(<span class="type">char</span> *P)</span>&#123;</span><br><span class="line">  Token Head = &#123;&#125;;</span><br><span class="line">  Token *Cur = &amp;Head;</span><br><span class="line">  <span class="keyword">while</span>(*P)&#123;</span><br><span class="line">    <span class="comment">//跳过所有空白符如：空格,回车</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">isspace</span>(*P))&#123;</span><br><span class="line">      ++P;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//解析数字</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">isdigit</span>(*P))&#123;</span><br><span class="line">      <span class="comment">// 初始化，类似于C++的构造函数</span></span><br><span class="line">      <span class="comment">// 我们不使用Head来存储信息，仅用来表示链表入口，这样每次都是存储在Cur-&gt;Next</span></span><br><span class="line">      <span class="comment">// 否则下述操作将使第一个Token的地址不在Head中。</span></span><br><span class="line">      Cur-&gt;Next = newToken(TK_NUM,P,P);</span><br><span class="line">      Cur = Cur-&gt;Next;</span><br><span class="line">      <span class="type">const</span> <span class="type">char</span> *OldPtr = P;</span><br><span class="line">      Cur-&gt;Val = strtoul(P,&amp;P,<span class="number">10</span>);</span><br><span class="line">      Cur-&gt;Len = P - OldPtr;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">     <span class="comment">// 解析操作符</span></span><br><span class="line">    <span class="keyword">if</span> (*P == <span class="string">&#x27;+&#x27;</span> || *P == <span class="string">&#x27;-&#x27;</span>) &#123;</span><br><span class="line">      <span class="comment">// 操作符长度都为1</span></span><br><span class="line">      Cur-&gt;Next = newToken(TK_PUNCT, P, P + <span class="number">1</span>);</span><br><span class="line">      Cur = Cur-&gt;Next;</span><br><span class="line">      ++P;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 处理无法识别的字符</span></span><br><span class="line">    error(<span class="string">&quot;invalid token: %c&quot;</span>, *P);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//解析结束，增加一个EOF，表示终止符</span></span><br><span class="line">  Cur-&gt;Next = newToken(TK_EOF,P,P);</span><br><span class="line">  <span class="keyword">return</span> Head.Next;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> Argc,<span class="type">char</span>** Argv)</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(Argc != <span class="number">2</span>)&#123;</span><br><span class="line">    error(<span class="string">&quot;%s: invalid number of arguments&quot;</span>,Argv[<span class="number">0</span>]);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//解析ArgV[1]</span></span><br><span class="line">  Token *Tok = tokenize(Argv[<span class="number">1</span>]);</span><br><span class="line">  <span class="comment">//声明一个全局main段，同时也是程序入口段</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;  .globl main\n&quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;main:\n&quot;</span>);</span><br><span class="line">  <span class="comment">//li 为addi别名指令，加载一个立即数到寄存器中</span></span><br><span class="line">  <span class="comment">// 这里我们将算式分解为 num (op num) (op num)...的形式</span></span><br><span class="line">  <span class="comment">// 所以先将第一个num传入a0</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;  li a0,%d\n&quot;</span>,getNumber(Tok));</span><br><span class="line">  Tok = Tok-&gt;Next;</span><br><span class="line">  <span class="keyword">while</span>(Tok-&gt;Kind !=TK_EOF)&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 判断为加号</span></span><br><span class="line">    <span class="keyword">if</span>(equal(Tok,<span class="string">&quot;+&quot;</span>))&#123;</span><br><span class="line">      Tok=Tok-&gt;Next;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;  addi a0, a0, %d\n&quot;</span>,getNumber(Tok));</span><br><span class="line">      Tok = Tok -&gt;Next;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 不是+，则判断-</span></span><br><span class="line">    <span class="comment">// 没有subi指令，但是addi支持有符号数，所以直接对num取反</span></span><br><span class="line">    Tok = skip(Tok, <span class="string">&quot;-&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;  addi a0, a0, -%d\n&quot;</span>, getNumber(Tok));</span><br><span class="line">    Tok = Tok-&gt;Next;</span><br><span class="line">  &#125;</span><br><span class="line">    <span class="comment">// ret为jalr x0, x1, 0别名指令，用于返回子程序</span></span><br><span class="line">    <span class="comment">// 返回的为a0的值</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;  ret\n&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/08/31/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B002/" data-id="cl7iuzc7j000k5smj47kmhc57" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -628,6 +668,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/">rvcc学习笔记19</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B018/">rvcc学习笔记18</a>
           </li>
         
@@ -641,10 +685,6 @@
         
           <li>
             <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B016/">rvcc学习笔记16</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B015/">rvcc学习笔记15</a>
           </li>
         
       </ul>

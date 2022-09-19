@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>rvcc学习笔记19 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="支持一元&amp; *运算符​    一元&amp;是引用符，返回变量的地址，一元*是解引用符，返回该地址存储的值。在Node节点种类中，添加这两种。 12ND_ADDR,      &#x2F;&#x2F; 取地址 &amp;ND_DEREF,     &#x2F;&#x2F; 解引用 *  语法分析：​    修改文法，*&#x2F;&#x2F; unary &#x3D; (“+” | “-“ | “*“ | “&amp;”) unary | primary*">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rvcc学习笔记19">
+<meta property="og:url" content="http://example.com/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="支持一元&amp; *运算符​    一元&amp;是引用符，返回变量的地址，一元*是解引用符，返回该地址存储的值。在Node节点种类中，添加这两种。 12ND_ADDR,      &#x2F;&#x2F; 取地址 &amp;ND_DEREF,     &#x2F;&#x2F; 解引用 *  语法分析：​    修改文法，*&#x2F;&#x2F; unary &#x3D; (“+” | “-“ | “*“ | “&amp;”) unary | primary*">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-19T03:04:00.000Z">
+<meta property="article:modified_time" content="2022-09-19T05:06:27.934Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rvcc学习笔记19" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/" class="article-date">
+  <time datetime="2022-09-19T03:04:00.000Z" itemprop="datePublished">2022-09-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rvcc学习笔记19
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持一元-amp-运算符"><a href="#支持一元-amp-运算符" class="headerlink" title="支持一元&amp; *运算符"></a>支持一元&amp; *运算符</h2><p>​    一元&amp;是引用符，返回变量的地址，一元*是解引用符，返回该地址存储的值。在Node节点种类中，添加这两种。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ND_ADDR,      <span class="comment">// 取地址 &amp;</span></span><br><span class="line">ND_DEREF,     <span class="comment">// 解引用 *</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="语法分析："><a href="#语法分析：" class="headerlink" title="语法分析："></a>语法分析：</h3><p>​    修改文法，*// unary = (“+” | “-“ | “*“ | “&amp;”) unary | primary*</p>
+<p>​    unary()函数实现：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析一元运算</span></span><br><span class="line"><span class="comment">// unary = (&quot;+&quot; | &quot;-&quot; | &quot;*&quot; | &quot;&amp;&quot;) unary | primary</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">unary</span><span class="params">(Token **Rest, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// &quot;+&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;+&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> unary(Rest, Tok-&gt;Next);</span><br><span class="line">  <span class="comment">// &quot;-&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;-&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> newUnary(ND_NEG, unary(Rest, Tok-&gt;Next),Tok);</span><br><span class="line">  <span class="comment">// &quot;&amp;&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span>(equal(Tok,<span class="string">&quot;&amp;&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> newUnary(ND_ADDR,unary(Rest,Tok-&gt;Next),Tok);</span><br><span class="line">  <span class="comment">// &quot;*&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;*&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> newUnary(ND_DEREF, unary(Rest, Tok-&gt;Next), Tok);</span><br><span class="line">  <span class="comment">// primary</span></span><br><span class="line">  <span class="keyword">return</span> primary(Rest, Tok);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h2><p>​        引用符就是返回变量的地址，在genExpr中加入一行就行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">case ND_ADDR:</span><br><span class="line">   genAddr(Nd-&gt;LHS);</span><br><span class="line">   return;</span><br></pre></td></tr></table></figure>
+
+<p>​        对于解引用符是返回一个地址里存储的值。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> ND_VAR:</span><br><span class="line">   <span class="comment">// 计算出变量的地址，然后存入a0</span></span><br><span class="line">   genAddr(Nd);</span><br><span class="line">   <span class="comment">// 访问a0地址中存储的数据，存入到a0当中</span></span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  # 读取a0中存放的地址，得到的值存入a0\n&quot;</span>);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  ld a0, 0(a0)\n&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span>;</span><br><span class="line">   <span class="comment">// 解引用</span></span><br><span class="line"> <span class="keyword">case</span> ND_DEREF:</span><br><span class="line">   genExpr(Nd-&gt;LHS);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  # 读取a0中存放的地址，得到的值存入a0\n&quot;</span>);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  ld a0, 0(a0)\n&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">genAddr</span><span class="params">(Node *Nd)</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (Nd-&gt;Kind) &#123;</span><br><span class="line">  <span class="comment">// 变量</span></span><br><span class="line">  <span class="keyword">case</span> ND_VAR:</span><br><span class="line">    <span class="comment">// 偏移量是相对于fp的</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;  # 获取变量%s的栈内地址为%d(fp)\n&quot;</span>, Nd-&gt;Var-&gt;Name,</span><br><span class="line">           Nd-&gt;Var-&gt;Offset);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;  addi a0, fp, %d\n&quot;</span>, Nd-&gt;Var-&gt;Offset);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="comment">// 解引用*</span></span><br><span class="line">  <span class="keyword">case</span> ND_DEREF:</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125; </span><br></pre></td></tr></table></figure>
+
+<h2 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">assert <span class="number">3</span> <span class="string">&#x27;&#123; x=3; return *&amp;x; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">3</span> <span class="string">&#x27;&#123; x=3; y=&amp;x; z=&amp;y; return **z; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">5</span> <span class="string">&#x27;&#123; x=3; y=5; return *(&amp;x+8); &#125;&#x27;</span></span><br><span class="line">assert <span class="number">3</span> <span class="string">&#x27;&#123; x=3; y=5; return *(&amp;y-8); &#125;&#x27;</span></span><br><span class="line">assert <span class="number">5</span> <span class="string">&#x27;&#123; x=3; y=&amp;x; *y=5; return x; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">7</span> <span class="string">&#x27;&#123; x=3; y=5; *(&amp;x+8)=7; return y; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">7</span> <span class="string">&#x27;&#123; x=3; y=5; *(&amp;y-8)=7; return x; &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123; x=<span class="number">3</span>; <span class="keyword">return</span> *&amp;x; &#125; =&gt; <span class="number">3</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=&amp;x; z=&amp;y; <span class="keyword">return</span> **z; &#125; =&gt; <span class="number">3</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; <span class="keyword">return</span> *(&amp;x+<span class="number">8</span>); &#125; =&gt; <span class="number">5</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; <span class="keyword">return</span> *(&amp;y<span class="number">-8</span>); &#125; =&gt; <span class="number">3</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=&amp;x; *y=<span class="number">5</span>; <span class="keyword">return</span> x; &#125; =&gt; <span class="number">5</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; *(&amp;x+<span class="number">8</span>)=<span class="number">7</span>; <span class="keyword">return</span> y; &#125; =&gt; <span class="number">7</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; *(&amp;y<span class="number">-8</span>)=<span class="number">7</span>; <span class="keyword">return</span> x; &#125; =&gt; <span class="number">7</span></span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/" data-id="cl88b1ulf0000pomj5qt9eyd1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B018/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">rvcc学习笔记18</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/">rvcc学习笔记19</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B018/">rvcc学习笔记18</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/16/leetcode-850/">leetcode#850</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B017/">rvcc学习笔记17</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B016/">rvcc学习笔记16</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
