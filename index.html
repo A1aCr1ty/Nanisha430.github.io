@@ -64,6 +64,42 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-stm32固件库原理初探" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/" class="article-date">
+  <time datetime="2022-09-20T08:59:22.000Z" itemprop="datePublished">2022-09-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/">stm32固件库原理初探</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/" data-id="cl8a17gth0000g8mjg23ca504" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记20" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/20/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B020/" class="article-date">
@@ -560,52 +596,6 @@
 
 
   
-    <article id="post-rvcc学习笔记13" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B013/" class="article-date">
-  <time datetime="2022-09-14T06:22:34.000Z" itemprop="datePublished">2022-09-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B013/">rvcc学习笔记13</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="支持空语句"><a href="#支持空语句" class="headerlink" title="支持空语句"></a>支持空语句</h2><p>​    空语句就是只有；。</p>
-<h3 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h3><p>​        修改文法experStmt = expr? ;</p>
-<p>​        experStmt表达式解析：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析表达式语句</span></span><br><span class="line"><span class="comment">// exprStmt = expr? &quot;;&quot;</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// &quot;;&quot;</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;;&quot;</span>)) &#123;</span><br><span class="line">    *Rest = Tok-&gt;Next;</span><br><span class="line">    <span class="keyword">return</span> newNode(ND_BLOCK);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// expr &quot;;&quot;</span></span><br><span class="line">  Node *Nd = newUnary(ND_EXPR_STMT, expr(&amp;Tok, Tok));</span><br><span class="line">  *Rest = skip(Tok, <span class="string">&quot;;&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> Nd;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h2><p><strong>测试用例：</strong>assert 5 ‘{ ;;; return 5; }’</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123; ;;; <span class="built_in">return</span> 5; &#125; =&gt; 5</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B013/" data-id="cl819a0n50000ccmj8qqxf137" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -642,6 +632,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/">stm32固件库原理初探</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/20/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B020/">rvcc学习笔记20</a>
           </li>
         
@@ -655,10 +649,6 @@
         
           <li>
             <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B018/">rvcc学习笔记18</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/16/leetcode-850/">leetcode#850</a>
           </li>
         
       </ul>
