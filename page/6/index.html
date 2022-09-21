@@ -64,6 +64,104 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-c++基础" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/02/c++%E5%9F%BA%E7%A1%80/" class="article-date">
+  <time datetime="2022-08-02T02:00:13.000Z" itemprop="datePublished">2022-08-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/02/c++%E5%9F%BA%E7%A1%80/">c++基础</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="c-运算符运算顺序："><a href="#c-运算符运算顺序：" class="headerlink" title="c++ 运算符运算顺序："></a>c++ 运算符运算顺序：</h2><p>相同优先级从左到右</p>
+<p>逻辑运算符（NOT）&gt; 算数运算符（*，/，%）&gt;算数运算符（+,-）&gt; 相对关系运算符（&gt;,&lt;,&lt;=,&gt;=）&gt;</p>
+<p>相对关系运算符(==,!=) &gt; 逻辑运算符（AND）&gt; 逻辑运算符（OR）&gt; 赋值运算符</p>
+<h2 id="c-文件读写"><a href="#c-文件读写" class="headerlink" title="c++ 文件读写"></a>c++ 文件读写</h2><p>ifstream 读文件</p>
+<p>ofstream 写文件 ， 追加模式 ofstream(“a.txt” , ios_base::app)</p>
+<p>fstream 同时读写文件</p>
+<h2 id="c-模板函数的定义"><a href="#c-模板函数的定义" class="headerlink" title="c++ 模板函数的定义"></a>c++ 模板函数的定义</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> elemType&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">display_message</span><span class="params">(<span class="type">const</span> string &amp;msg,<span class="type">const</span> vector&lt;elemType&gt; &amp;vec)</span></span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">display_message</span><span class="params">(<span class="type">const</span> string &amp;msg,<span class="type">const</span> list&lt;elemType&gt; &amp;lt)</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="C-函数指针"><a href="#C-函数指针" class="headerlink" title="C++ 函数指针"></a>C++ 函数指针</h2><p><em><em>函数指针必须指明函数的返回值和参数表，此外函数指针的定义式必须将</em> 置于某个位置</em>*</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> vector&lt;<span class="type">int</span>&gt; * (*seq_ptr)(<span class="type">int</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>现在seq_ptr可以指向具有所列之返回值类型及参数表的任何一个函数</strong></p>
+<h2 id="泛型编程"><a href="#泛型编程" class="headerlink" title="泛型编程"></a>泛型编程</h2><p><strong>STL(Standard Template Library)由两种组件构成，一种是容器包括 vector , list , set ,map另一种是操作这些容器的泛型算法例如find(),sort()</strong></p>
+<p>list和map 属于序列式容器，set和map属于关联式容器。</p>
+<h3 id="标准容器的iterators"><a href="#标准容器的iterators" class="headerlink" title="标准容器的iterators"></a>标准容器的iterators</h3><p>定义方法 <strong>vector<int>::iterator it;</int></strong></p>
+<p>iterator实际上是一个指针，指向容器中某个元素的指针。</p>
+<p>泛型函数的编写关键在于iterator，它可以是函数不直接操作与容器，而是iterator，这样不同的容器。</p>
+<h3 id="序列式容器的使用"><a href="#序列式容器的使用" class="headerlink" title="序列式容器的使用"></a>序列式容器的使用</h3><p>定义空容器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**list&lt;<span class="type">int</span>&gt;  ilist;**</span><br></pre></td></tr></table></figure>
+
+<p>定义特定大小容器： </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**<span class="function">list&lt;<span class="type">int</span>&gt; <span class="title">ilist</span><span class="params">(<span class="number">1024</span>)</span></span>;**</span><br></pre></td></tr></table></figure>
+
+<p>产生特定大小的容器，并为其赋值：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**<span class="function">list&lt;<span class="type">int</span>&gt; <span class="title">ilist</span><span class="params">(<span class="number">10</span>,<span class="number">-1</span>)</span></span>;**</span><br></pre></td></tr></table></figure>
+
+<p>通过一对iterators产生容器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**<span class="type">int</span>  iA[<span class="number">8</span>]=&#123;<span class="number">1</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">2</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">2</span>&#125;; <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fib</span><span class="params">(ia,ia+<span class="number">8</span>)</span></span>;**</span><br></pre></td></tr></table></figure>
+
+<p>根据已有容器产生新的容器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">list&lt;string&gt; slist;</span><br><span class="line">	</span><br><span class="line"><span class="comment">//填充容器</span></span><br><span class="line"></span><br><span class="line"><span class="function">list&lt;string&gt; <span class="title">slist2</span><span class="params">(slist)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="面向对象编程"><a href="#面向对象编程" class="headerlink" title="面向对象编程"></a>面向对象编程</h2><p><strong>class的程序骨干</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">stack</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="comment">//..public interface </span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="comment">// private 的实现部分</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>成员函数在class内部定义则被视为inline函数，若在class外部定义则要使用特殊的语法。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">stack::<span class="built_in">push</span>()&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>成员初值表（constructor 规定的第二种初试化语法</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Triangular :: <span class="built_in">Triangular</span>(<span class="type">const</span> Triangular &amp;rhs): _length(rhs._length)</span><br><span class="line">    ,_beg_pos(rhs._beg_pos),_next(rhs._beg_pos<span class="number">-1</span>)&#123;&#125;</span><br><span class="line">Triangular :: <span class="built_in">Triangular</span>(<span class="type">int</span> len,<span class="type">int</span> bp): _name(<span class="string">&quot;Triangular&quot;</span>)&#123;</span><br><span class="line">    _length=len&gt;<span class="number">0</span>?len:<span class="number">1</span>;</span><br><span class="line">    _beg_pos=bp&gt;<span class="number">0</span>?bp:<span class="number">1</span>;</span><br><span class="line">    _next = _beg_pos<span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="运算符重载"><a href="#运算符重载" class="headerlink" title="运算符重载"></a>运算符重载</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">LessThan</span>&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="function"><span class="type">bool</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="type">int</span> value)</span> <span class="type">const</span></span>;  <span class="comment">//重载（）运算符，令他具有比较两个数的含义</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">    	<span class="type">int</span> _val</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="type">int</span> value)</span></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> value&lt;_val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="function">LessThan <span class="title">It</span><span class="params">(<span class="number">10</span>)</span></span>;</span><br><span class="line">    cout&lt;&lt;<span class="built_in">It</span>(<span class="number">11</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="重载iostream操作符"><a href="#重载iostream操作符" class="headerlink" title="重载iostream操作符"></a>重载iostream操作符</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Player</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="type">int</span> x;</span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">         <span class="type">int</span> y ;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">ostream&amp; <span class="keyword">operator</span>&lt;&lt; (ostream &amp;os,Player player)&#123;</span><br><span class="line">    os&lt;&lt;<span class="string">&quot;(&quot;</span>&lt;&lt;player.x&lt;&lt;<span class="string">&quot;)&quot;</span>;</span><br><span class="line">    <span class="keyword">return</span> os;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Player player1;</span><br><span class="line">    player1.x=<span class="number">1</span>;</span><br><span class="line">    cout&lt;&lt;player1;</span><br><span class="line">    cout&lt;&lt;endl&lt;&lt;<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="类中的static"><a href="#类中的static" class="headerlink" title="类中的static"></a>类中的static</h3><p>首先类中的static 变量要使用要在外部声明</p>
+<p><strong>int Player::x;</strong><br><strong>int Player::y;</strong></p>
+<p>一个类中的所有的实例的static变量其实都是一个</p>
+<p>比如player1的x，y为1，2；</p>
+<p>然后player2改变了x，y值 为3，4</p>
+<p>最后输出player1的x，y值为3，4</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Player</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="type">static</span> <span class="type">int</span> x,y;  <span class="comment">// 静态变量使用要先声明 ，实际上相当于x，y不属于类，而是命名空间中的两个变量</span></span><br><span class="line">        <span class="built_in">Player</span>(<span class="type">int</span> ax)&#123;</span><br><span class="line">            x = ax;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="type">void</span> <span class="title">print</span><span class="params">()</span></span>&#123;</span><br><span class="line">            cout&lt;&lt;<span class="keyword">this</span>-&gt;x;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> Player::x;</span><br><span class="line"><span class="type">int</span> Player::y;</span><br><span class="line"></span><br><span class="line">ostream&amp; <span class="keyword">operator</span>&lt;&lt; (ostream &amp;os,Player player)&#123;</span><br><span class="line">    os&lt;&lt;<span class="string">&quot;(&quot;</span>&lt;&lt;player.x&lt;&lt;<span class="string">&quot;)&quot;</span>;</span><br><span class="line">    <span class="keyword">return</span> os;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="function">Player <span class="title">player1</span><span class="params">(<span class="number">1</span>)</span>,<span class="title">player2</span><span class="params">(<span class="number">2</span>)</span></span>;</span><br><span class="line">    player1.<span class="built_in">print</span>();    </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="在类中每个非静态方法都能获得一个类的实例，可以用this指针指向这个类实例。"><a href="#在类中每个非静态方法都能获得一个类的实例，可以用this指针指向这个类实例。" class="headerlink" title="在类中每个非静态方法都能获得一个类的实例，可以用this指针指向这个类实例。"></a>在类中每个非静态方法都能获得一个类的实例，可以用this指针指向这个类实例。</h3><h2 id="C-的继承"><a href="#C-的继承" class="headerlink" title="C++的继承"></a>C++的继承</h2><p>虚函数的出现，子类要重写父类的方法，一定要把父类的方法标记为虚函数。</p>
+<p>因为如果不这样做，当子类的指针调用该函数时，下列情况仍然会调用父类的方法</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Entity</span>&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="type">int</span> x,y;</span><br><span class="line">    	<span class="function">string <span class="title">GetName</span><span class="params">()</span></span>&#123; <span class="keyword">return</span> <span class="string">&quot;Entity&quot;</span>;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Player</span>: <span class="keyword">public</span> Entity&#123;</span><br><span class="line">    string name;</span><br><span class="line">    <span class="function">string <span class="title">GetName</span><span class="params">()</span></span>&#123; <span class="keyword">return</span> <span class="keyword">this</span>.Name&#125;</span><br><span class="line">    <span class="built_in">Player</span>(<span class="type">const</span> string &amp;name):<span class="built_in">name</span>(name)&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="built_in">printName</span>(Entity e)&#123;  <span class="comment">//没有虚函数，调用方法时，都是使用该参数的方法</span></span><br><span class="line">    cout&lt;&lt;e-&gt;<span class="built_in">GetName</span>()&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	Entity * e - <span class="keyword">new</span> <span class="built_in">Entity</span>();</span><br><span class="line">    <span class="built_in">printName</span>(e);</span><br><span class="line">    Player * p = <span class="keyword">new</span> <span class="built_in">Player</span>(<span class="string">&quot;cherno&quot;</span>);</span><br><span class="line">    <span class="built_in">printName</span>(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>player 也是Entity类，传入printName()函数中执行的是Entity的GetName()函数</p>
+<p>原因在于我们声明函数时，我们的方法一般在类的内部起作用。然后调用方法的时候，会调用属于该类型的方法。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Entity</span>&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="type">int</span> x,y;</span><br><span class="line">    	<span class="function"><span class="keyword">virtual</span> string <span class="title">GetName</span><span class="params">()</span></span>&#123; <span class="keyword">return</span> <span class="string">&quot;Entity&quot;</span>;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Player</span>: <span class="keyword">public</span> Entity&#123;</span><br><span class="line">    string name;</span><br><span class="line">   	<span class="function">string <span class="title">GetName</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; <span class="keyword">return</span> <span class="keyword">this</span>.Name&#125;</span><br><span class="line">    <span class="built_in">Player</span>(<span class="type">const</span> string &amp;name):<span class="built_in">name</span>(name)&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="built_in">printName</span>(Entity e)&#123;  <span class="comment">//没有虚函数，调用方法时，都是使用该参数的方法</span></span><br><span class="line">    cout&lt;&lt;e-&gt;<span class="built_in">GetName</span>()&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	Entity * e - <span class="keyword">new</span> <span class="built_in">Entity</span>();</span><br><span class="line">    <span class="built_in">printName</span>(e);</span><br><span class="line">    Player * p = <span class="keyword">new</span> <span class="built_in">Player</span>(<span class="string">&quot;cherno&quot;</span>);</span><br><span class="line">    <span class="built_in">printName</span>(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="纯虚函数就是虚函数没有方法体，并赋值为0。具有纯虚函数的类不能实例化，只能被子类继承，继承的子类必须实现父类所有的纯虚函数。具有纯虚函数的类相当于java中的接口。"><a href="#纯虚函数就是虚函数没有方法体，并赋值为0。具有纯虚函数的类不能实例化，只能被子类继承，继承的子类必须实现父类所有的纯虚函数。具有纯虚函数的类相当于java中的接口。" class="headerlink" title="纯虚函数就是虚函数没有方法体，并赋值为0。具有纯虚函数的类不能实例化，只能被子类继承，继承的子类必须实现父类所有的纯虚函数。具有纯虚函数的类相当于java中的接口。"></a>纯虚函数就是虚函数没有方法体，并赋值为0。具有纯虚函数的类不能实例化，只能被子类继承，继承的子类必须实现父类所有的纯虚函数。具有纯虚函数的类相当于java中的接口。</h3><h3 id="在派生类中定义虚函数的注意事项："><a href="#在派生类中定义虚函数的注意事项：" class="headerlink" title="在派生类中定义虚函数的注意事项："></a>在派生类中定义虚函数的注意事项：</h3><p><strong>派生类中的方法的返回值和参数必须和父类一致，否则派生类的方法不是重写父类的方法而是隐藏了父类的方法</strong></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/02/c++%E5%9F%BA%E7%A1%80/" data-id="cl7iuzc6y00005smj0xxz8kmb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-文本分析二叉树实现" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/07/29/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90%E4%BA%8C%E5%8F%89%E6%A0%91%E5%AE%9E%E7%8E%B0/" class="article-date">
@@ -544,6 +642,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">stm32固件库文件分析</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/21/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B021/">rvcc学习笔记21</a>
           </li>
         
@@ -557,10 +659,6 @@
         
           <li>
             <a href="/2022/09/19/%E5%88%9D%E8%AF%86stm32/">初识stm32</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/">rvcc学习笔记19</a>
           </li>
         
       </ul>
