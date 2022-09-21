@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>stm32位带操作 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="什么是位带操作？​        简单来说就是通过宏定义封装一些操作，让你可以像51单片机上去操作IO口，从而不用麻烦的去配置各种寄存器，在STM32中有两个地方实现了位带。其中一个是 SRAM 区的最低 1MB 范围，第二个则是片内外设区的最低 1MB 范围。这两个区中的地址除了可以像普通的 RAM 一样使用外，它们还都有自己的“位带别名区”，位带别名区把每个比特膨胀成一个 32 位的字。当你通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stm32位带操作">
+<meta property="og:url" content="http://example.com/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="什么是位带操作？​        简单来说就是通过宏定义封装一些操作，让你可以像51单片机上去操作IO口，从而不用麻烦的去配置各种寄存器，在STM32中有两个地方实现了位带。其中一个是 SRAM 区的最低 1MB 范围，第二个则是片内外设区的最低 1MB 范围。这两个区中的地址除了可以像普通的 RAM 一样使用外，它们还都有自己的“位带别名区”，位带别名区把每个比特膨胀成一个 32 位的字。当你通">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-21T09:20:49.000Z">
+<meta property="article:modified_time" content="2022-09-21T09:55:15.108Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-stm32位带操作" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" class="article-date">
+  <time datetime="2022-09-21T09:20:49.000Z" itemprop="datePublished">2022-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      stm32位带操作
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="什么是位带操作？"><a href="#什么是位带操作？" class="headerlink" title="什么是位带操作？"></a>什么是位带操作？</h2><p>​        简单来说就是通过宏定义封装一些操作，让你可以像51单片机上去操作IO口，从而不用麻烦的去配置各种寄存器，在STM32中有两个地方实现了位带。其中一个是 SRAM 区的最低 1MB 范围，第二个则是片内外设区的最低 1MB 范围。这两个区中的地址除了可以像普通的 RAM 一样使用外，它们还都有自己的“位带别名区”，位带别名区把每个比特膨胀成一个 32 位的字。当你通过位带别名区访问这些字时，就可以达到访问原始比特的目的。</p>
+<p>​        stm32上位带区的地址有两个，片上SRAM的0x2000 0000到0x2010 0000，以及片上外设的0x4000 0000 到 0x4010 0000。他们的每个地址都会膨胀成一个32位的字，通过这个地址可以控制原来的bit位。</p>
+<p>​        位带别名区：0x2200 0000到0x23FF FFFF 和 0x4200 0000 到0x43FF FFFF</p>
+<h2 id="公式"><a href="#公式" class="headerlink" title="公式"></a>公式</h2><p>​        <strong>#define BITBAND(addr, bitnum)     ((addr &amp; 0xF0000000)+0x2000000 + ((addr &amp;0xFFFFFF)&lt;&lt;5) + (bitnum&lt;&lt;2))</strong></p>
+<p>其中addr &amp; 0xF000 0000 是获取前四位，目的是整合SRAM和外设两个公式。</p>
+<p>((addr &amp; 0xF0000000)+0x2000000)是位带别名区的起始地址</p>
+<p>((addr &amp;0xFFFFF)屏蔽了前8位，因为相对于各自的位带区起始地址都是相同的，在计算得到了偏移地址，1个地址有32位，这32位都会膨胀成一个新的32位地址，所以乘以32(左移5位)得到最后1位的偏移地址。</p>
+<p>bitnum&lt;&lt;2是因为1个地址有4个字节，左移两位乘以4.</p>
+<p>​    使用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BITBAND(addr, bitnum) ((addr &amp; 0xF0000000)+0x2000000+((addr &amp;0xFFFFF)&lt;&lt;5)+(bitnum&lt;&lt;2))</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) </span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOA_ODR_Addr    (GPIOA_BASE+12) <span class="comment">//0x4001080C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOB_ODR_Addr    (GPIOB_BASE+12) <span class="comment">//0x40010C0C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOC_ODR_Addr    (GPIOC_BASE+12) <span class="comment">//0x4001100C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOD_ODR_Addr    (GPIOD_BASE+12) <span class="comment">//0x4001140C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOE_ODR_Addr    (GPIOE_BASE+12) <span class="comment">//0x4001180C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOF_ODR_Addr    (GPIOF_BASE+12) <span class="comment">//0x40011A0C    </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOG_ODR_Addr    (GPIOG_BASE+12) <span class="comment">//0x40011E0C    </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOA_IDR_Addr    (GPIOA_BASE+8) <span class="comment">//0x40010808 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOB_IDR_Addr    (GPIOB_BASE+8) <span class="comment">//0x40010C08 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOC_IDR_Addr    (GPIOC_BASE+8) <span class="comment">//0x40011008 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOD_IDR_Addr    (GPIOD_BASE+8) <span class="comment">//0x40011408 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOE_IDR_Addr    (GPIOE_BASE+8) <span class="comment">//0x40011808 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOF_IDR_Addr    (GPIOF_BASE+8) <span class="comment">//0x40011A08 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOG_IDR_Addr    (GPIOG_BASE+8) <span class="comment">//0x40011E08 </span></span></span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br></pre></td></tr></table></figure>
+
+<p>​    </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" data-id="cl8bg91bb0000bomjdhzxae7p" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">stm32固件库文件分析</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/">stm32位带操作</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">stm32固件库文件分析</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/21/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B021/">rvcc学习笔记21</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/">stm32固件库原理初探</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/20/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B020/">rvcc学习笔记20</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

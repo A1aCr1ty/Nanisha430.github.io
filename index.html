@@ -64,6 +64,54 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-stm32位带操作" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" class="article-date">
+  <time datetime="2022-09-21T09:20:49.000Z" itemprop="datePublished">2022-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/">stm32位带操作</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="什么是位带操作？"><a href="#什么是位带操作？" class="headerlink" title="什么是位带操作？"></a>什么是位带操作？</h2><p>​        简单来说就是通过宏定义封装一些操作，让你可以像51单片机上去操作IO口，从而不用麻烦的去配置各种寄存器，在STM32中有两个地方实现了位带。其中一个是 SRAM 区的最低 1MB 范围，第二个则是片内外设区的最低 1MB 范围。这两个区中的地址除了可以像普通的 RAM 一样使用外，它们还都有自己的“位带别名区”，位带别名区把每个比特膨胀成一个 32 位的字。当你通过位带别名区访问这些字时，就可以达到访问原始比特的目的。</p>
+<p>​        stm32上位带区的地址有两个，片上SRAM的0x2000 0000到0x2010 0000，以及片上外设的0x4000 0000 到 0x4010 0000。他们的每个地址都会膨胀成一个32位的字，通过这个地址可以控制原来的bit位。</p>
+<p>​        位带别名区：0x2200 0000到0x23FF FFFF 和 0x4200 0000 到0x43FF FFFF</p>
+<h2 id="公式"><a href="#公式" class="headerlink" title="公式"></a>公式</h2><p>​        <strong>#define BITBAND(addr, bitnum)     ((addr &amp; 0xF0000000)+0x2000000 + ((addr &amp;0xFFFFFF)&lt;&lt;5) + (bitnum&lt;&lt;2))</strong></p>
+<p>其中addr &amp; 0xF000 0000 是获取前四位，目的是整合SRAM和外设两个公式。</p>
+<p>((addr &amp; 0xF0000000)+0x2000000)是位带别名区的起始地址</p>
+<p>((addr &amp;0xFFFFF)屏蔽了前8位，因为相对于各自的位带区起始地址都是相同的，在计算得到了偏移地址，1个地址有32位，这32位都会膨胀成一个新的32位地址，所以乘以32(左移5位)得到最后1位的偏移地址。</p>
+<p>bitnum&lt;&lt;2是因为1个地址有4个字节，左移两位乘以4.</p>
+<p>​    使用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BITBAND(addr, bitnum) ((addr &amp; 0xF0000000)+0x2000000+((addr &amp;0xFFFFF)&lt;&lt;5)+(bitnum&lt;&lt;2))</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) </span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOA_ODR_Addr    (GPIOA_BASE+12) <span class="comment">//0x4001080C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOB_ODR_Addr    (GPIOB_BASE+12) <span class="comment">//0x40010C0C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOC_ODR_Addr    (GPIOC_BASE+12) <span class="comment">//0x4001100C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOD_ODR_Addr    (GPIOD_BASE+12) <span class="comment">//0x4001140C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOE_ODR_Addr    (GPIOE_BASE+12) <span class="comment">//0x4001180C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOF_ODR_Addr    (GPIOF_BASE+12) <span class="comment">//0x40011A0C    </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOG_ODR_Addr    (GPIOG_BASE+12) <span class="comment">//0x40011E0C    </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOA_IDR_Addr    (GPIOA_BASE+8) <span class="comment">//0x40010808 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOB_IDR_Addr    (GPIOB_BASE+8) <span class="comment">//0x40010C08 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOC_IDR_Addr    (GPIOC_BASE+8) <span class="comment">//0x40011008 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOD_IDR_Addr    (GPIOD_BASE+8) <span class="comment">//0x40011408 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOE_IDR_Addr    (GPIOE_BASE+8) <span class="comment">//0x40011808 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOF_IDR_Addr    (GPIOF_BASE+8) <span class="comment">//0x40011A08 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOG_IDR_Addr    (GPIOG_BASE+8) <span class="comment">//0x40011E08 </span></span></span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br></pre></td></tr></table></figure>
+
+<p>​    </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" data-id="cl8bg91bb0000bomjdhzxae7p" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-stm32固件库文件分析" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" class="article-date">
@@ -86,7 +134,17 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <h2 id="1-汇编编写的启动文件"><a href="#1-汇编编写的启动文件" class="headerlink" title="1-汇编编写的启动文件"></a>1-汇编编写的启动文件</h2><p><strong>startup_stm32f10x_hd.s</strong>:设置堆栈指针、设置PC指针、初始化中断向量表、配置系统时钟、对用C库函数_main最终去到C的世界</p>
+<h2 id="2-时钟配置文件"><a href="#2-时钟配置文件" class="headerlink" title="2-时钟配置文件"></a>2-时钟配置文件</h2><p><strong>system_stm32f10x.c</strong>：把外部时钟HSE=8M，经过PLL倍频为72M。</p>
+<h2 id="3-外设相关的"><a href="#3-外设相关的" class="headerlink" title="3-外设相关的"></a>3-外设相关的</h2><p><strong>stm32f10x.h</strong>：实现了内核之外的外设的寄存器映射<br>xxx：GPIO、USRAT、I2C、SPI、FSMC<br><strong>stm32f10x_xx.c</strong>：外设的驱动函数库文件<br><strong>stm32f10x_xx.h</strong>：存放外设的初始化结构体，外设初始化结构体成员的参数列表，外设固件库函数的声明</p>
+<h2 id="4-内核相关的"><a href="#4-内核相关的" class="headerlink" title="4-内核相关的"></a>4-内核相关的</h2><p>CMSIS - Cortex 微控制器软件接口标准<br><strong>core_cm3.h</strong>：实现了内核里面外设的寄存器映射<br><strong>core_cm3.c</strong>：内核外设的驱动固件库</p>
+<p>NVIC(嵌套向量中断控制器)、SysTick(系统滴答定时器)<br>misc.h<br>misc.c</p>
+<h2 id="5-头文件的配置文件"><a href="#5-头文件的配置文件" class="headerlink" title="5-头文件的配置文件"></a>5-头文件的配置文件</h2><p><strong>stm32f10x_conf.h</strong>：头文件的头文件<br>//stm32f10x_usart.h<br>//stm32f10x_i2c.h<br>//stm32f10x_spi.h<br>//stm32f10x_adc.h<br>//stm32f10x_fsmc.h<br>……</p>
+<h2 id="6-专门存放中断服务函数的C文件"><a href="#6-专门存放中断服务函数的C文件" class="headerlink" title="6-专门存放中断服务函数的C文件"></a>6-专门存放中断服务函数的C文件</h2><p><strong>stm32f10x_it.c</strong><br><strong>stm32f10x_it.h</strong></p>
+<p>中断服务函数你可以随意放在其他的地方，并不是一定要放在stm32f10x_it.c</p>
+<p>#include “stm32f10x.h”   // 相当于51单片机中的  #include &lt;reg51.h&gt;</p>
+<p>int main(void)<br>{<br>    // 来到这里的时候，系统的时钟已经被配置成72M。<br>}</p>
+
       
     </div>
     <footer class="article-footer">
@@ -576,57 +634,6 @@
 
 
   
-    <article id="post-rvcc学习笔记16" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B016/" class="article-date">
-  <time datetime="2022-09-16T05:24:49.000Z" itemprop="datePublished">2022-09-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B016/">rvcc学习笔记16</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="支持while语句"><a href="#支持while语句" class="headerlink" title="支持while语句"></a>支持while语句</h2><p>​    while语句和for语句的功能是相似的，只不过形式上略有不同，他们都是完成循环功能的。</p>
-<p>​    在结构上，依然是使用ND_FOR种类的结点，只不过新加了一个while关键字。</p>
-<h3 id="语法分析："><a href="#语法分析：" class="headerlink" title="语法分析："></a>语法分析：</h3><p>​        修改了文法，while语句是一种新的语句。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// stmt = &quot;return&quot; expr &quot;;&quot;</span></span><br><span class="line"><span class="comment">//        | &quot;if&quot; &quot;(&quot; expr &quot;)&quot; stmt (&quot;else&quot; stmt)?</span></span><br><span class="line"><span class="comment">//        | &quot;for&quot; &quot;(&quot; exprstmt expr? &quot;;&quot; expr? &quot;;&quot; &quot;)&quot; stmt</span></span><br><span class="line"><span class="comment">//        | &quot;while&quot; &quot;(&quot; expr &quot;)&quot; stmt</span></span><br><span class="line"><span class="comment">//        | &quot;&#123;&quot; compoundStmt</span></span><br><span class="line"><span class="comment">//        | exprStmt</span></span><br></pre></td></tr></table></figure>
-
-<p>​        stmt函数实现while：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析while语句</span></span><br><span class="line"> <span class="comment">// &quot;while&quot; &quot;(&quot; expr &quot;)&quot; stmt</span></span><br><span class="line"> <span class="keyword">if</span>(equal(Tok,<span class="string">&quot;while&quot;</span>))&#123;</span><br><span class="line">   Node *Nd = newNode(ND_FOR);</span><br><span class="line">   <span class="comment">// &quot;(&quot;</span></span><br><span class="line">   Tok = skip(Tok-&gt;Next,<span class="string">&quot;(&quot;</span>);</span><br><span class="line">   <span class="comment">// expr</span></span><br><span class="line">   Nd-&gt;Cond = expr(&amp;Tok,Tok);</span><br><span class="line">   <span class="comment">// &quot;)&quot;</span></span><br><span class="line">   Tok = skip(Tok,<span class="string">&quot;)&quot;</span>);</span><br><span class="line">   <span class="comment">// stmt</span></span><br><span class="line">   Nd-&gt;Then = stmt(Rest,Tok);</span><br><span class="line">   <span class="keyword">return</span> Nd;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="代码生成："><a href="#代码生成：" class="headerlink" title="代码生成："></a>代码生成：</h3><p>​        和for语句的代码生成几乎相同，只需要判断Nd-&gt;iniit是否为空，为空则是while语句，不为空则是for语句，其他都是完全相同的。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> ND_FOR: &#123;</span><br><span class="line">   <span class="comment">// 代码段计数</span></span><br><span class="line">   <span class="type">int</span> C =count();</span><br><span class="line">   <span class="comment">// 生成初始化语句</span></span><br><span class="line">   <span class="keyword">if</span>(Nd-&gt;init)</span><br><span class="line">     genStmt(Nd-&gt;init);</span><br><span class="line">   <span class="comment">// 输出循环头部标签</span></span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;.L.begin.%d:\n&quot;</span>,C);</span><br><span class="line">   <span class="comment">// 处理循环条件语句</span></span><br><span class="line">   <span class="comment">// 条件不为空</span></span><br><span class="line">   <span class="keyword">if</span>(Nd-&gt;Cond)&#123;</span><br><span class="line">     <span class="comment">// 生成条件循环语句</span></span><br><span class="line">     genExpr(Nd-&gt;Cond);</span><br><span class="line">     <span class="comment">// 判断条件是否为0，如果为0则跳转到循环结束</span></span><br><span class="line">     <span class="built_in">printf</span>(<span class="string">&quot;  beqz a0, .L.end.%d\n&quot;</span>,C);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 生成循环体语句</span></span><br><span class="line">   genStmt(Nd-&gt;Then);</span><br><span class="line">   <span class="comment">//  处理循环递增语句</span></span><br><span class="line">   <span class="keyword">if</span>(Nd-&gt;Inc)&#123;</span><br><span class="line">     <span class="comment">//  生成循环递增语句</span></span><br><span class="line">     genExpr(Nd-&gt;Inc);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 跳转到循环的头部</span></span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  j .L.begin.%d\n&quot;</span>,C);</span><br><span class="line">   <span class="comment">// 输出循环尾部的标签</span></span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;.L.end.%d:\n&quot;</span>,C);</span><br><span class="line">   <span class="keyword">return</span>;</span><br><span class="line"> &#125;  </span><br></pre></td></tr></table></figure>
-
-<h2 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h2><p>​        <strong>测试用例： { i=0; while(i&lt;10) { i=i+1; } return i; }</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">.globl main</span><br><span class="line">main:</span><br><span class="line">  addi sp, sp, <span class="number">-8</span></span><br><span class="line">  sd fp, <span class="number">0</span>(sp)</span><br><span class="line">  mv fp, sp</span><br><span class="line">  addi sp, sp, <span class="number">-16</span></span><br><span class="line">  addi a0, fp, <span class="number">-8</span></span><br><span class="line">  addi sp, sp, <span class="number">-8</span></span><br><span class="line">  sd a0, <span class="number">0</span>(sp)</span><br><span class="line">  li a0, <span class="number">0</span></span><br><span class="line">  ld a1, <span class="number">0</span>(sp)</span><br><span class="line">  addi sp, sp, <span class="number">8</span></span><br><span class="line">  sd a0, <span class="number">0</span>(a1)</span><br><span class="line">.L.begin<span class="number">.1</span>:</span><br><span class="line">  li a0, <span class="number">10</span></span><br><span class="line">  addi sp, sp, <span class="number">-8</span></span><br><span class="line">  sd a0, <span class="number">0</span>(sp)</span><br><span class="line">  addi a0, fp, <span class="number">-8</span></span><br><span class="line">  ld a0, <span class="number">0</span>(a0)</span><br><span class="line">  ld a1, <span class="number">0</span>(sp)</span><br><span class="line">  addi sp, sp, <span class="number">8</span></span><br><span class="line">  slt a0, a0, a1</span><br><span class="line">  beqz a0, .L.end<span class="number">.1</span></span><br><span class="line">  addi a0, fp, <span class="number">-8</span></span><br><span class="line">  addi sp, sp, <span class="number">-8</span></span><br><span class="line">  sd a0, <span class="number">0</span>(sp)</span><br><span class="line">  li a0, <span class="number">1</span></span><br><span class="line">  addi sp, sp, <span class="number">-8</span></span><br><span class="line">  sd a0, <span class="number">0</span>(sp)</span><br><span class="line">  addi a0, fp, <span class="number">-8</span></span><br><span class="line">  ld a0, <span class="number">0</span>(a0)</span><br><span class="line">  ld a1, <span class="number">0</span>(sp)</span><br><span class="line">  addi sp, sp, <span class="number">8</span></span><br><span class="line">  add a0, a0, a1</span><br><span class="line">  ld a1, <span class="number">0</span>(sp)</span><br><span class="line">  addi sp, sp, <span class="number">8</span></span><br><span class="line">  sd a0, <span class="number">0</span>(a1)</span><br><span class="line">  j .L.begin<span class="number">.1</span></span><br><span class="line">.L.end<span class="number">.1</span>:</span><br><span class="line">  addi a0, fp, <span class="number">-8</span></span><br><span class="line">  ld a0, <span class="number">0</span>(a0)</span><br><span class="line">  j .L.<span class="keyword">return</span></span><br><span class="line">.L.<span class="keyword">return</span>:</span><br><span class="line">  mv sp, fp</span><br><span class="line">  ld fp, <span class="number">0</span>(sp)</span><br><span class="line">  addi sp, sp, <span class="number">8</span></span><br><span class="line">  ret</span><br></pre></td></tr></table></figure>
-
-<p>​    输出结果: 10</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/16/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B016/" data-id="cl842l0760000pomj4bmiamki" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -663,6 +670,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/">stm32位带操作</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">stm32固件库文件分析</a>
           </li>
         
@@ -676,10 +687,6 @@
         
           <li>
             <a href="/2022/09/20/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B020/">rvcc学习笔记20</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/19/%E5%88%9D%E8%AF%86stm32/">初识stm32</a>
           </li>
         
       </ul>
