@@ -64,6 +64,57 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-leecode-18四数之和" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/08/05/leecode-18%E5%9B%9B%E6%95%B0%E4%B9%8B%E5%92%8C/" class="article-date">
+  <time datetime="2022-08-05T06:16:07.000Z" itemprop="datePublished">2022-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/08/05/leecode-18%E5%9B%9B%E6%95%B0%E4%B9%8B%E5%92%8C/">leecode#18四数之和</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="18-四数之和"><a href="#18-四数之和" class="headerlink" title="18. 四数之和"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/4sum/">18. 四数之和</a></h2><hr>
+<p><strong>给你一个由 <code>n</code> 个整数组成的数组 <code>nums</code> ，和一个目标值 <code>target</code> 。请你找出并返回满足下述全部条件且不重复的四元组 <code>[nums[a], nums[b], nums[c], nums[d]]</code> （若两个四元组元素一一对应，则认为两个四元组重复）：</strong></p>
+<ul>
+<li><strong><code>0 &lt;= a, b, c, d &lt; n</code></strong></li>
+<li><strong><code>a</code>、<code>b</code>、<code>c</code> 和 <code>d</code> 互不相同</strong></li>
+<li><strong><code>nums[a] + nums[b] + nums[c] + nums[d] == target</code></strong></li>
+</ul>
+<p><strong>你可以按 任意顺序 返回答案 。</strong></p>
+<p> <strong>示例 1：</strong></p>
+<p><strong>输入：nums = [1,0,-1,0,-2,2], target = 0</strong><br><strong>输出：[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]</strong><br><strong>示例 2：</strong></p>
+<p><strong>输入：nums = [2,2,2,2,2], target = 8</strong><br><strong>输出：[[2,2,2,2]]</strong></p>
+<hr>
+<h2 id="思路和三数之和一样的，使用排序和双指针"><a href="#思路和三数之和一样的，使用排序和双指针" class="headerlink" title="思路和三数之和一样的，使用排序和双指针"></a>思路和三数之和一样的，使用排序和双指针</h2><p><strong>其源代码如下</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">fourSum</span>(vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> target) &#123;</span><br><span class="line">        <span class="type">int</span> i,j=<span class="number">0</span>;</span><br><span class="line">        <span class="built_in">sort</span>(nums.<span class="built_in">begin</span>(),nums.<span class="built_in">end</span>());</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; res;</span><br><span class="line">        <span class="type">int</span> left , right;</span><br><span class="line">        <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;nums.<span class="built_in">size</span>();i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(i&gt;<span class="number">0</span>&amp;&amp;nums[i]==nums[i<span class="number">-1</span>]) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">for</span>(j=i+<span class="number">1</span>;j&lt;nums.<span class="built_in">size</span>();j++)&#123;</span><br><span class="line">                <span class="keyword">if</span>(j&gt;i+<span class="number">1</span>&amp;&amp;nums[j]==nums[j<span class="number">-1</span>]) <span class="keyword">continue</span>;</span><br><span class="line">                left = j +<span class="number">1</span>;</span><br><span class="line">                right=nums.<span class="built_in">size</span>()<span class="number">-1</span>;</span><br><span class="line">                <span class="keyword">while</span>(left&lt;right)&#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span>((<span class="type">long</span>)nums[i]+nums[j]-target&gt;-(nums[left]+nums[right]))&#123;</span><br><span class="line">                    right--;</span><br><span class="line">                &#125;<span class="keyword">else</span> <span class="keyword">if</span>((<span class="type">long</span>)nums[i]+nums[j]-target&lt;-(nums[left]+nums[right]))&#123;</span><br><span class="line">                    left++;</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                    res.<span class="built_in">push_back</span>(&#123;nums[i],nums[j],nums[left],nums[right]&#125;);</span><br><span class="line">                <span class="keyword">while</span>(left&lt;right&amp;&amp;nums[left]==nums[left+<span class="number">1</span>]) left++;</span><br><span class="line">                <span class="keyword">while</span>(left&lt;right&amp;&amp;nums[right]==nums[right<span class="number">-1</span>]) right--;</span><br><span class="line">                    left++;</span><br><span class="line">                    right--;</span><br><span class="line">                &#125;</span><br><span class="line">                &#125;</span><br><span class="line">             </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> res;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/08/05/leecode-18%E5%9B%9B%E6%95%B0%E4%B9%8B%E5%92%8C/" data-id="cl7iuzc7e000b5smj6av9b3gb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-快速排序的实现" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/08/05/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%9A%84%E5%AE%9E%E7%8E%B0/" class="article-date">
@@ -636,54 +687,6 @@
 
 
   
-    <article id="post-文本分析" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/07/26/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90/" class="article-date">
-  <time datetime="2022-07-26T05:11:54.000Z" itemprop="datePublished">2022-07-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/07/26/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90/">文本分析</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="编写一个程序，分析并统计字符串的数量和种类-忽略"><a href="#编写一个程序，分析并统计字符串的数量和种类-忽略" class="headerlink" title="编写一个程序，分析并统计字符串的数量和种类,忽略"></a>编写一个程序，分析并统计字符串的数量和种类,忽略</h2><h3 id="文件的读入："><a href="#文件的读入：" class="headerlink" title="文件的读入："></a>文件的读入：</h3><p>​        文件读入尝试了两种方法，fscanf和fgetc。</p>
-<p>​        fscanf()：包含三个参数，文件指针，读取方式，字符数组。</p>
-<p>​            使用fscanf(fp,”%s”,str)实现以空格符，换行符为分隔，每个字符串分别读取、</p>
-<p>​        fgetc(): 实现将文件中的内容逐字符的读取。</p>
-<h3 id="采用fgetc函数读入文件："><a href="#采用fgetc函数读入文件：" class="headerlink" title="采用fgetc函数读入文件："></a>采用fgetc函数读入文件：</h3><p>​        其主要问题是将各个字符串提取出来并计数，设定好分割字符串的规则。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(ch!=<span class="string">&#x27;/&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;&lt;&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27; &#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;.&#x27;</span>  </span><br><span class="line">`&amp;&amp;ch!=<span class="string">&#x27;,&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;\n&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;(&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;)&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;*&#x27;</span>`</span><br><span class="line">  `&amp;&amp;ch!=<span class="string">&#x27;;&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;=&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;\t&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;:&#x27;</span>&amp;&amp;ch!=<span class="string">&#x27;;&#x27;</span>)&#123;`</span><br><span class="line">	`strC[count][length++]=ch;`</span><br><span class="line">   &#125;`</span><br></pre></td></tr></table></figure>
-
-<p>​        其次就是判断字符串在之前是否已经存储过了，如果存储过了则删除，原先的总数加1.若没存储过则保存新的字符串。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(length!=<span class="number">0</span>)&#123;`</span><br><span class="line"></span><br><span class="line">​        `flag=<span class="number">1</span>;`</span><br><span class="line"></span><br><span class="line">​        `count++;`</span><br><span class="line"></span><br><span class="line">​        `<span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;count<span class="number">-1</span>;i++)&#123;`</span><br><span class="line"></span><br><span class="line">​          `<span class="keyword">if</span>(first==<span class="number">1</span>)&#123;`</span><br><span class="line"></span><br><span class="line">​            `first=<span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">​          `&#125;<span class="keyword">else</span>&#123;`</span><br><span class="line"></span><br><span class="line">​            `<span class="keyword">if</span>(<span class="built_in">strcmp</span>(strC[i],strC[count<span class="number">-1</span>])==<span class="number">0</span>)&#123;`</span><br><span class="line"></span><br><span class="line">​              `strCount[i]++;`</span><br><span class="line"></span><br><span class="line">​              `<span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;length;i++)&#123;`</span><br><span class="line"></span><br><span class="line">​                `strC[count<span class="number">-1</span>][i]=<span class="string">&quot;&quot;</span>;`</span><br><span class="line"></span><br><span class="line">​              `&#125;`</span><br><span class="line"></span><br><span class="line">​              `count--;`</span><br><span class="line"></span><br><span class="line">​              `flag=<span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">​              `<span class="keyword">break</span>;`</span><br><span class="line"></span><br><span class="line">​          `&#125;`</span><br><span class="line"></span><br><span class="line">​          `&#125;` </span><br><span class="line"></span><br><span class="line">​        `&#125;`</span><br><span class="line"></span><br><span class="line">​      `&#125;` </span><br><span class="line"></span><br><span class="line">​      `<span class="keyword">if</span>(flag==<span class="number">1</span>)&#123;`</span><br><span class="line"></span><br><span class="line">​        `strCount[count<span class="number">-1</span>]=<span class="number">1</span>;`</span><br><span class="line"></span><br><span class="line">​        `length=<span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">​        `flag=<span class="number">0</span>;`</span><br><span class="line"></span><br><span class="line">​      ``&#125;```</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/07/26/%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90/" data-id="cl7iuzc7n000t5smj4wd7efb9" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -720,6 +723,10 @@
       <ul>
         
           <li>
+            <a href="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/">malloc与内存池</a>
+          </li>
+        
+          <li>
             <a href="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/">CM32实验:外部中断控制</a>
           </li>
         
@@ -733,10 +740,6 @@
         
           <li>
             <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/">stm32位带操作</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">stm32固件库文件分析</a>
           </li>
         
       </ul>

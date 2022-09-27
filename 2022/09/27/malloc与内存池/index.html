@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>malloc与内存池 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="malloc与内存池​    malloc（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。 1、malloc的工作机制：​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小">
+<meta property="og:type" content="article">
+<meta property="og:title" content="malloc与内存池">
+<meta property="og:url" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="malloc与内存池​    malloc（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。 1、malloc的工作机制：​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png">
+<meta property="og:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png">
+<meta property="og:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg">
+<meta property="article:published_time" content="2022-09-27T05:58:31.000Z">
+<meta property="article:modified_time" content="2022-09-27T07:47:19.214Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-malloc与内存池" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" class="article-date">
+  <time datetime="2022-09-27T05:58:31.000Z" itemprop="datePublished">2022-09-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      malloc与内存池
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="malloc与内存池"><a href="#malloc与内存池" class="headerlink" title="malloc与内存池"></a>malloc与内存池</h2><p>​    <strong><a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=malloc&spm=1001.2101.3001.7020">malloc</a>（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。</strong></p>
+<h3 id="1、malloc的工作机制："><a href="#1、malloc的工作机制：" class="headerlink" title="1、malloc的工作机制："></a>1、malloc的工作机制：</h3><p>​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小与用户请求的大小相等，另一块的大小就是剩下的字节）。接下来，将分配给用户的那块内存传给用户，并将剩下的那块（如果有的话）返回到连接表上。</p>
+<p>​    调用free函数时，它将用户释放的内存块连接到空闲链上。到最后，空闲链会被切成很多的小内存片 段，如果这时用户申请一个大的内存片段，那么空闲链上可能没有可以满足用户要求的片段了。于是，malloc函数请求延时，并开始在空闲链上翻箱倒柜地检 查各内存片段，对它们进行整理，将相邻的小空闲块合并成较大的内存块。</p>
+<h3 id="2、内存池："><a href="#2、内存池：" class="headerlink" title="2、内存池："></a>2、内存池：</h3><p>​    在嵌入式开发中，内存一般较小，且对稳定性要求较高，内存管理就十分必要。在嵌入式裸机开发中，无MMU，无法实现对内存进行动态映射，malloc和free并不能实现对动态内存的管理。所以需要在启动阶段专门给其分配一段空闲的内存区域作为malloc的内存区，并且malloc和free的使用很容易造成内存碎片，可能因为空间不足而分配失败，从而导致系统崩溃，因此应该慎用。</p>
+<h3 id="3、内存池的优点："><a href="#3、内存池的优点：" class="headerlink" title="3、内存池的优点："></a>3、内存池的优点：</h3><p>​    （1）每次动态内存申请的大小都是固定的，可以有效防止内存碎片化。（至于为什么，可以想想，每次申请的都是固定的大小，回收也是固定的大小）</p>
+<p>　（2）效率高，不需要复杂的内存分配算法来实现。申请，释放的时间复杂度，可以做到O（1）。</p>
+<p>　（3）实现简单，易用。</p>
+<p>　（4）内存的申请，释放都在可控的范围之内。不会出现以后运行着，运行着，就再也申请不到内存的情况。</p>
+<h3 id="4、内存池的设计与实现"><a href="#4、内存池的设计与实现" class="headerlink" title="4、内存池的设计与实现"></a>4、内存池的设计与实现</h3><h4 id="4-1、目的："><a href="#4-1、目的：" class="headerlink" title="4.1、目的："></a>4.1、目的：</h4><p>​        使用内存池，就是为一段内存buffer建立一个内存管理机制。让用户能在buffer上根据需求分配和回收内存。</p>
+<h4 id="4-2、要求："><a href="#4-2、要求：" class="headerlink" title="4.2、要求："></a>4.2、要求：</h4><p>​        减少内存碎片，执行的效率要高于C语言的malloc和free。</p>
+<h4 id="4-3、设计思路："><a href="#4-3、设计思路：" class="headerlink" title="4.3、设计思路："></a>4.3、设计思路：</h4><p>​        将buffer分为四部分，第1部分是mem_pool结构体；第2部分是内存映射表；第3部分是内存chunk结构体缓冲区；第4部分是实际可分配的内存区。整个buffer结构图如图1所示：</p>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png" class>
+
+<p>​                                                                                                                    图1 内存buffer结构图</p>
+<p>​        第1部分的作用是可以通过该mem_pool结构体控制整个内存池。</p>
+<p>​        第2部分的作用是记录第4部分，即实际可分配的内存区的使用情况。表中的每一个单元表示一个固定大小的内存块（block），多个连续的block组成一个chunk，每个block的详细结构如图2所示：</p>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png" class>
+
+<p>​                                                                                                                    图2 memory block结构图</p>
+<p>​        其中count表示该block后面的与该block同属于一个chunk的blokc的个数，start表示该block所在的chunk的起始block索引。其实start这个域只有在每个chunk的最后一个block中才会用到（用于从当前chunk寻找前一个chunk的起始位置），而pmem_chunk则是一个指针，指向一个mem_chunk结构体。任意一块大小的内存都会被取向上整到block大小的整数倍。</p>
+<p>​        第3部分是一个mem_chunk pool，其作用是存储整个程序可用的mem_chunk结构体。mem_chunk pool中的mem_chunk被组织成双向链表结构（快速插入和删除）。每个mem_chunk结构图如图3所示：</p>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg" class>
+
+<p>​                                                                                                                    图3 memory chunk结构图</p>
+<p>​        其中pmem_block指向该chunk在内存映射表中的位置，others表示其他一些域，不同的实现对应该域的内容略有不同。</p>
+<p>第4部分就是实际可以被分配给用户的内存。</p>
+<p>​        整个内存池管理程序除了这四部分外，还有一个重要的内容就是memory chunk set。虽然其中的每个元素都来自mem_chunk pool，但是它与mem_chunk pool的不同之处在于其中的每个memory chunk中记录了当前可用的一块内存的相关信息。而mem_chunk pool中的memory chunk的内容是无定以的。可以这样理解mem_chunk pool与memory chunk set：mem_chunk pool是为memory chunk set分配内存的“内存池”，只是该“内存池”每次分配的内存大小是固定的，为mem_chunk结构体的大小。内存池程序主要是通过搜索这个memory chunk set来获取可被分配的内存。在memory chunk set上建立不同的数据结构就构成了不同的内存池实现方法，同时也导致了不同的搜索效率，直接影响内存池的性能，本文稍后会介绍两种内存池的实现。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" data-id="cl8jwbrhx000050mjaxvsctob" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">CM32实验:外部中断控制</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/">malloc与内存池</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/">CM32实验:外部中断控制</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/">CM32实验：设置时钟</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/22/%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E7%9A%84%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/">编译器优化的常用方法</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/">stm32位带操作</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
