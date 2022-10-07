@@ -64,6 +64,63 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-初识stm32" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/19/%E5%88%9D%E8%AF%86stm32/" class="article-date">
+  <time datetime="2022-09-19T06:23:04.000Z" itemprop="datePublished">2022-09-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/19/%E5%88%9D%E8%AF%86stm32/">初识stm32</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>​        <strong>STM32，从字面上来理解，ST 是意法半导体，M 是 Microelectronics 的缩写，32 表示 32 位，合起 来理解，STM32 就是指 ST 公司开发的 32 位微控制器。在如今的 32 位控制器当中，STM32 可以 说是最璀璨的新星，它受宠若娇，大受工程师和市场的青睐，无芯能出其右。</strong></p>
+<h2 id="STM32-命名方法"><a href="#STM32-命名方法" class="headerlink" title="STM32 命名方法"></a>STM32 命名方法</h2><img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919145045224.png" class>
+
+<h3 id="芯片里面的架构"><a href="#芯片里面的架构" class="headerlink" title="芯片里面的架构"></a>芯片里面的架构</h3><img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919150930040.png" class>
+
+<h3 id="stm32寄存器地址映射"><a href="#stm32寄存器地址映射" class="headerlink" title="stm32寄存器地址映射"></a>stm32寄存器地址映射</h3><p>​        首先有4GB地址空间，arm平均分为8块，每块512MB，每个块也有具体功能。</p>
+<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919160354694.png" class>
+
+<h3 id="寄存器地址映射"><a href="#寄存器地址映射" class="headerlink" title="寄存器地址映射"></a>寄存器地址映射</h3><p>​        以GPIOB_ODR为例,首先找到外设区，其中分为APB1，APB2，AHB三条总线。APB1 挂载低速 外设，APB2 和 AHB 挂载高速外设。相应总线的最低地址我们称为该总线的基地址，总线基地 址也是挂载在该总线上的首个外设的地址。其中 APB1 总线的地址最低，片上外设从这里开始， 也叫外设基地址。</p>
+<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919160750563.png" class>
+
+<p>​        而外设也有地址范围，以GPIO为例。GPIO 属于高速的外设，挂载到 APB2 总线 上，具体见表格 5‑6。</p>
+<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919160830567.png" class>
+
+<p>​        GPIO 有很多个寄存器，每一个都有特定的功能。每个寄存器为 32bit，占四个字节，在该外设的 基地址上按照顺序排列，寄存器的位置都以相对该外设基地址的偏移地址来描述。，以GPIOB端口为例。</p>
+<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919161202537.png" class>
+
+
+
+<h2 id="第一个stm32程序：-控制led灯亮绿光"><a href="#第一个stm32程序：-控制led灯亮绿光" class="headerlink" title="第一个stm32程序： 控制led灯亮绿光"></a>第一个stm32程序： 控制led灯亮绿光</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> 0 </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;reg52.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">sbit LED = P0^<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">	P0 = <span class="number">0XFE</span>; <span class="comment">// 总线操作</span></span><br><span class="line">	LED = <span class="number">0</span>;   <span class="comment">// 位操作</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;stm32f10x.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line">	<span class="comment">//打开GPIOB端口的时钟</span></span><br><span class="line">	*(<span class="type">unsigned</span> <span class="type">int</span> *) <span class="number">0x40021018</span> |= ( <span class="number">1</span> &lt;&lt; (<span class="number">3</span>)); </span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 配置GPIOB_CRL 设置为0001 ，配置IO口为输出</span></span><br><span class="line">	*(<span class="type">unsigned</span> <span class="type">int</span> *) <span class="number">0x40010C00</span> |= ( <span class="number">1</span>&lt;&lt;(<span class="number">4</span> * <span class="number">0</span>));</span><br><span class="line">	<span class="comment">// 控制ODR寄存器</span></span><br><span class="line">	*(<span class="type">unsigned</span> <span class="type">int</span> *) <span class="number">0x40010C0C</span> &amp;= ~(<span class="number">1</span>&lt;&lt;<span class="number">0</span>);</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">SystemInit</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line">		<span class="comment">//函数体为空，目的为了编译器不报错</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/19/%E5%88%9D%E8%AF%86stm32/" data-id="cl88jf0260000ekmj9ya5dzz8" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记19" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/" class="article-date">
@@ -549,54 +606,6 @@
 
 
   
-    <article id="post-leecode-670" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/13/leecode-670/" class="article-date">
-  <time datetime="2022-09-13T13:18:42.000Z" itemprop="datePublished">2022-09-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/13/leecode-670/">leecode#670</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="670-最大交换"><a href="#670-最大交换" class="headerlink" title="670. 最大交换"></a><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/maximum-swap/">670. 最大交换</a></h2><p>给定一个非负整数，你<strong>至多</strong>可以交换一次数字中的任意两位。返回你能得到的最大值。</p>
-<p><strong>示例 1 :</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: 2736</span><br><span class="line">输出: 7236</span><br><span class="line">解释: 交换数字2和数字7。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2 :</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: 9973</span><br><span class="line">输出: 9973</span><br><span class="line">解释: 不需要交换。</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>​    贪心算法，总结的来说就是每个数都要比后面的数大，如果满足不了，就找后面最大的位数和在他前面比他小的位置互换。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">int</span> <span class="title function_">maximumSwap</span><span class="params">(<span class="type">int</span> num)</span> &#123;</span><br><span class="line">        <span class="built_in">string</span> charArray = to_string(num);</span><br><span class="line">        <span class="type">int</span> count = charArray.size();</span><br><span class="line">        <span class="type">int</span> maxId = count;</span><br><span class="line">        <span class="type">int</span> id1 = <span class="number">-1</span>,id2 = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = count<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)&#123;</span><br><span class="line">            <span class="keyword">if</span>(charArray[i]&gt;charArray[maxId])&#123;</span><br><span class="line">                maxId = i;</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span>(charArray[i]&lt;charArray[maxId])&#123;</span><br><span class="line">                id1 = i;</span><br><span class="line">                id2 = maxId;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(id1&gt;=<span class="number">0</span>)&#123;</span><br><span class="line">            swap(charArray[id1],charArray[id2]);</span><br><span class="line">            <span class="keyword">return</span> stoi(charArray);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> num;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/13/leecode-670/" data-id="cl8089t6u00001kmj6py22dss" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -620,7 +629,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
     </div>
   </div>
 
@@ -631,6 +640,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/">ONEOS内存池实现及改进</a>
+          </li>
         
           <li>
             <a href="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/">malloc与内存池</a>
@@ -646,10 +659,6 @@
         
           <li>
             <a href="/2022/09/22/%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E7%9A%84%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/">编译器优化的常用方法</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/">stm32位带操作</a>
           </li>
         
       </ul>
