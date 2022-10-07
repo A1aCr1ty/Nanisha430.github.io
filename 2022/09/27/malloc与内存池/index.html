@@ -7,18 +7,18 @@
   
   <title>malloc与内存池 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="malloc与内存池​    malloc（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。 1、malloc的工作机制：​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小">
+  <meta name="description" content="​    malloc（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。 1、malloc的工作机制：​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小与用户请求的大小相等">
 <meta property="og:type" content="article">
 <meta property="og:title" content="malloc与内存池">
 <meta property="og:url" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="malloc与内存池​    malloc（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。 1、malloc的工作机制：​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小">
+<meta property="og:description" content="​    malloc（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。 1、malloc的工作机制：​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小与用户请求的大小相等">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png">
 <meta property="og:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png">
 <meta property="og:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg">
 <meta property="article:published_time" content="2022-09-27T05:58:31.000Z">
-<meta property="article:modified_time" content="2022-09-27T07:47:19.214Z">
+<meta property="article:modified_time" content="2022-10-07T08:56:57.096Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png">
@@ -92,7 +92,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="malloc与内存池"><a href="#malloc与内存池" class="headerlink" title="malloc与内存池"></a>malloc与内存池</h2><p>​    <strong><a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=malloc&spm=1001.2101.3001.7020">malloc</a>（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。</strong></p>
+        <p>​    <strong><a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=malloc&spm=1001.2101.3001.7020">malloc</a>（）是C语言中动态存储管理 的一组标准库函数之一。其作用是在内存的动态存储区中分配一个长度为size的连续空间。</strong></p>
 <h3 id="1、malloc的工作机制："><a href="#1、malloc的工作机制：" class="headerlink" title="1、malloc的工作机制："></a>1、malloc的工作机制：</h3><p>​    malloc的工作实质体现在，他有一个将可用的内存块地址连接为一个长长的列表的所谓空闲链表，调用malloc函数时，它沿连接表寻找一个大到足以满足用户请求所需要的内存块。然后，将该内存块一分为二（一块的大小与用户请求的大小相等，另一块的大小就是剩下的字节）。接下来，将分配给用户的那块内存传给用户，并将剩下的那块（如果有的话）返回到连接表上。</p>
 <p>​    调用free函数时，它将用户释放的内存块连接到空闲链上。到最后，空闲链会被切成很多的小内存片 段，如果这时用户申请一个大的内存片段，那么空闲链上可能没有可以满足用户要求的片段了。于是，malloc函数请求延时，并开始在空闲链上翻箱倒柜地检 查各内存片段，对它们进行整理，将相邻的小空闲块合并成较大的内存块。</p>
 <h3 id="2、内存池："><a href="#2、内存池：" class="headerlink" title="2、内存池："></a>2、内存池：</h3><p>​    在嵌入式开发中，内存一般较小，且对稳定性要求较高，内存管理就十分必要。在嵌入式裸机开发中，无MMU，无法实现对内存进行动态映射，malloc和free并不能实现对动态内存的管理。所以需要在启动阶段专门给其分配一段空闲的内存区域作为malloc的内存区，并且malloc和free的使用很容易造成内存碎片，可能因为空间不足而分配失败，从而导致系统崩溃，因此应该慎用。</p>
