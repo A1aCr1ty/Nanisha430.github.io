@@ -93,18 +93,18 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="OneOS内存池的基本结构"><a href="#OneOS内存池的基本结构" class="headerlink" title="OneOS内存池的基本结构"></a>OneOS内存池的基本结构</h2><p>OneOS内存池的实现原理是Freelist，其本质为一个空闲链表块，其原理图如下图所示：</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class> 
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class=""> 
 
 <p>其关键在于：链表管理信息的存储，Pool初始化，申请和释放过程。</p>
 <p>申请的过程很简单，但是free过程中存在问题。<strong>如何通过指针确定内存块的大小？</strong></p>
 <h3 id="通常做法："><a href="#通常做法：" class="headerlink" title="通常做法："></a><strong>通常做法：</strong></h3><p>实现简单，但是对于小内存分配来说浪费了空间。</p>
 
 
-<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class>
+<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class="">
 
 <p>将分配后的的内存块指向内存池。</p>
 <h3 id="改进的做法："><a href="#改进的做法：" class="headerlink" title="改进的做法："></a>改进的做法：</h3><p>page是由pool来维护的，所有的page都会指向pool，而block都是由page维护的，传来的的block地址经过处理可以的得到page地址，从而知道pool的信息。</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class>
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class="">
 
 <ul>
 <li>将第一个page的地址设为4KB的倍数。</li>
@@ -202,7 +202,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="cl8y94a9y00006gmj9fn98ut2" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="cl92id4or0002ggmj86o8fg2k" class="article-share-link">Share</a>
       
       
     </footer>

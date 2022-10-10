@@ -88,13 +88,13 @@
       
         <h2 id="内存管理方式"><a href="#内存管理方式" class="headerlink" title="内存管理方式"></a>内存管理方式</h2><p>分配内存方式的时候，分配的大小和何时分配何时释放都是不确定的，所以不同的情况有不同的处理方式。</p>
 <h3 id="1、内存块固定大小"><a href="#1、内存块固定大小" class="headerlink" title="1、内存块固定大小"></a>1、内存块固定大小</h3><p>不管内存的大小，每次分配固定大小的内存，这样可以有效避免内存碎片，但是内存的利用率很低。</p>
-<img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010160601650.png" class title="image-20221010160601650">
+<img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010160601650.png" class="" title="image-20221010160601650">
 
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" data-id="cl92h09wh0000i8mj0j128wq2" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" data-id="cl92id4pi001iggmj9g5m4xf7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -127,18 +127,18 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="OneOS内存池的基本结构"><a href="#OneOS内存池的基本结构" class="headerlink" title="OneOS内存池的基本结构"></a>OneOS内存池的基本结构</h2><p>OneOS内存池的实现原理是Freelist，其本质为一个空闲链表块，其原理图如下图所示：</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class> 
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class=""> 
 
 <p>其关键在于：链表管理信息的存储，Pool初始化，申请和释放过程。</p>
 <p>申请的过程很简单，但是free过程中存在问题。<strong>如何通过指针确定内存块的大小？</strong></p>
 <h3 id="通常做法："><a href="#通常做法：" class="headerlink" title="通常做法："></a><strong>通常做法：</strong></h3><p>实现简单，但是对于小内存分配来说浪费了空间。</p>
 
 
-<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class>
+<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class="">
 
 <p>将分配后的的内存块指向内存池。</p>
 <h3 id="改进的做法："><a href="#改进的做法：" class="headerlink" title="改进的做法："></a>改进的做法：</h3><p>page是由pool来维护的，所有的page都会指向pool，而block都是由page维护的，传来的的block地址经过处理可以的得到page地址，从而知道pool的信息。</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class>
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class="">
 
 <ul>
 <li>将第一个page的地址设为4KB的倍数。</li>
@@ -236,7 +236,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="cl8y94a9y00006gmj9fn98ut2" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="cl92id4or0002ggmj86o8fg2k" class="article-share-link">Share</a>
       
       
     </footer>
@@ -279,17 +279,17 @@
 <h3 id="4、内存池的设计与实现"><a href="#4、内存池的设计与实现" class="headerlink" title="4、内存池的设计与实现"></a>4、内存池的设计与实现</h3><h4 id="4-1、目的："><a href="#4-1、目的：" class="headerlink" title="4.1、目的："></a>4.1、目的：</h4><p>​        使用内存池，就是为一段内存buffer建立一个内存管理机制。让用户能在buffer上根据需求分配和回收内存。</p>
 <h4 id="4-2、要求："><a href="#4-2、要求：" class="headerlink" title="4.2、要求："></a>4.2、要求：</h4><p>​        减少内存碎片，执行的效率要高于C语言的malloc和free。</p>
 <h4 id="4-3、设计思路："><a href="#4-3、设计思路：" class="headerlink" title="4.3、设计思路："></a>4.3、设计思路：</h4><p>​        将buffer分为四部分，第1部分是mem_pool结构体；第2部分是内存映射表；第3部分是内存chunk结构体缓冲区；第4部分是实际可分配的内存区。整个buffer结构图如图1所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png" class>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png" class="">
 
 <p>​                                                                                                                    图1 内存buffer结构图</p>
 <p>​        第1部分的作用是可以通过该mem_pool结构体控制整个内存池。</p>
 <p>​        第2部分的作用是记录第4部分，即实际可分配的内存区的使用情况。表中的每一个单元表示一个固定大小的内存块（block），多个连续的block组成一个chunk，每个block的详细结构如图2所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png" class>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png" class="">
 
 <p>​                                                                                                                    图2 memory block结构图</p>
 <p>​        其中count表示该block后面的与该block同属于一个chunk的blokc的个数，start表示该block所在的chunk的起始block索引。其实start这个域只有在每个chunk的最后一个block中才会用到（用于从当前chunk寻找前一个chunk的起始位置），而pmem_chunk则是一个指针，指向一个mem_chunk结构体。任意一块大小的内存都会被取向上整到block大小的整数倍。</p>
 <p>​        第3部分是一个mem_chunk pool，其作用是存储整个程序可用的mem_chunk结构体。mem_chunk pool中的mem_chunk被组织成双向链表结构（快速插入和删除）。每个mem_chunk结构图如图3所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg" class>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg" class="">
 
 <p>​                                                                                                                    图3 memory chunk结构图</p>
 <p>​        其中pmem_block指向该chunk在内存映射表中的位置，others表示其他一些域，不同的实现对应该域的内容略有不同。</p>
@@ -299,7 +299,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" data-id="cl8jwbrhx000050mjaxvsctob" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" data-id="cl92id4p3000nggmj8maub8lv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -332,7 +332,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="实验：外部中断控制"><a href="#实验：外部中断控制" class="headerlink" title="实验：外部中断控制"></a>实验：外部中断控制</h2><p>​        CM32外部中断/事件控制器框图：</p>
-<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/image-20220923165924674.png" class>
+<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/image-20220923165924674.png" class="">
 
 <h3 id="1、初始化用来中断的GPIO"><a href="#1、初始化用来中断的GPIO" class="headerlink" title="1、初始化用来中断的GPIO"></a>1、初始化用来中断的GPIO</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Initialize Led1 and Led2 as output pushpull mode */</span></span><br><span class="line">LedInit(LED1_PORT, LED1_PIN);</span><br><span class="line">LedInit(LED2_PORT, LED2_PIN);</span><br></pre></td></tr></table></figure>
 
@@ -347,7 +347,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/" data-id="cl8e9rz7n00003kmj79pkg4jf" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/" data-id="cl92id4oj0000ggmj5jb45e03" class="article-share-link">Share</a>
       
       
     </footer>
@@ -380,7 +380,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="实验：设置系统时钟"><a href="#实验：设置系统时钟" class="headerlink" title="实验：设置系统时钟"></a>实验：设置系统时钟</h2><p>​    CM32芯片有3个不同时钟源可以驱动系统时钟，HSE，HSI， PLL（锁相环倍频）</p>
-<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/image-20220923131722385.png" class>
+<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/image-20220923131722385.png" class="">
 
 <p>​            <em>1．当 HSI 被用于作为 PLL 时钟的输入时，系统时钟能得到的最大频率是 128MHz。</em></p>
 <p>​        用户可通过多个预分频器配置 AHB、高速 APB（APB2）和低速 APB（APB1）域的频率。AHB 域的 最大频率是 144MHz，APB2 域的最大频率是 72MHz，APB1 域的最大允许频率是 36MHz。</p>
@@ -405,7 +405,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/" data-id="cl8e2vl880000r4mj17at29q2" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/" data-id="cl92id4op0001ggmj2hunam79" class="article-share-link">Share</a>
       
       
     </footer>
@@ -496,7 +496,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/22/%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E7%9A%84%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/" data-id="cl8e2vl8i0001r4mjca4y6q4z" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/22/%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E7%9A%84%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/" data-id="cl92id4pq001sggmj5wsxb6a9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -543,7 +543,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" data-id="cl8bg91bb0000bomjdhzxae7p" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" data-id="cl92id4pe001bggmj9qhv9roa" class="article-share-link">Share</a>
       
       
     </footer>
@@ -589,7 +589,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" data-id="cl8b8sm2p0000ewmjaet570xw" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" data-id="cl92id4pg001dggmj3c55hmv6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -653,7 +653,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/21/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B021/" data-id="cl8b6yis80000zsmj5s639svj" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/21/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B021/" data-id="cl92id4pd0019ggmjd6ld3gfd" class="article-share-link">Share</a>
       
       
     </footer>
@@ -686,7 +686,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="实验：编写一个固件库雏形点亮LED小灯"><a href="#实验：编写一个固件库雏形点亮LED小灯" class="headerlink" title="实验：编写一个固件库雏形点亮LED小灯"></a>实验：编写一个固件库雏形点亮LED小灯</h2><p>​    首先查看LED灯原理图：</p>
-<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920170054642.png" class>
+<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920170054642.png" class="">
 
 <p>​    从其中可以知道控制绿灯的亮和暗是通过PB0引脚的。</p>
 <p>​    点亮这个小灯，需要配置GPIOB的某些寄存器，通过地址访问寄存器和复杂的位操作可以实现，但是程序的可读性太差了，所以固件库的编写很有必要，它可以简化编程，提高程序可读性。</p>
@@ -701,17 +701,17 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_0    ((uint16_t)0x0001)  <span class="comment">/*!&lt; 选择Pin0 */</span>    <span class="comment">//(00000000 00000001)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_1    ((uint16_t)0x0002)  <span class="comment">/*!&lt; 选择Pin1 */</span>    <span class="comment">//(00000000 00000010)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_2    ((uint16_t)0x0004)  <span class="comment">/*!&lt; 选择Pin2 */</span>    <span class="comment">//(00000000 00000100)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_3    ((uint16_t)0x0008)  <span class="comment">/*!&lt; 选择Pin3 */</span>    <span class="comment">//(00000000 00001000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_4    ((uint16_t)0x0010)  <span class="comment">/*!&lt; 选择Pin4 */</span>    <span class="comment">//(00000000 00010000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_5    ((uint16_t)0x0020)  <span class="comment">/*!&lt; 选择Pin5 */</span>    <span class="comment">//(00000000 00100000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_6    ((uint16_t)0x0040)  <span class="comment">/*!&lt; 选择Pin6 */</span>    <span class="comment">//(00000000 01000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_7    ((uint16_t)0x0080)  <span class="comment">/*!&lt; 选择Pin7 */</span>    <span class="comment">//(00000000 10000000)b</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_8    ((uint16_t)0x0100)  <span class="comment">/*!&lt; 选择Pin8 */</span>    <span class="comment">//(00000001 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_9    ((uint16_t)0x0200)  <span class="comment">/*!&lt; 选择Pin9 */</span>    <span class="comment">//(00000010 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_10   ((uint16_t)0x0400)  <span class="comment">/*!&lt; 选择Pin10 */</span>   <span class="comment">//(00000100 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_11   ((uint16_t)0x0800)  <span class="comment">/*!&lt; 选择Pin11 */</span>   <span class="comment">//(00001000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_12   ((uint16_t)0x1000)  <span class="comment">/*!&lt; 选择Pin12 */</span>   <span class="comment">//(00010000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_13   ((uint16_t)0x2000)  <span class="comment">/*!&lt; 选择Pin13 */</span>   <span class="comment">//(00100000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_14   ((uint16_t)0x4000)  <span class="comment">/*!&lt; 选择Pin14 */</span>   <span class="comment">//(01000000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_15   ((uint16_t)0x8000)  <span class="comment">/*!&lt; 选择Pin15 */</span>   <span class="comment">//(10000000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_All  ((uint16_t)0xFFFF)  <span class="comment">/*!&lt; 选择全部引脚*/</span> <span class="comment">//(11111111 11111111)b</span></span></span><br></pre></td></tr></table></figure>
 
 <p>​    选择正确的引脚之后就是要设置相应的寄存器了，GPIOB_ODR用来控制输出，其中高16位没用，低16位决定16个引脚。</p>
-<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172817324.png" class>
+<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172817324.png" class="">
 
 <p>​    其次是设置GPIO的模式，他是通过GPIOB_CRL和GPIOB_CRH两个寄存器来控制的。其中CRL是控制0-7八个引脚，CRH用来控制8-15的引脚。每四位控制一个引脚，前两位是CNF用来控制输入输出模式，后两位是mode用来控制速度。</p>
-<p>​    <img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172633548.png" class></p>
+<p>​    <img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172633548.png" class=""></p>
 <p>​    定义下列枚举类，方便我们使用：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span></span></span><br><span class="line"><span class="class">&#123;</span> </span><br><span class="line">  GPIO_Speed_10MHz = <span class="number">1</span>,         <span class="comment">// 10MHZ        (01)b</span></span><br><span class="line">  GPIO_Speed_2MHz,              <span class="comment">// 2MHZ         (10)b</span></span><br><span class="line">  GPIO_Speed_50MHz              <span class="comment">// 50MHZ        (11)b</span></span><br><span class="line">&#125;GPIOSpeed_TypeDef;</span><br></pre></td></tr></table></figure>
 
 
 
 <p>其中输入和输出模式的定义按照：</p>
-<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920174940417.png" class>
+<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920174940417.png" class="">
 
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span></span></span><br><span class="line"><span class="class">&#123;</span> GPIO_Mode_AIN = <span class="number">0x0</span>,           <span class="comment">// 模拟输入     (0000 0000)b</span></span><br><span class="line">  GPIO_Mode_IN_FLOATING = <span class="number">0x04</span>,  <span class="comment">// 浮空输入     (0000 0100)b</span></span><br><span class="line">  GPIO_Mode_IPD = <span class="number">0x28</span>,          <span class="comment">// 下拉输入     (0010 1000)b</span></span><br><span class="line">  GPIO_Mode_IPU = <span class="number">0x48</span>,          <span class="comment">// 上拉输入     (0100 1000)b</span></span><br><span class="line"></span><br><span class="line">  GPIO_Mode_Out_OD = <span class="number">0x14</span>,       <span class="comment">// 开漏输出     (0001 0100)b</span></span><br><span class="line">  GPIO_Mode_Out_PP = <span class="number">0x10</span>,       <span class="comment">// 推挽输出     (0001 0000)b</span></span><br><span class="line">  GPIO_Mode_AF_OD = <span class="number">0x1C</span>,        <span class="comment">// 复用开漏输出 (0001 1100)b</span></span><br><span class="line">  GPIO_Mode_AF_PP = <span class="number">0x18</span>         <span class="comment">// 复用推挽输出 (0001 1000)b</span></span><br><span class="line">&#125;GPIOMode_TypeDef;</span><br></pre></td></tr></table></figure>
 
@@ -732,7 +732,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/" data-id="cl8a17gth0000g8mjg23ca504" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/" data-id="cl92id4pg001cggmjehmq9m6r" class="article-share-link">Share</a>
       
       
     </footer>

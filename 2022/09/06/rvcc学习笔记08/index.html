@@ -16,7 +16,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png">
 <meta property="article:published_time" content="2022-09-06T07:54:11.000Z">
-<meta property="article:modified_time" content="2022-09-06T09:11:51.317Z">
+<meta property="article:modified_time" content="2022-09-06T11:20:00.773Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png">
@@ -97,7 +97,7 @@
 
 
 
-<h3 id="采用和token一样的链表结构"><a href="#采用和token一样的链表结构" class="headerlink" title="采用和token一样的链表结构"></a>采用和token一样的链表结构</h3><img src="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png" class>
+<h3 id="采用和token一样的链表结构"><a href="#采用和token一样的链表结构" class="headerlink" title="采用和token一样的链表结构"></a>采用和token一样的链表结构</h3><img src="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png" class="">
 
 <h3 id="修改文法"><a href="#修改文法" class="headerlink" title="修改文法"></a>修改文法</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">*<span class="comment">// program = stmt** </span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// stmt = exprStmt*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// exprStmt = expr&quot;;&quot;*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// expr = equality*</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">expr</span><span class="params">(Token **Rest, Token *Tok)</span>;</span><br><span class="line"><span class="comment">//解析语句</span></span><br><span class="line"><span class="comment">// stmt = exprStmt</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> exprStmt(Rest,Tok);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//解析表达式语句</span></span><br><span class="line"><span class="comment">// exprStmt = expr&quot;;&quot;</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">   Node *Nd = newUnary(ND_EXPR_STMT,expr(&amp;Tok,Tok));</span><br><span class="line">   *Rest = skip(Tok,<span class="string">&quot;;&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span> Nd; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -111,7 +111,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" data-id="cl7pz1bbe0000aomj801g4r5j" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" data-id="cl92id4p8000wggmj85eah7hv" class="article-share-link">Share</a>
       
       
     </footer>

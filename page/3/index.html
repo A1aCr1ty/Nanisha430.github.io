@@ -108,7 +108,7 @@
 
 <h2 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h2><p>​    测试用例：assert 3 ‘{ {1; {2;} return 3;} }’ </p>
 <p>​    生成的AST树应该是这样的：</p>
-<img src="/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B012/image-20220914135236942.png" class>
+<img src="/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B012/image-20220914135236942.png" class="">
 
 <p>​    生成的汇编代码：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">.globl main</span><br><span class="line">main:</span><br><span class="line">  addi sp, sp, <span class="number">-8</span></span><br><span class="line">  sd fp, <span class="number">0</span>(sp)</span><br><span class="line">  mv fp, sp</span><br><span class="line">  addi sp, sp, <span class="number">-0</span></span><br><span class="line">  li a0, <span class="number">1</span></span><br><span class="line">  li a0, <span class="number">2</span></span><br><span class="line">  li a0, <span class="number">3</span></span><br><span class="line">  j .L.<span class="keyword">return</span></span><br><span class="line">.L.<span class="keyword">return</span>:</span><br><span class="line">  mv sp, fp</span><br><span class="line">  ld fp, <span class="number">0</span>(sp)</span><br><span class="line">  addi sp, sp, <span class="number">8</span></span><br><span class="line">  ret</span><br></pre></td></tr></table></figure>
@@ -117,7 +117,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B012/" data-id="cl817t8hd00007kmj6fhi3hid" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/14/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B012/" data-id="cl92id4p90010ggmj2x441hwy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -165,7 +165,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/13/leecode-670/" data-id="cl8089t6u00001kmj6py22dss" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/13/leecode-670/" data-id="cl92id4p1000kggmj67taaico" class="article-share-link">Share</a>
       
       
     </footer>
@@ -206,13 +206,13 @@
 <p><strong>cpu可以直接使用的信息在内存中存放。</strong></p>
 <p><strong>在存储器中的指令和数据没有任何区别，都是二进制信息。</strong></p>
 <p><strong>在RISC-V中有32个32bit寄存器：</strong></p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220913190127022.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220913190127022.png" class="">
 
 
 
 <p><strong>RV32I指令集有47条指令，能够满足现代操作系统运行的基本要求，47条指令按照功能可以分为如下几类。</strong></p>
 <p>整数运算指令：实现算术、逻辑、比较等运算。<br>分支转移指令：实现条件转移、无条件转移等运算，并且没有延迟槽。<br>加载存储指令：实现字节、半字、字的加载、存储操作，采用的都是寄存器相对寻址方式。<br>控制与状态寄存器访问指令：实现对系统控制与状态寄存器的原子读-写、原子读-修改、原子读-清零等操作。<br>系统调用指令：实现系统调用、调试等功能。</p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105039186.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105039186.png" class="">
 
 <h3 id="R-类型指令"><a href="#R-类型指令" class="headerlink" title="R 类型指令"></a>R 类型指令</h3><ul>
 <li><strong>opcode是操作码，占了7bit，在指令格式的0-6bit位上</strong></li>
@@ -221,7 +221,7 @@
 <li><strong>rs1 (Source Register #1)是第一个源操作数寄存器，占了5bit，在指令格式的15-19bit位上。</strong>  </li>
 <li><strong>rs2 (Source Register #2)是第二个源操作数寄存器，占了5bit，在指令格式的25-31bit位上。</strong></li>
 </ul>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919104651373.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919104651373.png" class="">
 
 <h3 id="I类型指令"><a href="#I类型指令" class="headerlink" title="I类型指令"></a>I类型指令</h3><ul>
 <li><p>opcode是操作码，占了7bit，在指令格式的0-6bit位上</p>
@@ -243,7 +243,7 @@
 </li>
 </ul>
 <p>​        格式上只有一个字段不同于r格式，rs2和funct7替换为12位符号立即数（immediate字）imm[11：0]。immediate字段为补码值，所以它可以表示从-2”到2”-1之间的整数。当I型格式用于加载指令时，immediate字段表示一个字节偏移量，所以加载双字指令可以取相对于基址寄存器rd中基地址偏移±（2”或2048)字节(±(2或256）个双字)的任何双字</p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105824873.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105824873.png" class="">
 
 <p>I类型的指令算术展示：</p>
 <p>注：其中画圈表示位移方向0表示向左移，1表示向右移</p>
@@ -258,7 +258,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" data-id="cl8034c1p00017smj5scab1gb" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" data-id="cl92id4pl001qggmjcqr94qta" class="article-share-link">Share</a>
       
       
     </footer>
@@ -312,7 +312,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/" data-id="cl8034c1m00007smjfgqdg3vz" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/13/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B011/" data-id="cl92id4p9000zggmjg18p0wmq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -376,7 +376,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/" data-id="cl7t3ruau0000lsmj81ms8kdy" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/08/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B010/" data-id="cl92id4p8000xggmjbhtkftl4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -426,7 +426,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/" data-id="cl7rcw9e8000018mjdccihp0a" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/07/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B009/" data-id="cl92id4p8000yggmjbernfy53" class="article-share-link">Share</a>
       
       
     </footer>
@@ -465,7 +465,7 @@
 
 
 
-<h3 id="采用和token一样的链表结构"><a href="#采用和token一样的链表结构" class="headerlink" title="采用和token一样的链表结构"></a>采用和token一样的链表结构</h3><img src="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png" class>
+<h3 id="采用和token一样的链表结构"><a href="#采用和token一样的链表结构" class="headerlink" title="采用和token一样的链表结构"></a>采用和token一样的链表结构</h3><img src="/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/image-20220906170054910.png" class="">
 
 <h3 id="修改文法"><a href="#修改文法" class="headerlink" title="修改文法"></a>修改文法</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">*<span class="comment">// program = stmt** </span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// stmt = exprStmt*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// exprStmt = expr&quot;;&quot;*</span></span><br><span class="line"></span><br><span class="line">*<span class="comment">// expr = equality*</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>;</span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">expr</span><span class="params">(Token **Rest, Token *Tok)</span>;</span><br><span class="line"><span class="comment">//解析语句</span></span><br><span class="line"><span class="comment">// stmt = exprStmt</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">stmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> exprStmt(Rest,Tok);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//解析表达式语句</span></span><br><span class="line"><span class="comment">// exprStmt = expr&quot;;&quot;</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">exprStmt</span><span class="params">(Token **Rest,Token *Tok)</span>&#123;</span><br><span class="line">   Node *Nd = newUnary(ND_EXPR_STMT,expr(&amp;Tok,Tok));</span><br><span class="line">   *Rest = skip(Tok,<span class="string">&quot;;&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span> Nd; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -479,7 +479,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" data-id="cl7pz1bbe0000aomj801g4r5j" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B008/" data-id="cl92id4p8000wggmj85eah7hv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -530,7 +530,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B007/" data-id="cl7pq7fku0000kgmjd0xl9hp3" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/06/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B007/" data-id="cl92id4p7000vggmje8o5hy6v" class="article-share-link">Share</a>
       
       
     </footer>
@@ -577,7 +577,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/05/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B006/" data-id="cl7okyl8b0000ngmjcfbwdilv" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/05/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B006/" data-id="cl92id4p7000uggmjd60wgrsu" class="article-share-link">Share</a>
       
       
     </footer>
@@ -630,7 +630,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/02/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B005/" data-id="cl7k9biax00009omj09sf4zrf" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/02/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B005/" data-id="cl92id4p6000tggmjcv5084t0" class="article-share-link">Share</a>
       
       
     </footer>

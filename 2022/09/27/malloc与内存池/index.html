@@ -103,17 +103,17 @@
 <h3 id="4、内存池的设计与实现"><a href="#4、内存池的设计与实现" class="headerlink" title="4、内存池的设计与实现"></a>4、内存池的设计与实现</h3><h4 id="4-1、目的："><a href="#4-1、目的：" class="headerlink" title="4.1、目的："></a>4.1、目的：</h4><p>​        使用内存池，就是为一段内存buffer建立一个内存管理机制。让用户能在buffer上根据需求分配和回收内存。</p>
 <h4 id="4-2、要求："><a href="#4-2、要求：" class="headerlink" title="4.2、要求："></a>4.2、要求：</h4><p>​        减少内存碎片，执行的效率要高于C语言的malloc和free。</p>
 <h4 id="4-3、设计思路："><a href="#4-3、设计思路：" class="headerlink" title="4.3、设计思路："></a>4.3、设计思路：</h4><p>​        将buffer分为四部分，第1部分是mem_pool结构体；第2部分是内存映射表；第3部分是内存chunk结构体缓冲区；第4部分是实际可分配的内存区。整个buffer结构图如图1所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png" class>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png" class="">
 
 <p>​                                                                                                                    图1 内存buffer结构图</p>
 <p>​        第1部分的作用是可以通过该mem_pool结构体控制整个内存池。</p>
 <p>​        第2部分的作用是记录第4部分，即实际可分配的内存区的使用情况。表中的每一个单元表示一个固定大小的内存块（block），多个连续的block组成一个chunk，每个block的详细结构如图2所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png" class>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png" class="">
 
 <p>​                                                                                                                    图2 memory block结构图</p>
 <p>​        其中count表示该block后面的与该block同属于一个chunk的blokc的个数，start表示该block所在的chunk的起始block索引。其实start这个域只有在每个chunk的最后一个block中才会用到（用于从当前chunk寻找前一个chunk的起始位置），而pmem_chunk则是一个指针，指向一个mem_chunk结构体。任意一块大小的内存都会被取向上整到block大小的整数倍。</p>
 <p>​        第3部分是一个mem_chunk pool，其作用是存储整个程序可用的mem_chunk结构体。mem_chunk pool中的mem_chunk被组织成双向链表结构（快速插入和删除）。每个mem_chunk结构图如图3所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg" class>
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg" class="">
 
 <p>​                                                                                                                    图3 memory chunk结构图</p>
 <p>​        其中pmem_block指向该chunk在内存映射表中的位置，others表示其他一些域，不同的实现对应该域的内容略有不同。</p>
@@ -123,7 +123,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" data-id="cl8jwbrhx000050mjaxvsctob" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" data-id="cl92id4p3000nggmj8maub8lv" class="article-share-link">Share</a>
       
       
     </footer>

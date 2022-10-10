@@ -19,7 +19,7 @@
 <meta property="og:image" content="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919104651373.png">
 <meta property="og:image" content="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105824873.png">
 <meta property="article:published_time" content="2022-09-13T09:48:22.000Z">
-<meta property="article:modified_time" content="2022-09-19T03:01:24.788Z">
+<meta property="article:modified_time" content="2022-09-19T03:04:47.652Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220913190127022.png">
@@ -102,13 +102,13 @@
 <p><strong>cpu可以直接使用的信息在内存中存放。</strong></p>
 <p><strong>在存储器中的指令和数据没有任何区别，都是二进制信息。</strong></p>
 <p><strong>在RISC-V中有32个32bit寄存器：</strong></p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220913190127022.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220913190127022.png" class="">
 
 
 
 <p><strong>RV32I指令集有47条指令，能够满足现代操作系统运行的基本要求，47条指令按照功能可以分为如下几类。</strong></p>
 <p>整数运算指令：实现算术、逻辑、比较等运算。<br>分支转移指令：实现条件转移、无条件转移等运算，并且没有延迟槽。<br>加载存储指令：实现字节、半字、字的加载、存储操作，采用的都是寄存器相对寻址方式。<br>控制与状态寄存器访问指令：实现对系统控制与状态寄存器的原子读-写、原子读-修改、原子读-清零等操作。<br>系统调用指令：实现系统调用、调试等功能。</p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105039186.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105039186.png" class="">
 
 <h3 id="R-类型指令"><a href="#R-类型指令" class="headerlink" title="R 类型指令"></a>R 类型指令</h3><ul>
 <li><strong>opcode是操作码，占了7bit，在指令格式的0-6bit位上</strong></li>
@@ -117,7 +117,7 @@
 <li><strong>rs1 (Source Register #1)是第一个源操作数寄存器，占了5bit，在指令格式的15-19bit位上。</strong>  </li>
 <li><strong>rs2 (Source Register #2)是第二个源操作数寄存器，占了5bit，在指令格式的25-31bit位上。</strong></li>
 </ul>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919104651373.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919104651373.png" class="">
 
 <h3 id="I类型指令"><a href="#I类型指令" class="headerlink" title="I类型指令"></a>I类型指令</h3><ul>
 <li><p>opcode是操作码，占了7bit，在指令格式的0-6bit位上</p>
@@ -139,7 +139,7 @@
 </li>
 </ul>
 <p>​        格式上只有一个字段不同于r格式，rs2和funct7替换为12位符号立即数（immediate字）imm[11：0]。immediate字段为补码值，所以它可以表示从-2”到2”-1之间的整数。当I型格式用于加载指令时，immediate字段表示一个字节偏移量，所以加载双字指令可以取相对于基址寄存器rd中基地址偏移±（2”或2048)字节(±(2或256）个双字)的任何双字</p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105824873.png" class>
+<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105824873.png" class="">
 
 <p>I类型的指令算术展示：</p>
 <p>注：其中画圈表示位移方向0表示向左移，1表示向右移</p>
@@ -154,7 +154,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" data-id="cl8034c1p00017smj5scab1gb" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" data-id="cl92id4pl001qggmjcqr94qta" class="article-share-link">Share</a>
       
       
     </footer>
