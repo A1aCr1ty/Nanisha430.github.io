@@ -64,6 +64,81 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-基于riscv使用汇编实现简单的任务调度" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/" class="article-date">
+  <time datetime="2022-10-18T05:29:45.000Z" itemprop="datePublished">2022-10-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/">基于riscv使用汇编实现简单的任务调度</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="任务调度"><a href="#任务调度" class="headerlink" title="任务调度"></a>任务调度</h2><p>本文主要通过简单的代码实现，线程的上下文保存和切换，实现一个简单的多线程框架，线程的调度只是使用了一个轮询的方法。</p>
+<h2 id="上下文"><a href="#上下文" class="headerlink" title="上下文"></a>上下文</h2><p>对于一个运行中的程序, 我们可以把它看作一个状态机, CPU每次执行一条指令会导致这个状态机从一个状态转换到另一个状态, 而这里的状态就是CPU的寄存器值和当前时刻内存的状态, 即state = (Regs, Mem). 一个程序的执行过程就是状态机状态迁移的过程, 如果希望在一个线程执行过程到某条指令时切换到另一个线程, 我们必须额外实现一段代码去完成这种切换, 并把这段代码插入到希望的切换点的后面, 这段代码必须要满足两个条件: </p>
+<p>1): 能够正确保存当前线程A的状态. 我们可以先假设完成这段切换的代码不存在, 线程A本该执行它的下一条指令, 而在执行下一条指令之前, 线程A有一个确定的状态, 即CPU的寄存器和内存中的值, <strong>具体来说包括pc指针, 栈寄存器sp, 通用寄存器等以及线程使用到的内存的状态.</strong> 线程切换代码, 首先必须能够当前线程A的状态保存起来, 以便后续调度器再切换回当前的这个线程. </p>
+<p>2): 能够正确恢复被选中的线程B的状态. 为了切换到另一个线程B去执行, 我<strong>们必须从保存线程B状态的内存地址处读取线程B的状态, 然后更新CPU寄存器以及内存的状态,</strong> 更新完成之后就可以继续线程B被中断的执行流了. 这里保存和恢复的线程状态就是线程的上下文, 在一个线程还没有运行过的情况下, 我们需要手工构造一个线程的上下文, 这个上下文的作用是使得线程一旦被调度, 就能够从创建线程时指定的入口地址处执行</p>
+<h2 id="保存上下文"><a href="#保存上下文" class="headerlink" title="保存上下文"></a>保存上下文</h2><p>真个汇编代码的逻辑就是首先保存当前线程的上下文，在切换要执行线程的上下文。</p>
+<p>以下都以RISC-V为基础进行讨论. 从线程A的角度看, 当它在自己的正常执行流中调用我们实现的上下文切换代码时, 只是相当于调用了一个普通函数, 因此编译器会根据RISC-V架构的ABI约定, 在调用这个函数之前去保存caller saved registers, 即ABI约定中应该由调用者去保存的寄存器, 并且在调用结束之后插入恢复这些寄存器的指令序列, 上下文切换代码段首先要做的就是保存ABI中约定由被调用者保存的寄存器, 我们可以在表示线程的结构体中开辟一块区域用来保存这些寄存器, 具体实现可以定义一个描述上下文的结构体, 并在线程结构体中嵌入一个上下文描述结构体.</p>
+<h2 id="切换上下文"><a href="#切换上下文" class="headerlink" title="切换上下文"></a>切换上下文</h2><p>线程切换代码段的下一个任务是恢复线程B的状态到CPU和内存, 只要使用若干load指令去恢复线程B的寄存器状态即可, 最后使用调用返回指令ret就完成了线程的切换. ret指令会根据ra寄存器的值更新pc寄存器, 从而完成跳转, 而ra寄存器保存了线程B被中断的那条指令的地址, 需要注意的是, 在RISC-V架构下, 我们无法通过类似mv这样的指令直接修改pc寄存器的值.</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><h3 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h3><p>进入到main函数之后, 首先创将两个线程, 然后调用本文实现调度模块提供的接口对线程列表中的线程进行调度, 直到没有可供调度的线程.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span> &#123;  </span><br><span class="line">	qthread_create(thread1_start);     </span><br><span class="line">	qthread_create(thread2_start);     </span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;Start to run all threads...n&quot;</span>);     </span><br><span class="line">	qthread_run_all();     </span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;All threads are done!n&quot;</span>);      </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>两个线程的入口函数分别为<code>thread1_start</code>和<code>thread2_start</code>, 线程完成的任务如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">thread1_start</span><span class="params">(<span class="type">void</span> *args)</span> &#123;     </span><br><span class="line">	<span class="type">int</span> i = <span class="number">1</span>;     </span><br><span class="line">	<span class="keyword">while</span> (i &lt; <span class="number">1000</span>)&#123;</span><br><span class="line">    	<span class="keyword">if</span> ((i % <span class="number">100</span>) == <span class="number">0</span>)&#123;</span><br><span class="line">        	<span class="built_in">printf</span>(<span class="string">&quot;Thread #1: runningn&quot;</span>);             </span><br><span class="line">        	qthread_yield();         </span><br><span class="line">        &#125;         </span><br><span class="line">        i++;     </span><br><span class="line">    &#125;     </span><br><span class="line">    qthread_exit();     </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>两个线程的入口函数功能类似, 都会在使用占用一段时间的CPU之后主动放弃使用权, 任务完成之后主动退出, 在CM32M433R开发板运行可以得到运行结果:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Start to run all threads...</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">All threads are done!</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程调度模块的具体接口"><a href="#线程调度模块的具体接口" class="headerlink" title="线程调度模块的具体接口"></a>线程调度模块的具体接口</h3><p>对于本文实现的线程调度模块qthread，其对外的接口主要包括创建，运行，挂起，结束。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">qthread_create</span><span class="params">(<span class="type">qthread_entry_t</span> entry)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">qthread_yield</span><span class="params">()</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">qthread_exit</span><span class="params">()</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">qthread_run_all</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程描述的结构体"><a href="#线程描述的结构体" class="headerlink" title="线程描述的结构体"></a>线程描述的结构体</h3><p>为了管理创建出来的线程, 需要一个描述线程的结构体, 记录线程的id, 调度状态, 线程上下文等信息. 需要注意的是, 每个线程的运行都需要栈的支持, 这里在线程结构体中定义了一个1024字节大小的数组, 用于线程函数运行使用的栈, 在创建线程时, 会手动设置线程上下文中的sp指针的值.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	uint64 tid;</span><br><span class="line">	<span class="class"><span class="keyword">enum</span> <span class="title">thread_state</span> <span class="title">state</span>;</span></span><br><span class="line">	<span class="type">qthread_entry_t</span> qthread_entry;</span><br><span class="line">	<span class="type">char</span> <span class="built_in">stack</span>[<span class="number">1024</span>];</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">context</span> <span class="title">context</span>;</span></span><br><span class="line">&#125; <span class="type">qthread_t</span>;</span><br></pre></td></tr></table></figure>
+
+<p>创建线程的接口实现如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">qthread_create</span><span class="params">(<span class="type">qthread_entry_t</span> entry)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> index_found = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; MAX_THREADS_NR; ++i)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (qthread_table[i].state == UNUSED)</span><br><span class="line">        &#123;</span><br><span class="line">            index_found = i;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (index_found &lt; <span class="number">0</span> || index_found &gt;= MAX_THREADS_NR)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    qthread_table[index_found].tid = get_next_tid();</span><br><span class="line">    qthread_table[index_found].state = READY;</span><br><span class="line">    qthread_table[index_found].qthread_entry = entry;</span><br><span class="line"></span><br><span class="line">    qthread_table[index_found].context.ra = (uint64)entry;</span><br><span class="line">    qthread_table[index_found].context.sp = (uint64)qthread_table[index_found].<span class="built_in">stack</span> + <span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为栈的增长方向是由高地址向低地址, 所以线程上下文中的sp指针赋值时需要加上栈的大小, 否则会出现栈溢出的问题.</p>
+<h3 id="上下文描述结构体"><a href="#上下文描述结构体" class="headerlink" title="上下文描述结构体"></a>上下文描述结构体</h3><p>对于RISC-V架构, 在进行上下文切换时需要保存ABI约定中callee维护的寄存器外加<code>ra</code>寄存器, 因为<code>ra</code>寄存器记录了调用完线程切换代码段对应的函数之后的返回地址, 即线程A被打断的指令地址. 上下文描述结构体如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">context</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    uint64 ra;  <span class="comment">// x1 </span></span><br><span class="line">    uint64 sp;  <span class="comment">// x2</span></span><br><span class="line">    uint64 s0;  <span class="comment">// x8</span></span><br><span class="line">    uint64 s1;  <span class="comment">// x9</span></span><br><span class="line">    uint64 s2;  <span class="comment">// x18 - x27</span></span><br><span class="line">    uint64 s3;  <span class="comment">// </span></span><br><span class="line">    uint64 s4;  <span class="comment">//</span></span><br><span class="line">    uint64 s5;</span><br><span class="line">    uint64 s6;</span><br><span class="line">    uint64 s7;</span><br><span class="line">    uint64 s8;</span><br><span class="line">    uint64 s9;</span><br><span class="line">    uint64 s10;</span><br><span class="line">    uint64 s11;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程切换代码段"><a href="#线程切换代码段" class="headerlink" title="线程切换代码段"></a>线程切换代码段</h3><p>如上文所述, 线程切换代码段需要保存一个上下文, 并恢复另一个上下文, 这部分代码使用汇编指令去实现，这是riscv32的指令，如果时64位则是ld和sd，并且要保存浮点寄存器:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">	.section .text</span><br><span class="line">    .global swtch</span><br><span class="line">swtch:</span><br><span class="line">    sw ra, <span class="number">0</span>(a0)</span><br><span class="line">    sw sp, <span class="number">4</span>(a0)</span><br><span class="line">    sw s0, <span class="number">8</span>(a0)</span><br><span class="line">    sw s1, <span class="number">12</span>(a0)</span><br><span class="line">    sw s2, <span class="number">16</span>(a0)</span><br><span class="line">    sw s3, <span class="number">20</span>(a0)</span><br><span class="line">   	sw s4, <span class="number">24</span>(a0)</span><br><span class="line">    sw s5, <span class="number">28</span>(a0)</span><br><span class="line">    sw s6, <span class="number">32</span>(a0)</span><br><span class="line">    sw s7, <span class="number">36</span>(a0)</span><br><span class="line">    sw s8, <span class="number">40</span>(a0)</span><br><span class="line">    sw s9, <span class="number">44</span>(a0)</span><br><span class="line">    sw s10, <span class="number">48</span>(a0)</span><br><span class="line">    sw s11, <span class="number">52</span>(a0)</span><br><span class="line"></span><br><span class="line">    lw ra, <span class="number">0</span>(a1)</span><br><span class="line">    lw sp, <span class="number">4</span>(a1)</span><br><span class="line">    lw s0, <span class="number">8</span>(a1)</span><br><span class="line">    lw s1, <span class="number">12</span>(a1)</span><br><span class="line">    lw s2, <span class="number">16</span>(a1)</span><br><span class="line">    lw s3, <span class="number">20</span>(a1)</span><br><span class="line">    lw s4, <span class="number">24</span>(a1)</span><br><span class="line">    lw s5, <span class="number">28</span>(a1)</span><br><span class="line">    lw s6, <span class="number">32</span>(a1)</span><br><span class="line">    lw s7, <span class="number">36</span>(a1)</span><br><span class="line">    lw s8, <span class="number">40</span>(a1)</span><br><span class="line">    lw s9, <span class="number">44</span>(a1)</span><br><span class="line">    lw s10, <span class="number">48</span>(a1)</span><br><span class="line">    lw s11, <span class="number">52</span>(a1)</span><br><span class="line"></span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+<p>代码的前半部分用于保存上下文, 后半部分用于恢复上下文, 按照ABI约定, 寄存器<code>a0</code>和<code>a1</code>分别用来传递函数调用的第一个和第二个参数, 这里在调用时传递的就是两段保存和恢复各自上下文的内存地址. 最后的<code>ret</code>指令, 会用寄存器<code>ra</code>的值更新寄存器<code>pc</code>, 因为<code>ra</code>已经被恢复成了线程B被中断的指令地址, 所以<code>ret</code>指令执行过后CPU就会执行线程B对应的代码. 在恢复上下文时也更新了栈指针寄存器<code>sp</code>, 所以线程B在执行时使用的时自己的栈内存. 线程主动释放CPU资源时会调用<code>qthread_yield()</code>, 在这个函数中会调用线程切换函数<code>swtch</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">qthread_yield</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    current-&gt;state = READY;</span><br><span class="line">    swtch(&amp;current-&gt;context, &amp;qthread_context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于调用<code>qthread_yield()</code>的线程A来说, 当其内部调用<code>swtch</code>函数时, 实际上CPU已经切换到了另一个线程B去执行, 但线程A是不能感知到的, 当这个<code>swtch</code>函数返回之后, 对线程A来说就像调用了一个普通的函数一样, 线程A会继续自己的执行流.</p>
+<h3 id="轮询调度实现"><a href="#轮询调度实现" class="headerlink" title="轮询调度实现"></a>轮询调度实现</h3><p>调度采用轮询的方式, 每次选取一个可用线程去切换.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">qthread_run_all</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; MAX_THREADS_NR; ++i)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (qthread_table[i].state == READY)</span><br><span class="line">            &#123;</span><br><span class="line">                current = &amp;qthread_table[i];</span><br><span class="line">                current-&gt;state = RUNNING;</span><br><span class="line">                count++;</span><br><span class="line">                swtch(&amp;qthread_context, &amp;current-&gt;context);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (count == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        count = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/" data-id="cl9dtq1p20000ckmj11q942i8" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux内存管理-slab原理以及buddy伙伴系统" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/10/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-slab%E5%8E%9F%E7%90%86%E4%BB%A5%E5%8F%8Abuddy%E4%BC%99%E4%BC%B4%E7%B3%BB%E7%BB%9F/" class="article-date">
@@ -750,52 +825,6 @@
 
 
   
-    <article id="post-stm32固件库文件分析" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" class="article-date">
-  <time datetime="2022-09-21T06:25:10.000Z" itemprop="datePublished">2022-09-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">stm32固件库文件分析</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="1-汇编编写的启动文件"><a href="#1-汇编编写的启动文件" class="headerlink" title="1-汇编编写的启动文件"></a>1-汇编编写的启动文件</h2><p><strong>startup_stm32f10x_hd.s</strong>:设置堆栈指针、设置PC指针、初始化中断向量表、配置系统时钟、对用C库函数_main最终去到C的世界</p>
-<h2 id="2-时钟配置文件"><a href="#2-时钟配置文件" class="headerlink" title="2-时钟配置文件"></a>2-时钟配置文件</h2><p><strong>system_stm32f10x.c</strong>：把外部时钟HSE=8M，经过PLL倍频为72M。</p>
-<h2 id="3-外设相关的"><a href="#3-外设相关的" class="headerlink" title="3-外设相关的"></a>3-外设相关的</h2><p><strong>stm32f10x.h</strong>：实现了内核之外的外设的寄存器映射<br>xxx：GPIO、USRAT、I2C、SPI、FSMC<br><strong>stm32f10x_xx.c</strong>：外设的驱动函数库文件<br><strong>stm32f10x_xx.h</strong>：存放外设的初始化结构体，外设初始化结构体成员的参数列表，外设固件库函数的声明</p>
-<h2 id="4-内核相关的"><a href="#4-内核相关的" class="headerlink" title="4-内核相关的"></a>4-内核相关的</h2><p>CMSIS - Cortex 微控制器软件接口标准<br><strong>core_cm3.h</strong>：实现了内核里面外设的寄存器映射<br><strong>core_cm3.c</strong>：内核外设的驱动固件库</p>
-<p>NVIC(嵌套向量中断控制器)、SysTick(系统滴答定时器)<br>misc.h<br>misc.c</p>
-<h2 id="5-头文件的配置文件"><a href="#5-头文件的配置文件" class="headerlink" title="5-头文件的配置文件"></a>5-头文件的配置文件</h2><p><strong>stm32f10x_conf.h</strong>：头文件的头文件<br>//stm32f10x_usart.h<br>//stm32f10x_i2c.h<br>//stm32f10x_spi.h<br>//stm32f10x_adc.h<br>//stm32f10x_fsmc.h<br>……</p>
-<h2 id="6-专门存放中断服务函数的C文件"><a href="#6-专门存放中断服务函数的C文件" class="headerlink" title="6-专门存放中断服务函数的C文件"></a>6-专门存放中断服务函数的C文件</h2><p><strong>stm32f10x_it.c</strong><br><strong>stm32f10x_it.h</strong></p>
-<p>中断服务函数你可以随意放在其他的地方，并不是一定要放在stm32f10x_it.c</p>
-<p>#include “stm32f10x.h”   // 相当于51单片机中的  #include &lt;reg51.h&gt;</p>
-<p>int main(void)<br>{<br>    // 来到这里的时候，系统的时钟已经被配置成72M。<br>}</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" data-id="cl92id4pg001dggmj3c55hmv6" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -832,6 +861,10 @@
       <ul>
         
           <li>
+            <a href="/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/">基于riscv使用汇编实现简单的任务调度</a>
+          </li>
+        
+          <li>
             <a href="/2022/10/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-slab%E5%8E%9F%E7%90%86%E4%BB%A5%E5%8F%8Abuddy%E4%BC%99%E4%BC%B4%E7%B3%BB%E7%BB%9F/">Linux内存管理:slab原理以及buddy伙伴系统</a>
           </li>
         
@@ -845,10 +878,6 @@
         
           <li>
             <a href="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/">ONEOS内存池实现及改进</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/">malloc与内存池</a>
           </li>
         
       </ul>
