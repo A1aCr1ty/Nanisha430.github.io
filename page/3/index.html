@@ -64,6 +64,62 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rvcc学习笔记19" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/" class="article-date">
+  <time datetime="2022-09-19T03:04:00.000Z" itemprop="datePublished">2022-09-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/">rvcc学习笔记19</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="支持一元-amp-运算符"><a href="#支持一元-amp-运算符" class="headerlink" title="支持一元&amp; *运算符"></a>支持一元&amp; *运算符</h2><p>​    一元&amp;是引用符，返回变量的地址，一元*是解引用符，返回该地址存储的值。在Node节点种类中，添加这两种。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ND_ADDR,      <span class="comment">// 取地址 &amp;</span></span><br><span class="line">ND_DEREF,     <span class="comment">// 解引用 *</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="语法分析："><a href="#语法分析：" class="headerlink" title="语法分析："></a>语法分析：</h3><p>​    修改文法，*// unary = (“+” | “-“ | “*“ | “&amp;”) unary | primary*</p>
+<p>​    unary()函数实现：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析一元运算</span></span><br><span class="line"><span class="comment">// unary = (&quot;+&quot; | &quot;-&quot; | &quot;*&quot; | &quot;&amp;&quot;) unary | primary</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">unary</span><span class="params">(Token **Rest, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// &quot;+&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;+&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> unary(Rest, Tok-&gt;Next);</span><br><span class="line">  <span class="comment">// &quot;-&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;-&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> newUnary(ND_NEG, unary(Rest, Tok-&gt;Next),Tok);</span><br><span class="line">  <span class="comment">// &quot;&amp;&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span>(equal(Tok,<span class="string">&quot;&amp;&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> newUnary(ND_ADDR,unary(Rest,Tok-&gt;Next),Tok);</span><br><span class="line">  <span class="comment">// &quot;*&quot; unary</span></span><br><span class="line">  <span class="keyword">if</span> (equal(Tok, <span class="string">&quot;*&quot;</span>))</span><br><span class="line">    <span class="keyword">return</span> newUnary(ND_DEREF, unary(Rest, Tok-&gt;Next), Tok);</span><br><span class="line">  <span class="comment">// primary</span></span><br><span class="line">  <span class="keyword">return</span> primary(Rest, Tok);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h2><p>​        引用符就是返回变量的地址，在genExpr中加入一行就行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">case ND_ADDR:</span><br><span class="line">   genAddr(Nd-&gt;LHS);</span><br><span class="line">   return;</span><br></pre></td></tr></table></figure>
+
+<p>​        对于解引用符是返回一个地址里存储的值。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> ND_VAR:</span><br><span class="line">   <span class="comment">// 计算出变量的地址，然后存入a0</span></span><br><span class="line">   genAddr(Nd);</span><br><span class="line">   <span class="comment">// 访问a0地址中存储的数据，存入到a0当中</span></span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  # 读取a0中存放的地址，得到的值存入a0\n&quot;</span>);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  ld a0, 0(a0)\n&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span>;</span><br><span class="line">   <span class="comment">// 解引用</span></span><br><span class="line"> <span class="keyword">case</span> ND_DEREF:</span><br><span class="line">   genExpr(Nd-&gt;LHS);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  # 读取a0中存放的地址，得到的值存入a0\n&quot;</span>);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;  ld a0, 0(a0)\n&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">genAddr</span><span class="params">(Node *Nd)</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (Nd-&gt;Kind) &#123;</span><br><span class="line">  <span class="comment">// 变量</span></span><br><span class="line">  <span class="keyword">case</span> ND_VAR:</span><br><span class="line">    <span class="comment">// 偏移量是相对于fp的</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;  # 获取变量%s的栈内地址为%d(fp)\n&quot;</span>, Nd-&gt;Var-&gt;Name,</span><br><span class="line">           Nd-&gt;Var-&gt;Offset);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;  addi a0, fp, %d\n&quot;</span>, Nd-&gt;Var-&gt;Offset);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="comment">// 解引用*</span></span><br><span class="line">  <span class="keyword">case</span> ND_DEREF:</span><br><span class="line">    genExpr(Nd-&gt;LHS);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125; </span><br></pre></td></tr></table></figure>
+
+<h2 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">assert <span class="number">3</span> <span class="string">&#x27;&#123; x=3; return *&amp;x; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">3</span> <span class="string">&#x27;&#123; x=3; y=&amp;x; z=&amp;y; return **z; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">5</span> <span class="string">&#x27;&#123; x=3; y=5; return *(&amp;x+8); &#125;&#x27;</span></span><br><span class="line">assert <span class="number">3</span> <span class="string">&#x27;&#123; x=3; y=5; return *(&amp;y-8); &#125;&#x27;</span></span><br><span class="line">assert <span class="number">5</span> <span class="string">&#x27;&#123; x=3; y=&amp;x; *y=5; return x; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">7</span> <span class="string">&#x27;&#123; x=3; y=5; *(&amp;x+8)=7; return y; &#125;&#x27;</span></span><br><span class="line">assert <span class="number">7</span> <span class="string">&#x27;&#123; x=3; y=5; *(&amp;y-8)=7; return x; &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123; x=<span class="number">3</span>; <span class="keyword">return</span> *&amp;x; &#125; =&gt; <span class="number">3</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=&amp;x; z=&amp;y; <span class="keyword">return</span> **z; &#125; =&gt; <span class="number">3</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; <span class="keyword">return</span> *(&amp;x+<span class="number">8</span>); &#125; =&gt; <span class="number">5</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; <span class="keyword">return</span> *(&amp;y<span class="number">-8</span>); &#125; =&gt; <span class="number">3</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=&amp;x; *y=<span class="number">5</span>; <span class="keyword">return</span> x; &#125; =&gt; <span class="number">5</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; *(&amp;x+<span class="number">8</span>)=<span class="number">7</span>; <span class="keyword">return</span> y; &#125; =&gt; <span class="number">7</span></span><br><span class="line">&#123; x=<span class="number">3</span>; y=<span class="number">5</span>; *(&amp;y<span class="number">-8</span>)=<span class="number">7</span>; <span class="keyword">return</span> x; &#125; =&gt; <span class="number">7</span></span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B019/" data-id="cl92id4pc0018ggmjgl4bb9d1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rvcc学习笔记18" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/19/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B018/" class="article-date">
@@ -541,99 +597,6 @@
 
 
   
-    <article id="post-汇编相关" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" class="article-date">
-  <time datetime="2022-09-13T09:48:22.000Z" itemprop="datePublished">2022-09-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/">汇编相关</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>cpu对存储器进行读写，是通过地址总线，数据总线，控制总线来进行的。</strong></p>
-<p>地址总线的宽度决定了存储单元的数量，一个地址对应一个存储单元，一个存储单元大小为1字节。地址总线数量为32，则存储单元的数量为2的32次方。</p>
-<p>数据总线的宽度决定了数据传输的速率，8根数据总线传输1110H要两次而，16位数据总线只要一次。</p>
-<p>控制总线的数量决定控制的读写设备的数量。</p>
-<p><strong>汇编指令是机器指令的助记符，同机器指令一一对应。</strong></p>
-<p><strong>每一中cpu都有自己的汇编指令集。</strong></p>
-<p><strong>cpu可以直接使用的信息在内存中存放。</strong></p>
-<p><strong>在存储器中的指令和数据没有任何区别，都是二进制信息。</strong></p>
-<p><strong>在RISC-V中有32个32bit寄存器：</strong></p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220913190127022.png" class="">
-
-
-
-<p><strong>RV32I指令集有47条指令，能够满足现代操作系统运行的基本要求，47条指令按照功能可以分为如下几类。</strong></p>
-<p>整数运算指令：实现算术、逻辑、比较等运算。<br>分支转移指令：实现条件转移、无条件转移等运算，并且没有延迟槽。<br>加载存储指令：实现字节、半字、字的加载、存储操作，采用的都是寄存器相对寻址方式。<br>控制与状态寄存器访问指令：实现对系统控制与状态寄存器的原子读-写、原子读-修改、原子读-清零等操作。<br>系统调用指令：实现系统调用、调试等功能。</p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105039186.png" class="">
-
-<h3 id="R-类型指令"><a href="#R-类型指令" class="headerlink" title="R 类型指令"></a>R 类型指令</h3><ul>
-<li><strong>opcode是操作码，占了7bit，在指令格式的0-6bit位上</strong></li>
-<li><strong>rd (Destination Register)是目的寄存器，占了5bit，在指令格式的7-11bit位上</strong>  </li>
-<li><strong>funct3+funct7是两个操作字段。funct3占了3bit，在指令格式的12-14bit位上；funct7占了7bit，在指令格式的25-31bit位上。</strong>  </li>
-<li><strong>rs1 (Source Register #1)是第一个源操作数寄存器，占了5bit，在指令格式的15-19bit位上。</strong>  </li>
-<li><strong>rs2 (Source Register #2)是第二个源操作数寄存器，占了5bit，在指令格式的25-31bit位上。</strong></li>
-</ul>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919104651373.png" class="">
-
-<h3 id="I类型指令"><a href="#I类型指令" class="headerlink" title="I类型指令"></a>I类型指令</h3><ul>
-<li><p>opcode是操作码，占了7bit，在指令格式的0-6bit位上</p>
-</li>
-<li><p>rd (Destination Register)是目的寄存器，占了5bit，在指令格式的7-11bit位上</p>
-</li>
-<li><p>funct3是操作字段。funct3占了3bit，在指令格式的12-14bit位上。</p>
-</li>
-<li><p>rs1 (Source Register #1)是第一个源操作数寄存器，占了5bit，在指令格式的15-19bit位上。</p>
-</li>
-<li><p>存放12位的立即数——imm[11:0]，在指令格式的20-31bit位上。</p>
-</li>
-</ul>
-<p>​    <strong>I类型指令可以用于：</strong></p>
-<ul>
-<li><p>寄存器-立即数的运算</p>
-</li>
-<li><p>加载指令</p>
-</li>
-</ul>
-<p>​        格式上只有一个字段不同于r格式，rs2和funct7替换为12位符号立即数（immediate字）imm[11：0]。immediate字段为补码值，所以它可以表示从-2”到2”-1之间的整数。当I型格式用于加载指令时，immediate字段表示一个字节偏移量，所以加载双字指令可以取相对于基址寄存器rd中基地址偏移±（2”或2048)字节(±(2或256）个双字)的任何双字</p>
-<img src="/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/image-20220919105824873.png" class="">
-
-<p>I类型的指令算术展示：</p>
-<p>注：其中画圈表示位移方向0表示向左移，1表示向右移</p>
-<ul>
-<li>SLLI：是逻辑左移，低位补零</li>
-<li>SRLI：是逻辑右移, 高位补零</li>
-<li>SRAI：是算术右移，高位补原来高位。</li>
-</ul>
-<p>注：RV32I 支持加载有符号和无符号字节和半字（lb，lbu，lh，lhu）</p>
-<p>原文：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38915354/article/details/115696721">https://blog.csdn.net/qq_38915354/article/details/115696721</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/13/%E6%B1%87%E7%BC%96%E7%9B%B8%E5%85%B3/" data-id="cl92id4pl001qggmjcqr94qta" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -657,7 +620,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
     </div>
   </div>
 
@@ -668,6 +631,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/11/02/qemu%E6%96%B0%E5%A2%9ESoc/">qemu新增Soc</a>
+          </li>
         
           <li>
             <a href="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/">rtos中断流程</a>
@@ -683,10 +650,6 @@
         
           <li>
             <a href="/2022/10/20/%E4%BC%98%E5%85%88%E7%BA%A7%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9E%E7%8E%B0/">优先级任务调度实现</a>
-          </li>
-        
-          <li>
-            <a href="/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/">基于riscv使用汇编实现简单的任务调度</a>
           </li>
         
       </ul>
