@@ -64,6 +64,88 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-spike相关理解1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/" class="article-date">
+  <time datetime="2022-11-03T08:36:54.000Z" itemprop="datePublished">2022-11-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/">spike相关理解1</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="spike整体结构"><a href="#spike整体结构" class="headerlink" title="spike整体结构"></a>spike整体结构</h2><ul>
+<li><strong>fdt</strong>：为模拟器生成device tree，包括cpu数量，内存的大小等</li>
+<li><strong>fesvr</strong>：提供了target与主机host交互的接口（借助proxy kernel实现，pk处理application代码中的系统调用，但是实际上要导到host os中进行处理，他们之间就是通过fesvr来进行通信的）</li>
+<li><strong>softfloat库提供了浮点数的支持</strong></li>
+<li><strong>riscv实现了risc-v机器码的翻译和执行</strong></li>
+<li>spike_main: 程序的entry_point和interface</li>
+</ul>
+<h2 id="spike模拟器执行binary的流程"><a href="#spike模拟器执行binary的流程" class="headerlink" title="spike模拟器执行binary的流程"></a>spike模拟器执行binary的流程</h2><ul>
+<li>解码，将机器码要翻译成指令</li>
+<li>memory load and store  维护内存</li>
+<li>maintain register 维护寄存器</li>
+<li>debug mode — like a tiny gdb 提供一个接口类似于gdb</li>
+<li>执行指令</li>
+</ul>
+<h2 id="Spike-CPU的指令执⾏过程"><a href="#Spike-CPU的指令执⾏过程" class="headerlink" title="Spike CPU的指令执⾏过程"></a><strong>Spike CPU</strong>的指令执⾏过程</h2><ul>
+<li><p> Spike执⾏代码时，执⾏的实际上是C++ Function</p>
+</li>
+<li><p> CPU从pc指针处读取指令，通过译码来确定接下来要执⾏的功能 </p>
+</li>
+<li><p> 指令的⾏为定义在riscv/insns下的 指令名称.h⽂件中</p>
+</li>
+<li><p>指令的编码定义在riscv/encoding.h中</p>
+<p><img src="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/image-20221103165247326.png" alt="image-20221103165247326"></p>
+</li>
+<li><p> 定义⼀条指令需要定义如下内容：</p>
+</li>
+<li><p> #defifine MATCH_[instruction name] 0x12341234  // 指令的操作码</p>
+</li>
+<li><p> #defifine MASK_[instruction name] 0xabcdabcd  //指令的掩码，把不需要的不是参数的位置为一可以起到屏蔽作用</p>
+</li>
+<li><p> DECLARE_INSN(XXX, MATCH_XXX, MASK_XXX) // 将指令函数，指令操作码，指令掩码联系在一起</p>
+</li>
+<li><p> alternative：通过riscv-opcodes⽣成encoding.h</p>
+</li>
+</ul>
+<p> 例：riscv/insns/lw.h</p>
+<p><img src="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/image-20221103170520594.png" alt="image-20221103170520594"></p>
+<p>实际上模拟指令的⾏为相当于写对应的c++ function</p>
+<p> riscv/decode.h中定义了⼀系列操作存储器和寄存器的宏定义，以便于在指令中操作它们</p>
+<h2 id="fesvr-模块简介"><a href="#fesvr-模块简介" class="headerlink" title="fesvr 模块简介"></a><strong>fesvr</strong> <strong>模块简介</strong></h2><ul>
+<li> <strong>fesvr， 全称是 risc-v front-end server</strong></li>
+<li>主要用来实现simulation target 与host 主机的交互</li>
+</ul>
+<p><img src="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/image-20221103171413134.png" alt="image-20221103171413134"></p>
+<p>spike并没有模拟外部设备，所以需要I/O会产生中断，用host os处理。 htif 全称 host target interface。</p>
+<h2 id="Spike-启动simulation的过程"><a href="#Spike-启动simulation的过程" class="headerlink" title="Spike 启动simulation的过程"></a><strong>Spike</strong> <strong>启动simulation</strong>的过程</h2><p><img src="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/image-20221103171954856.png" alt="image-20221103171954856"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/" data-id="cla0we55t00009cmj5sj4ecku" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-qemu新增Soc" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/11/02/qemu%E6%96%B0%E5%A2%9ESoc/" class="article-date">
@@ -90,6 +172,7 @@
 <p>• Trace-accurate(Spike) :模拟实际代码执⾏过程中的软硬件⾏为，提供指令级别的仿真</p>
 <p>• Cycle-accurate：提供硬件级别的仿真，可以针对特定的实现作周期级别的模拟</p>
 <p><img src="/2022/11/02/qemu%E6%96%B0%E5%A2%9ESoc/image-20221102144255567.png" alt="image-20221102144255567"></p>
+<h2 id="qemu基本结构"><a href="#qemu基本结构" class="headerlink" title="qemu基本结构"></a>qemu基本结构</h2><p><img src="/2022/11/02/qemu%E6%96%B0%E5%A2%9ESoc/image-20221103175755756.png" alt="image-20221103175755756"></p>
 <h2 id="QEMU中Soc的添加"><a href="#QEMU中Soc的添加" class="headerlink" title="QEMU中Soc的添加"></a>QEMU中Soc的添加</h2><h3 id="Cpu模拟"><a href="#Cpu模拟" class="headerlink" title="Cpu模拟"></a>Cpu模拟</h3><p>QOM模型：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">MyDevice</span>&#123;</span></span><br><span class="line">	DeviceState parent;   <span class="comment">// 父设备</span></span><br><span class="line">	<span class="type">int</span> reg0,reg1;</span><br><span class="line">&#125;MyDevice</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">MyDeviceClass</span>&#123;</span></span><br><span class="line">    DeviceClass parent; </span><br><span class="line">    <span class="type">void</span> (*init)(MyDevice *obj);    </span><br><span class="line">&#125;MyDeviceClass;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">my_device_register_types</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line">    type_register_static(&amp;my_device_info);</span><br><span class="line">&#125;</span><br><span class="line">type_init(my_device_register_types);</span><br></pre></td></tr></table></figure>
 
@@ -878,148 +961,6 @@
 
 
   
-    <article id="post-ONEOS内存池实现及改进" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" class="article-date">
-  <time datetime="2022-10-07T07:19:45.000Z" itemprop="datePublished">2022-10-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/">ONEOS内存池实现及改进</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="OneOS内存池的基本结构"><a href="#OneOS内存池的基本结构" class="headerlink" title="OneOS内存池的基本结构"></a>OneOS内存池的基本结构</h2><p>OneOS内存池的实现原理是Freelist，其本质为一个空闲链表块，其原理图如下图所示：</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class=""> 
-
-<p>其关键在于：链表管理信息的存储，Pool初始化，申请和释放过程。</p>
-<p>申请的过程很简单，但是free过程中存在问题。<strong>如何通过指针确定内存块的大小？</strong></p>
-<h3 id="通常做法："><a href="#通常做法：" class="headerlink" title="通常做法："></a><strong>通常做法：</strong></h3><p>实现简单，但是对于小内存分配来说浪费了空间。</p>
-
-
-<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class="">
-
-<p>将分配后的的内存块指向内存池。</p>
-<h3 id="改进的做法："><a href="#改进的做法：" class="headerlink" title="改进的做法："></a>改进的做法：</h3><p>page是由pool来维护的，所有的page都会指向pool，而block都是由page维护的，传来的的block地址经过处理可以的得到page地址，从而知道pool的信息。</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class="">
-
-<ul>
-<li>将第一个page的地址设为4KB的倍数。</li>
-<li>根据block的地址计算page地址 </li>
-<li>PA = BA &amp;~0xfff;  </li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>  <span class="title">page</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *mempool_address;         <span class="comment">//指向内存池</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *next_page;               <span class="comment">// 下一页</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> block_free_count;         <span class="comment">// 空闲块的数量</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *first_free_block;        <span class="comment">// 第一个空闲块的地址</span></span><br><span class="line">&#125;Page;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mempool</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="comment">// 内存池开始的地址</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *start_address;</span><br><span class="line">    <span class="comment">// 下一个空闲页的地址</span></span><br><span class="line">    Page *page_list;      <span class="comment">// 设置大小为4KB</span></span><br><span class="line">    <span class="comment">// 内存池的大小</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> size;</span><br><span class="line">    <span class="comment">// 内存块的大小</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> block_size;</span><br><span class="line">    <span class="comment">// page的数量</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> page_total_count;</span><br><span class="line">&#125;Mempool;</span><br></pre></td></tr></table></figure>
-
-<h4 id="mempool-init"><a href="#mempool-init" class="headerlink" title="mempool_init"></a>mempool_init</h4><p>该函数使用静态的方法初始化内存池，内存池以及内存池空间由使用者提供：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mempool_init</span><span class="params">(Mempool *mp,<span class="type">const</span> <span class="type">char</span> *name,<span class="type">void</span> *start,<span class="type">unsigned</span> <span class="type">long</span> size,<span class="type">unsigned</span> <span class="type">long</span> block_size,<span class="type">unsigned</span> <span class="type">long</span> num)</span></span><br></pre></td></tr></table></figure>
-
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>mp</td>
-<td>内存池句柄</td>
-</tr>
-<tr>
-<td>name</td>
-<td>内存池名称</td>
-</tr>
-<tr>
-<td>start</td>
-<td>内存分配起始地址</td>
-</tr>
-<tr>
-<td>size</td>
-<td>内存池大小</td>
-</tr>
-<tr>
-<td>block_size</td>
-<td>内存块大小</td>
-</tr>
-<tr>
-<td>num</td>
-<td>内存块数量</td>
-</tr>
-</tbody></table>
-<h4 id="mempool-alloc"><a href="#mempool-alloc" class="headerlink" title="mempool_alloc"></a>mempool_alloc</h4><p>该函数从内存池中申请一块内存</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">memory_alloc</span><span class="params">(Mempool *mp)</span></span><br></pre></td></tr></table></figure>
-
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>mp</td>
-<td>内存池句柄</td>
-</tr>
-<tr>
-<td><strong>返回</strong></td>
-<td><strong>说明</strong></td>
-</tr>
-<tr>
-<td>非NULL</td>
-<td>分配的内存块地址</td>
-</tr>
-<tr>
-<td>NULL</td>
-<td>分配失败</td>
-</tr>
-</tbody></table>
-<h4 id="mempool-free"><a href="#mempool-free" class="headerlink" title="mempool_free"></a>mempool_free</h4><p>释放一块由mempool_alloc()分配的内存块地址</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">memory_free</span><span class="params">(<span class="type">void</span> *block)</span></span><br></pre></td></tr></table></figure>
-
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>block</td>
-<td>内存块的地址</td>
-</tr>
-<tr>
-<td><strong>返回值</strong></td>
-<td><strong>说明</strong></td>
-</tr>
-<tr>
-<td>无</td>
-<td>无</td>
-</tr>
-</tbody></table>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="cl92id4or0002ggmj86o8fg2k" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -1056,6 +997,10 @@
       <ul>
         
           <li>
+            <a href="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/">spike相关理解1</a>
+          </li>
+        
+          <li>
             <a href="/2022/11/02/qemu%E6%96%B0%E5%A2%9ESoc/">qemu新增Soc</a>
           </li>
         
@@ -1069,10 +1014,6 @@
         
           <li>
             <a href="/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/">riscv汇编语言编程</a>
-          </li>
-        
-          <li>
-            <a href="/2022/10/20/%E4%BC%98%E5%85%88%E7%BA%A7%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9E%E7%8E%B0/">优先级任务调度实现</a>
           </li>
         
       </ul>

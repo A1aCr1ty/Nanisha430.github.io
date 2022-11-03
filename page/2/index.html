@@ -64,6 +64,148 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-ONEOS内存池实现及改进" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" class="article-date">
+  <time datetime="2022-10-07T07:19:45.000Z" itemprop="datePublished">2022-10-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/">ONEOS内存池实现及改进</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="OneOS内存池的基本结构"><a href="#OneOS内存池的基本结构" class="headerlink" title="OneOS内存池的基本结构"></a>OneOS内存池的基本结构</h2><p>OneOS内存池的实现原理是Freelist，其本质为一个空闲链表块，其原理图如下图所示：</p>
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class=""> 
+
+<p>其关键在于：链表管理信息的存储，Pool初始化，申请和释放过程。</p>
+<p>申请的过程很简单，但是free过程中存在问题。<strong>如何通过指针确定内存块的大小？</strong></p>
+<h3 id="通常做法："><a href="#通常做法：" class="headerlink" title="通常做法："></a><strong>通常做法：</strong></h3><p>实现简单，但是对于小内存分配来说浪费了空间。</p>
+
+
+<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class="">
+
+<p>将分配后的的内存块指向内存池。</p>
+<h3 id="改进的做法："><a href="#改进的做法：" class="headerlink" title="改进的做法："></a>改进的做法：</h3><p>page是由pool来维护的，所有的page都会指向pool，而block都是由page维护的，传来的的block地址经过处理可以的得到page地址，从而知道pool的信息。</p>
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class="">
+
+<ul>
+<li>将第一个page的地址设为4KB的倍数。</li>
+<li>根据block的地址计算page地址 </li>
+<li>PA = BA &amp;~0xfff;  </li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>  <span class="title">page</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *mempool_address;         <span class="comment">//指向内存池</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *next_page;               <span class="comment">// 下一页</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> block_free_count;         <span class="comment">// 空闲块的数量</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *first_free_block;        <span class="comment">// 第一个空闲块的地址</span></span><br><span class="line">&#125;Page;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mempool</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="comment">// 内存池开始的地址</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *start_address;</span><br><span class="line">    <span class="comment">// 下一个空闲页的地址</span></span><br><span class="line">    Page *page_list;      <span class="comment">// 设置大小为4KB</span></span><br><span class="line">    <span class="comment">// 内存池的大小</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> size;</span><br><span class="line">    <span class="comment">// 内存块的大小</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> block_size;</span><br><span class="line">    <span class="comment">// page的数量</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> page_total_count;</span><br><span class="line">&#125;Mempool;</span><br></pre></td></tr></table></figure>
+
+<h4 id="mempool-init"><a href="#mempool-init" class="headerlink" title="mempool_init"></a>mempool_init</h4><p>该函数使用静态的方法初始化内存池，内存池以及内存池空间由使用者提供：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mempool_init</span><span class="params">(Mempool *mp,<span class="type">const</span> <span class="type">char</span> *name,<span class="type">void</span> *start,<span class="type">unsigned</span> <span class="type">long</span> size,<span class="type">unsigned</span> <span class="type">long</span> block_size,<span class="type">unsigned</span> <span class="type">long</span> num)</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mp</td>
+<td>内存池句柄</td>
+</tr>
+<tr>
+<td>name</td>
+<td>内存池名称</td>
+</tr>
+<tr>
+<td>start</td>
+<td>内存分配起始地址</td>
+</tr>
+<tr>
+<td>size</td>
+<td>内存池大小</td>
+</tr>
+<tr>
+<td>block_size</td>
+<td>内存块大小</td>
+</tr>
+<tr>
+<td>num</td>
+<td>内存块数量</td>
+</tr>
+</tbody></table>
+<h4 id="mempool-alloc"><a href="#mempool-alloc" class="headerlink" title="mempool_alloc"></a>mempool_alloc</h4><p>该函数从内存池中申请一块内存</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">memory_alloc</span><span class="params">(Mempool *mp)</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mp</td>
+<td>内存池句柄</td>
+</tr>
+<tr>
+<td><strong>返回</strong></td>
+<td><strong>说明</strong></td>
+</tr>
+<tr>
+<td>非NULL</td>
+<td>分配的内存块地址</td>
+</tr>
+<tr>
+<td>NULL</td>
+<td>分配失败</td>
+</tr>
+</tbody></table>
+<h4 id="mempool-free"><a href="#mempool-free" class="headerlink" title="mempool_free"></a>mempool_free</h4><p>释放一块由mempool_alloc()分配的内存块地址</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">memory_free</span><span class="params">(<span class="type">void</span> *block)</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>block</td>
+<td>内存块的地址</td>
+</tr>
+<tr>
+<td><strong>返回值</strong></td>
+<td><strong>说明</strong></td>
+</tr>
+<tr>
+<td>无</td>
+<td>无</td>
+</tr>
+</tbody></table>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="cl92id4or0002ggmj86o8fg2k" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-malloc与内存池" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" class="article-date">
@@ -623,63 +765,6 @@
 
 
   
-    <article id="post-初识stm32" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/19/%E5%88%9D%E8%AF%86stm32/" class="article-date">
-  <time datetime="2022-09-19T06:23:04.000Z" itemprop="datePublished">2022-09-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/19/%E5%88%9D%E8%AF%86stm32/">初识stm32</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>​        <strong>STM32，从字面上来理解，ST 是意法半导体，M 是 Microelectronics 的缩写，32 表示 32 位，合起 来理解，STM32 就是指 ST 公司开发的 32 位微控制器。在如今的 32 位控制器当中，STM32 可以 说是最璀璨的新星，它受宠若娇，大受工程师和市场的青睐，无芯能出其右。</strong></p>
-<h2 id="STM32-命名方法"><a href="#STM32-命名方法" class="headerlink" title="STM32 命名方法"></a>STM32 命名方法</h2><img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919145045224.png" class="">
-
-<h3 id="芯片里面的架构"><a href="#芯片里面的架构" class="headerlink" title="芯片里面的架构"></a>芯片里面的架构</h3><img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919150930040.png" class="">
-
-<h3 id="stm32寄存器地址映射"><a href="#stm32寄存器地址映射" class="headerlink" title="stm32寄存器地址映射"></a>stm32寄存器地址映射</h3><p>​        首先有4GB地址空间，arm平均分为8块，每块512MB，每个块也有具体功能。</p>
-<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919160354694.png" class="">
-
-<h3 id="寄存器地址映射"><a href="#寄存器地址映射" class="headerlink" title="寄存器地址映射"></a>寄存器地址映射</h3><p>​        以GPIOB_ODR为例,首先找到外设区，其中分为APB1，APB2，AHB三条总线。APB1 挂载低速 外设，APB2 和 AHB 挂载高速外设。相应总线的最低地址我们称为该总线的基地址，总线基地 址也是挂载在该总线上的首个外设的地址。其中 APB1 总线的地址最低，片上外设从这里开始， 也叫外设基地址。</p>
-<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919160750563.png" class="">
-
-<p>​        而外设也有地址范围，以GPIO为例。GPIO 属于高速的外设，挂载到 APB2 总线 上，具体见表格 5‑6。</p>
-<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919160830567.png" class="">
-
-<p>​        GPIO 有很多个寄存器，每一个都有特定的功能。每个寄存器为 32bit，占四个字节，在该外设的 基地址上按照顺序排列，寄存器的位置都以相对该外设基地址的偏移地址来描述。，以GPIOB端口为例。</p>
-<img src="/2022/09/19/%E5%88%9D%E8%AF%86stm32/image-20220919161202537.png" class="">
-
-
-
-<h2 id="第一个stm32程序：-控制led灯亮绿光"><a href="#第一个stm32程序：-控制led灯亮绿光" class="headerlink" title="第一个stm32程序： 控制led灯亮绿光"></a>第一个stm32程序： 控制led灯亮绿光</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> 0 </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;reg52.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">sbit LED = P0^<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">	P0 = <span class="number">0XFE</span>; <span class="comment">// 总线操作</span></span><br><span class="line">	LED = <span class="number">0</span>;   <span class="comment">// 位操作</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;stm32f10x.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line">	<span class="comment">//打开GPIOB端口的时钟</span></span><br><span class="line">	*(<span class="type">unsigned</span> <span class="type">int</span> *) <span class="number">0x40021018</span> |= ( <span class="number">1</span> &lt;&lt; (<span class="number">3</span>)); </span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 配置GPIOB_CRL 设置为0001 ，配置IO口为输出</span></span><br><span class="line">	*(<span class="type">unsigned</span> <span class="type">int</span> *) <span class="number">0x40010C00</span> |= ( <span class="number">1</span>&lt;&lt;(<span class="number">4</span> * <span class="number">0</span>));</span><br><span class="line">	<span class="comment">// 控制ODR寄存器</span></span><br><span class="line">	*(<span class="type">unsigned</span> <span class="type">int</span> *) <span class="number">0x40010C0C</span> &amp;= ~(<span class="number">1</span>&lt;&lt;<span class="number">0</span>);</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">SystemInit</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line">		<span class="comment">//函数体为空，目的为了编译器不报错</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/19/%E5%88%9D%E8%AF%86stm32/" data-id="cl92id4ph001hggmj61tj8alx" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -716,6 +801,10 @@
       <ul>
         
           <li>
+            <a href="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/">spike相关理解1</a>
+          </li>
+        
+          <li>
             <a href="/2022/11/02/qemu%E6%96%B0%E5%A2%9ESoc/">qemu新增Soc</a>
           </li>
         
@@ -729,10 +818,6 @@
         
           <li>
             <a href="/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/">riscv汇编语言编程</a>
-          </li>
-        
-          <li>
-            <a href="/2022/10/20/%E4%BC%98%E5%85%88%E7%BA%A7%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9E%E7%8E%B0/">优先级任务调度实现</a>
           </li>
         
       </ul>
