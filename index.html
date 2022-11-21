@@ -99,8 +99,12 @@
 <p>编辑 <code>/etc/pacman.d/mirrorlist.msys</code> ，在文件开头添加：</p>
 <figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Server = <span class="symbol">https:</span>/<span class="regexp">/mirrors.tuna.tsinghua.edu.cn/msys</span>2/msys/$arch</span><br></pre></td></tr></table></figure>
 
-<p>然后执行<code>pacman -Syu</code>刷新软件包并且更新mysys2系统组件即可，然后重启shell。<br> 上面的/etc/是指mysys的安装目录下的etc目录。</p>
-<h3 id="4、快速安装所有mingw"><a href="#4、快速安装所有mingw" class="headerlink" title="4、快速安装所有mingw"></a>4、快速安装所有mingw</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pacman -S  mingw-w64-i686-toolchain</span><br><span class="line">pacman -S  mingw-w64-x86_64-toolchain</span><br></pre></td></tr></table></figure>
+<p>然后执行<code>pacman -Syu</code>刷新软件包并且更新mysys2系统组件即可，然后重启shell。</p>
+<p>上面的/etc/是指mysys的安装目录下的etc目录。</p>
+<p><strong>安装ninja</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/ninja-build/ninja.git</span><br><span class="line">./configure.py --bootstrap   #在ninja目录中执行</span><br><span class="line">cp ./ninja  /usr/bin  #在ninja目录中执行，这样即可任意位置使用ninja</span><br><span class="line">ninja --version</span><br></pre></td></tr></table></figure>
+
+<h3 id="4、快速安装所有mingw"><a href="#4、快速安装所有mingw" class="headerlink" title="4、快速安装所有mingw"></a>4、快速安装所有mingw</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pacman -S  mingw-w64-i686-toolchain</span><br><span class="line">pacman -S  mingw-w64-x86_64-toolchain</span><br></pre></td></tr></table></figure>
 
 <h3 id="5、msys2启动入口"><a href="#5、msys2启动入口" class="headerlink" title="5、msys2启动入口"></a>5、msys2启动入口</h3><p>安装Msys2后，或解压Msys2后，第一次运行下msys2_shell.cmd，提示第一次设置初始化完毕后，就可以运行Msys2.exe、mingw64.exe或mingw32.exe，主要区别：</p>
 <ul>
@@ -109,10 +113,10 @@
 <li>msys2 两个都不使用，只用自身 msys 的工具;82</li>
 </ul>
 <h3 id="6、其它常用软件或库"><a href="#6、其它常用软件或库" class="headerlink" title="6、其它常用软件或库"></a>6、其它常用软件或库</h3><p><code>pacman -S base-devel git wget p7zip perl ruby python2</code> ，不过有些上面安装过程中已经安装了。</p>
-<h3 id="7、拉取nuclei-qemu源代码"><a href="#7、拉取nuclei-qemu源代码" class="headerlink" title="7、拉取nuclei-qemu源代码"></a>7、拉取nuclei-qemu源代码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone -b plct-nuclei-rebase https://github.com/plctlab/plct-qemu.git</span><br><span class="line">cd plct-nuclei</span><br><span class="line">mkdir build </span><br><span class="line">cd build</span><br></pre></td></tr></table></figure>
+<h3 id="7、拉取nuclei-qemu源代码"><a href="#7、拉取nuclei-qemu源代码" class="headerlink" title="7、拉取nuclei-qemu源代码"></a>7、拉取nuclei-qemu源代码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone -b plct-nuclei-rebase https://github.com/plctlab/plct-qemu.git</span><br><span class="line">cd plct-nuclei</span><br><span class="line">mkdir build </span><br><span class="line">cd build</span><br><span class="line">git submodule init</span><br><span class="line">git submodule update --remote --recursive</span><br></pre></td></tr></table></figure>
 
 <p>只编译riscv32位的qemu，在configure中指定target-list=riscv32-softmmu</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">../configure --target-list=riscv32-softmmu </span><br><span class="line">make -j8</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">../configure --target-list=riscv32-softmmu --disable-werror</span><br><span class="line">make -j8</span><br></pre></td></tr></table></figure>
 
 <h3 id="8、验证qemu编译是否成功"><a href="#8、验证qemu编译是否成功" class="headerlink" title="8、验证qemu编译是否成功"></a>8、验证qemu编译是否成功</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./qemu-system-riscv32.exe --version</span><br></pre></td></tr></table></figure>
 
