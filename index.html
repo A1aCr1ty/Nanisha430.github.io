@@ -64,6 +64,42 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-实现一个ping的功能" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/" class="article-date">
+  <time datetime="2022-12-23T08:56:18.000Z" itemprop="datePublished">2022-12-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/" data-id="clc0b7ndt0000kgmj6kqx3964" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-csapp-proxyLab" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/12/23/csapp-proxyLab/" class="article-date">
@@ -955,62 +991,6 @@
 
 
   
-    <article id="post-数据结构位图" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/10/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%BD%8D%E5%9B%BE/" class="article-date">
-  <time datetime="2022-10-24T01:57:27.000Z" itemprop="datePublished">2022-10-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/10/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%BD%8D%E5%9B%BE/">数据结构位图</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="位图"><a href="#位图" class="headerlink" title="位图"></a>位图</h2><p>一个字节可以用来存储8个连续的整数，一个整数4个字节的话，当要存储40亿个整数时，按之前数组存储的方式需要大概16G的内存，显然不合理。使用位图的话，只需要500M的内存。</p>
-<p>位图初始化：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bitmap(<span class="type">int</span> size)&#123;</span><br><span class="line">	<span class="built_in">vector</span>&lt;<span class="type">int</span>&gt; arr;</span><br><span class="line">	<span class="built_in">memset</span>(arr,<span class="number">0</span>,(size&gt;&gt;<span class="number">32</span>+<span class="number">1</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="1、计算N属于那个单元，然后计算在单元的某个位置（查找x的位置）"><a href="#1、计算N属于那个单元，然后计算在单元的某个位置（查找x的位置）" class="headerlink" title="1、计算N属于那个单元，然后计算在单元的某个位置（查找x的位置）"></a>1、计算N属于那个单元，然后计算在单元的某个位置（查找x的位置）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">index = N &gt;&gt;<span class="number">5</span>;  <span class="comment">// 一个int类型的数据可以存储32个连续的整数，右移5位相当于除以32</span></span><br><span class="line">num = N %<span class="number">32</span>;    <span class="comment">// num &amp; 31</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="2、将位置x置位1"><a href="#2、将位置x置位1" class="headerlink" title="2、将位置x置位1"></a>2、将位置x置位1</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 数据在内存中按小端方式存放</span></span><br><span class="line">arr[index] |= (<span class="number">1</span>&lt;&lt;(<span class="number">31</span>-num))  <span class="comment">// &amp;31 相当于 %32 因为 31的2进制数为0x1111</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="3、将x位置上的数字清空"><a href="#3、将x位置上的数字清空" class="headerlink" title="3、将x位置上的数字清空"></a>3、将x位置上的数字清空</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arr[index] &amp;=~(<span class="number">1</span>&lt;&lt;(<span class="number">31</span>-num))</span><br></pre></td></tr></table></figure>
-
-<h3 id="4、判断位图中是否包含这个数"><a href="#4、判断位图中是否包含这个数" class="headerlink" title="4、判断位图中是否包含这个数"></a>4、判断位图中是否包含这个数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arr[index] &amp; (<span class="number">1</span>&lt;&lt;(<span class="number">31</span>-num)) !=<span class="number">0</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="rt-thread中的位图优先级"><a href="#rt-thread中的位图优先级" class="headerlink" title="rt-thread中的位图优先级"></a>rt-thread中的位图优先级</h2><p><img src="/2022/10/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%BD%8D%E5%9B%BE/image-20221107133426982.png" alt="image-20221107133426982"></p>
-<p><img src="/2022/10/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%BD%8D%E5%9B%BE/image-20221107133505042.png" alt="image-20221107133505042"></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">INT8U  <span class="type">const</span>  OSUnMapTbl[<span class="number">256</span>] = &#123; </span><br><span class="line">  <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x00 to 0x0F                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x10 to 0x1F                             */</span></span><br><span class="line">  <span class="number">5</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x20 to 0x2F                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x30 to 0x3F                             */</span></span><br><span class="line">  <span class="number">6</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x40 to 0x4F                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x50 to 0x5F                             */</span></span><br><span class="line">  <span class="number">5</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x60 to 0x6F                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x70 to 0x7F                             */</span></span><br><span class="line">  <span class="number">7</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x80 to 0x8F                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0x90 to 0x9F                             */</span></span><br><span class="line">  <span class="number">5</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0xA0 to 0xAF                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0xB0 to 0xBF                             */</span></span><br><span class="line">  <span class="number">6</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0xC0 to 0xCF                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0xD0 to 0xDF                             */</span></span><br><span class="line">  <span class="number">5</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>,       <span class="comment">/* 0xE0 to 0xEF                             */</span></span><br><span class="line">  <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>        <span class="comment">/* 0xF0 to 0xFF                             */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __rt_ffs(<span class="type">int</span> value)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (value == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (value &amp; <span class="number">0xff</span>)</span><br><span class="line">        <span class="keyword">return</span> __lowest_bit_bitmap[value &amp; <span class="number">0xff</span>] + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (value &amp; <span class="number">0xff00</span>)</span><br><span class="line">        <span class="keyword">return</span> __lowest_bit_bitmap[(value &amp; <span class="number">0xff00</span>) &gt;&gt; <span class="number">8</span>] + <span class="number">9</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (value &amp; <span class="number">0xff0000</span>)</span><br><span class="line">        <span class="keyword">return</span> __lowest_bit_bitmap[(value &amp; <span class="number">0xff0000</span>) &gt;&gt; <span class="number">16</span>] + <span class="number">17</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> __lowest_bit_bitmap[(value &amp; <span class="number">0xff000000</span>) &gt;&gt; <span class="number">24</span>] + <span class="number">25</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%BD%8D%E5%9B%BE/" data-id="cl9m644td00012omje6i22zzx" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -1047,6 +1027,10 @@
       <ul>
         
           <li>
+            <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
+          </li>
+        
+          <li>
             <a href="/2022/12/23/csapp-proxyLab/">csapp:proxyLab</a>
           </li>
         
@@ -1060,10 +1044,6 @@
         
           <li>
             <a href="/2022/11/28/qemu%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0/">qemu相关配置参数</a>
-          </li>
-        
-          <li>
-            <a href="/2022/11/24/epoll%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E6%98%93%E6%9C%8D%E5%8A%A1%E5%99%A8/">epoll实现一个简易服务器</a>
           </li>
         
       </ul>
