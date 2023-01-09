@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>redis的通信协议 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Redis 的通信协议 RESPRedis 自 2.0 版本起使用了统一的协议 RESP (REdis Serialization Protocol)，该协议易于实现，计算机可以高效的进行解析且易于被人类读懂。 RESP 是一个二进制安全的文本协议，工作于 TCP 协议上。RESP 以行作为单位，客户端和服务器发送的命令或数据一律以 \r\n （CRLF）作为换行符。 二进制安全是指允许协议中出现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis的通信协议">
+<meta property="og:url" content="http://example.com/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Redis 的通信协议 RESPRedis 自 2.0 版本起使用了统一的协议 RESP (REdis Serialization Protocol)，该协议易于实现，计算机可以高效的进行解析且易于被人类读懂。 RESP 是一个二进制安全的文本协议，工作于 TCP 协议上。RESP 以行作为单位，客户端和服务器发送的命令或数据一律以 \r\n （CRLF）作为换行符。 二进制安全是指允许协议中出现">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-01-09T02:30:17.000Z">
+<meta property="article:modified_time" content="2023-01-09T02:56:36.028Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-redis的通信协议" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" class="article-date">
+  <time datetime="2023-01-09T02:30:17.000Z" itemprop="datePublished">2023-01-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      redis的通信协议
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Redis-的通信协议-RESP"><a href="#Redis-的通信协议-RESP" class="headerlink" title="Redis 的通信协议 RESP"></a>Redis 的通信协议 RESP</h2><p>Redis 自 2.0 版本起使用了统一的协议 RESP (REdis Serialization Protocol)，该协议易于实现，计算机可以高效的进行解析且易于被人类读懂。</p>
+<p>RESP 是一个二进制安全的文本协议，工作于 TCP 协议上。RESP 以行作为单位，客户端和服务器发送的命令或数据一律以 \r\n （CRLF）作为换行符。</p>
+<p><strong>二进制安全是指允许协议中出现任意字符而不会导致故障。比如 C 语言的字符串以 <code>\0</code> 作为结尾不允许字符串中间出现<code>\0</code>, 而 Go 语言的 string 则允许出现 <code>\0</code>，我们说 Go 语言的 string 是二进制安全的，而 C 语言字符串不是二进制安全的。</strong></p>
+<p>RESP 定义了5种格式：</p>
+<ul>
+<li>简单字符串(Simple String): 服务器用来返回简单的结果，比如”OK”。非二进制安全，且不允许换行。</li>
+<li>错误信息(Error): 服务器用来返回简单的错误信息，比如”ERR Invalid Synatx”。非二进制安全，且不允许换行。</li>
+<li>整数(Integer): llen、scard 等命令的返回值, 64位有符号整数</li>
+<li>字符串(Bulk String): 二进制安全字符串, 比如 get 等命令的返回值</li>
+<li>数组(Array, 又称 Multi Bulk Strings): Bulk String 数组，客户端发送指令以及 lrange 等命令响应的格式</li>
+</ul>
+<p>RESP 通过第一个字符来表示格式：</p>
+<ul>
+<li>简单字符串：以”+” 开始， 如：”+OK\r\n”</li>
+<li>错误：以”-“ 开始，如：”-ERR Invalid Synatx\r\n”</li>
+<li>整数：以”:”开始，如：”:1\r\n”</li>
+<li>字符串：以 <code>$</code> 开始</li>
+<li>数组：以 <code>*</code> 开始</li>
+</ul>
+<p>Resp 协议的解析需要考虑到resp是一个二进制安全的协议，它需要正确的解析出位于字符串中的CRLF字符串。</p>
+<p>具体的协议解析器：</p>
+<p>// TODO</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" data-id="clco7qbxe00003kmj38r9b590" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">实现一个ping的功能</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">redis的通信协议</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/23/csapp-proxyLab/">csapp:proxyLab</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/07/csapp-ShellLab%E5%AE%9E%E9%AA%8C/">csapp:ShellLab实验</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/02/%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%E7%9A%84%E5%B0%81%E8%A3%85/">线程同步机制的封装</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

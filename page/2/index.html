@@ -64,6 +64,279 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-rtos中断流程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/" class="article-date">
+  <time datetime="2022-10-28T01:43:49.000Z" itemprop="datePublished">2022-10-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/">rtos中断流程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="RISCV中断和异常处理"><a href="#RISCV中断和异常处理" class="headerlink" title="RISCV中断和异常处理"></a>RISCV中断和异常处理</h2><p>RISCV架构下有三种特权级别，分别是Machine、Supervisor和User，简称M模式、S模式和U模式。M模式权限最高，在这个级别下的程序可以访问一切硬件和执行所有特权指令；S模式一般用于运行操作系统，可以设置MMU使用虚拟地址；U模式一般是普通应用程序使用，权限最低。</p>
+<p>M模式使用物理地址进行访问，不经过MMU，但是有类似arm下cortex-m中的MPU功能；S模式可以通过设置MMU来使用虚拟地址访问内存，所以像Linux这类操作系统都运行在S模式下。那么有人要问了，为啥RISCV架构特权模式设计成这样，直接把M模式和S模式合二为一不行吗？这个得从RISCV架构诞生背景来看了，RISCV架构诞生于2010年左右，这时不管是x86还是arm架构都发展得算是比较成熟了，所以RISCV架构设计时就定位了从微控制器到大型超级计算机都可以使用这个架构。在微控制器上使用的RISCV架构一般只有M模式，或者使用M和U两种模式，类似于cortex-m架构的定位；而在带MMU的芯片上，RISCV架构一般都使用M、S和U三种模式，这样通过“拼积木”的方式就可以让RISCV架构适用于各种场景了。</p>
+<p><strong>在arm下的应用程序通过“swi”指令可以将处理器从低特权级别切换到高特权级别，</strong>一般像Linux下的系统调用都是通过这种方式来使用的。类似的，<strong>在RISCV中，通过“ecall”指令可以从低特权切换到高特权</strong>，在U模式下执行就切换到S模式，在S模式下调用就切换到M模式。另外在RISCV中，默认产生中断和异常时，处理器自动切换到M模式处理，可以通过中断托管设置将一些中断和异常直接交给S模式处理。RISCV的架构设计就决定了必须要有程序运行在M模式下，来为S模式提供一些基础的服务，**RISCV为此定义了SBI(Supervisor Binary Interface)**接口规范，让运行在S模式下的操作系统在不同的RISCV处理器上都可以使用标准的SBI接口来使用相应的功能，这个其实就有点类似于x86下的BIOS概念了，详细的RISCV下中断和异常处理以及SBI规范在后续章节会讲解，这里只需要知道就可以。</p>
+<h2 id="中断和异常处理"><a href="#中断和异常处理" class="headerlink" title="中断和异常处理"></a>中断和异常处理</h2><p>在RISCV架构设计中，有一系列的控制和状态寄存器( Control and Status Registers）简称CSR，在三种特权级别下都有其对应的CSR，比如m模式下的命名都为mxxxx，s模式下的都为sxxxx等等。这些寄存器的作用类似于arm架构中的那些cp15寄存器，用于设置异常向量表、设置页表基址、获取异常信息等等。这些寄存器大多数都需要通过“csr”这类指令来进行访问，也有一部分寄存器是采用mmio映射的，可以使用普通访存指令访问，比如timer相关的寄存器（后面会讲）。</p>
+<table>
+<thead>
+<tr>
+<th>CSR名称</th>
+<th>访问属性</th>
+<th>功能描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mvendorid</td>
+<td>只读</td>
+<td>厂商ID</td>
+</tr>
+<tr>
+<td>marchId</td>
+<td>只读</td>
+<td>体系结构id</td>
+</tr>
+<tr>
+<td>mimpid</td>
+<td>只读</td>
+<td>特点实现id</td>
+</tr>
+<tr>
+<td>mhartid</td>
+<td>只读</td>
+<td>hart(硬件线程) id</td>
+</tr>
+<tr>
+<td>misa</td>
+<td>只读</td>
+<td>指令集架构信息</td>
+</tr>
+<tr>
+<td>mcycle/mycycleh</td>
+<td>只读</td>
+<td>时钟周期计数器</td>
+</tr>
+<tr>
+<td>cycle/ycycleh</td>
+<td>只读</td>
+<td>时钟周期计数器</td>
+</tr>
+<tr>
+<td>minstret</td>
+<td>只读</td>
+<td>退休指令计数器</td>
+</tr>
+<tr>
+<td>mstatus</td>
+<td>可读可写</td>
+<td>状态控制</td>
+</tr>
+<tr>
+<td>mie</td>
+<td>可读可写</td>
+<td>中断使能</td>
+</tr>
+<tr>
+<td>mip</td>
+<td>只读</td>
+<td>当前中断pengding位</td>
+</tr>
+<tr>
+<td>mtvec</td>
+<td>可读可写</td>
+<td>中断/异常矢量</td>
+</tr>
+<tr>
+<td>mtval</td>
+<td>可读可写</td>
+<td>异常和中断的补充信息（如异常指令，非法地址）</td>
+</tr>
+<tr>
+<td>mscratch</td>
+<td>可读可写</td>
+<td>提供一个上下文保存寄存器</td>
+</tr>
+<tr>
+<td>mepc</td>
+<td>可读可写</td>
+<td>异常程序指针</td>
+</tr>
+<tr>
+<td>mcause</td>
+<td>只读</td>
+<td>异常/中断原因</td>
+</tr>
+</tbody></table>
+<p>上图中的寄存器被分为四类，其中和Trap相关的寄存器比较重要，用于中断和异常处理：</p>
+<ul>
+<li>信息类：主要用于获取当前芯片id和cpu核id等信息。</li>
+<li>Trap设置：用于设置中断和异常相关寄存器。</li>
+<li>Trap处理：用于处理中断和异常相关寄存器。</li>
+<li>内存保护：作用类似于conterx-m中的mpu功能。</li>
+</ul>
+<h4 id="Machine-Information-Registers"><a href="#Machine-Information-Registers" class="headerlink" title="Machine Information Registers"></a>Machine Information Registers</h4><p>mvendorid、 marchid 和 mimpid 可以获取芯片制造商、架构和实现相关信息，最重要的还是 mhartid 这个寄存器，RISCV中每个cpu核都被称为一个hart，通过mhartid可以获取当前cpu核的id号。</p>
+<h4 id="Machine-Trap-Setup"><a href="#Machine-Trap-Setup" class="headerlink" title="Machine Trap Setup"></a>Machine Trap Setup</h4><p>在RISCV中，中断（interrupt）和异常（exception）被统称为trap。在arm中我们知道中断和异常是通过中断向量表中不同入口调用不同的处理函数处理的，但是在riscv中，所有中断和异常一般都是使用的同一个处理入口。在x86和arm下都存在中断向量表的概念，用于定义不同异常和中断的处理入口，但是在riscv下，一般是不存在中断向量表这个概念的，只存在trap处理入口这个概念。为了表述上的方便，后续的章节都将trap处理入口称为中断入口，但是要明白这个入口不仅仅是处理中断的，同时也是处理异常的入口。中断入口在m模式和s模式下都有专门的寄存器需要设置，在本小节我们只看m模式下的相关寄存器，在使用中断和异常处理之前需要进行一些设置，下面就来看看这些寄存器如何设置。</p>
+<h4 id="mtvec"><a href="#mtvec" class="headerlink" title="mtvec"></a>mtvec</h4><p>riscv支持向量中断和非向量中断两种编程模型， 非向量中断，也就是中断发生后，所有的入口只有一个，不固定偏移。</p>
+<p> mtvec寄存器全名为Machine Trap-Vector Base-Address Register，用于设置中断入口地址，其寄存器格式如下</p>
+<h1 id><a href="#" class="headerlink" title></a><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214110818111-230653853.png" alt="img"></h1><p> 可以看出mtvec需要中断入口地址是4字节对齐的，因为最低两个bit是用于设置中断模式的，其模式定义如下：</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214111053532-1352962926.png" alt="img"></p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214110833752-872983711.png" alt="img"></p>
+<ul>
+<li>Direct模式：所有的中断和异常使用同一个中断入口地址，一般都会设置为这种模式。</li>
+<li>Vectored模式：所有异常使用同一个入口地址，但是不同的中断使用不同的入口地址。</li>
+</ul>
+<h4 id="mstatus"><a href="#mstatus" class="headerlink" title="mstatus"></a>mstatus</h4><p>这个寄存器顾名思义是用来控制cpu核当前的一些状态信息的，比如全局中断使能等，寄存器的格式如下：</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214110954103-633405226.png" alt="img"></p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214111004056-324285028.png" alt="img"></p>
+<ul>
+<li><p>红框内的位域用来控制全局中断的使能，SIE控制S模式下全局中断，MIE控制M模式下全局中断。这个有点像arm里cpsr中的F位，只是在RISCV架构下还分为S模式和M模式来控制，像但是不完全像。</p>
+</li>
+<li><p>绿框里的位域用来记录发生中断之前MIE和SIE的值。SPIE记录的是SIE的值，MPIE记录的是MIE的值。</p>
+</li>
+<li><p>蓝色框内位域用来记录当特权级别由低到高发生变化时（比如执行ecall指令），之前的特权级别。当变化后的特权级别是S模式时，SPP表示变化之前的特权级别是S模式还是U模式，所以只需要1位就可以表示；当变化后的特权级别是M模式时，MPP表示变化之前是S模式还是U模式还是M模式，由于有三种情况，所以需要使用2位来表示。</p>
+</li>
+<li><p>注意：当发生中断时，SIE和MIE被硬件自动设置为0，用来屏蔽中断，这个行为和大部分架构都一样，同时MPIE和SPIE被硬件自动设置为MIE和SIE的值，如果特权级别还发生改变的话，之前的特权级别是记录在SPP或者MPP中的。当从中断中返回时，SIE和MIE被自动设置为MPIE和SPIE的值，同时MPIE和SPIE被自动设置为1，特权级别恢复为MPP或者SPP记录的级别，然后MPP或者SPP被设置为U模式。</p>
+</li>
+</ul>
+<h4 id="mie"><a href="#mie" class="headerlink" title="mie"></a>mie</h4><p>在RISCV下，将中断（interrupt）又细分为三种类型：定时中断(timer)、核间中断(soft)、中断控制器中断(external)。定时中断可以用于产生系统的tick，核间中断用于不同cpu核之间通信，中断控制器则负责所有外设中断。这个设计和arm下有点不一样，在arm多核下，架构中的定时器中断、核间中断和外设中断都是统一由中断控制器管理的，而在RISCV中定时器和核间中断是分离出来的，这两个中断被称为CLINT（Core Local Interrupt），而管理其他外设中断的中断控制器则被称为PLIC（Platform-Level Interrupt Controller）。每个核都有自己的定时器和产生核间中断的寄存器可以设置，这些寄存器的访问不同于其他的控制状态寄存器，采用的是MMIO映射方式访问，比如下图所示为SIFIVE FU540的CLINT寄存器表：</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214114537637-1524564992.png" alt="img"></p>
+<p>图中的msip用于产生m模式下的核间中断，mtime可以读取出当前计数器的值，mtimecmp用于设置比较值，当mtime的值增加到mtimecmp的值时就可以产生中断。这些寄存器的具体用法在后续的裸机程序编写章节会讲解，这里只需要简单了解即可。</p>
+<p>上述讲解的三种中断类型在m模式和s模式下都有相应的中断使能位设置，这是通过mie寄存器实现的<strong>，mie寄存器的格式如下：</strong></p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214114633507-942051388.png" alt="img"></p>
+<ul>
+<li>MSIE、MTIE、MEIE这三个位域分别控制m模式下核间中断、定时中断、中断控制器中断的使能状态。</li>
+<li>SSIE、STIE、SEIE这三个位域分别控制s模式下核间中断、定时中断、中断控制器中断的使能状态。</li>
+</ul>
+<h4 id="medeleg-和-mideleg"><a href="#medeleg-和-mideleg" class="headerlink" title="medeleg 和 mideleg"></a>medeleg 和 mideleg</h4><p>RISCV下默认所有中断和异常都是在m模式下处理的，但是有些时候我们需要将中断和异常直接交给s模式处理，这就是RISCV中的中断托管机制。通过mideleg寄存器，可以将三种中断交给s模式处理，通过medeleg寄存器，可以将异常交给s模式处理。下面来具体看看这些寄存器格式。</p>
+<p>当我们想把中断交给s模式处理时，我们可以设置mideleg寄存器，这个寄存器格式如下：</p>
+<p> <img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214114753859-1265781757.png" alt="img"></p>
+<ul>
+<li>bit[1]用于控制是否将核间中断交给s模式处理。</li>
+<li>bit[5]用于控制是否将定时中断交给s模式处理。</li>
+<li>bit[9]用于控制是否将中断控制器管理的中断交给s模式处理。</li>
+</ul>
+<p>注意对于<strong>核间中断和定时中断而言，即使使能了mideleg中对应的bit位，当产生相应中断时，还是先进入m模式进行处理，然后可以通过设置mip寄存器(下一小节讲解)，在退出m模式中断时就可以进入s模式的中断处理函数中处理。</strong></p>
+<p>当我们想把异常交给s模式处理时，我们可以设置medelrg寄存器，这个寄存器格式如下：</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214115020818-510847302.png" alt="img"></p>
+<p>可以看出来有很多异常是可以设置到s模式下处理的，但是实际使用时并不是所有异常都要交给s模式处理的，比如bit[9]代表的异常还是要交给m模式处理，因为像获取芯片id、cpu核id、设置timer等操作只能在m模式下进行，所以s模式通过SBI接口(后面会讲)使用“ecall”切换到m模式调用不同的服务，所以bit[9]代表的异常必须被m模式处理而不能交给s模式处理。</p>
+<h4 id="Machine-Trap-Handling"><a href="#Machine-Trap-Handling" class="headerlink" title="Machine Trap Handling"></a>Machine Trap Handling</h4><p>当产生中断或者异常时，会有一些信息保存在相应的寄存器中，下面我们就一起来看看这些寄存器。</p>
+<h4 id="mepc"><a href="#mepc" class="headerlink" title="mepc"></a>mepc</h4><p>在arm架构中，当发生中断或异常时，硬件自动将要返回的地址保存在lr寄存器中。类似的，在RISCV下产生中断或异常时，硬件自动将返回地址保存在mepc寄存器中，当在中断处理中返回时，硬件自动将mepc中的地址赋值给pc运行。</p>
+<p>要注意的时，在RISCV架构中，当产生的时异常时，mepc中保存的是产生异常那条指令的地址，而不是其下一条指令地址，这么设计的原因是希望产生异常时，软件开发人员对相应异常做出处理，当处理完之后再次给一个运行之前产生异常指令的机会，比如缺页异常就是通过这种机制来运行的。当不需要再次运行产生异常那条指令时，需要在中断处理时手动将mepc的值加4，这样中断返回时就是运行产生异常那条指令的下一条指令。当产生的是中断时，mepc直接保存的就是被中断指令的下一条指令的地址，所以需要做修正。</p>
+<h4 id="mcause和mtval"><a href="#mcause和mtval" class="headerlink" title="mcause和mtval"></a>mcause和mtval</h4><p>当产生中断和异常时，mcause寄存器中会记录当前产生的中断或者异常类型，而mtval则针对某些异常会记录一些辅助信息。我们来看看mcause寄存器的格式：</p>
+<p> <img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214115131193-1282204265.png" alt="img"> </p>
+<p>寄存器的最高位用来表示产生的是中断还是异常，1表示中断0表示异常。剩下的位域表示中断或者异常的具体类型，如下所示：</p>
+<p> <img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214115157627-1953252108.png" alt="img"></p>
+<p>可以看出来中断有6种类型，分别表示m和s模式下的定时、核间、中断控制器这三种中断，而异常的类型就比较多了。</p>
+<h4 id="mip"><a href="#mip" class="headerlink" title="mip"></a>mip</h4><p>这个寄存器可以表明当前是否产生了某种中断，其格式如下所示。</p>
+<p> <img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/665372-20211214115301918-476443465.png" alt="img"> </p>
+<ul>
+<li><p>MSIP表示m模式核间中断，此位只读，其状态反应的是CLINT中对应的核间中断设置寄存器最低位的状态，设置CLINT核间中断设置寄存器最低位为1则产生核间中断，置0则清除核间中断。</p>
+</li>
+<li><p>MTIP表示m模式定时中断，此位只读，其状态通过设置CLINT中对应的mtimecmp寄存器来清零。</p>
+</li>
+<li><p>MEIP表示m模式中断控制器中断，此位只读，其状态通过具体的中断控制器寄存器设置来清零。</p>
+</li>
+<li><p>SSIP表示s模式核间中断，此位在s模式只读(s模式下有sip寄存器，下面会讲)，在m模式下可读写，通过设置此位，可以进入s模式核间中断处理。</p>
+</li>
+<li><p>STIP表示s模式定时中断，此位在m模式下可读写，通过设置此位，可以进入s模式定时中断处理。</p>
+</li>
+<li><p>SEIP表示s模式中断控制器中断<strong>，此位在m模式下可读写，通过设置此位，可以进入s模式中断控制器中断处理</strong>。</p>
+</li>
+</ul>
+<h2 id="中断分类"><a href="#中断分类" class="headerlink" title="中断分类"></a>中断分类</h2><p>RISC-V定义了4种中断类型，大体上和ARM架构的中断类似，中断类型选取都是通过屏蔽寄存器来控制，下面所说的由xx寄存器控制就是指由xx寄存器来负责屏蔽某种中断类型</p>
+<h3 id="外部中断External-Interrupt"><a href="#外部中断External-Interrupt" class="headerlink" title="外部中断External Interrupt"></a>外部中断External Interrupt</h3><p>来自核心外的中断，常见的GPIO、UART中断都属于这个中断</p>
+<p>由CSR寄存器mie中的MEIE控制，等待标志反映在CSR寄存器mip中的MEIP域</p>
+<h3 id="定时器（也就是计时器）中断Timer-Interrupt"><a href="#定时器（也就是计时器）中断Timer-Interrupt" class="headerlink" title="定时器（也就是计时器）中断Timer Interrupt"></a>定时器（也就是计时器）中断Timer Interrupt</h3><p>来自定时器的中断</p>
+<p>由mie寄存器的MTIE域控制，等待标志反映在mip寄存器中的MTIP域</p>
+<h3 id="软件中断Software-Interrupt"><a href="#软件中断Software-Interrupt" class="headerlink" title="软件中断Software Interrupt"></a>软件中断Software Interrupt</h3><p>来自软件自己触发的中断</p>
+<p>由mie寄存器中的MSIE域控制，等待标志反映在mip寄存器的MSIP域</p>
+<p>RISC-V定义了一个平台级别中断控制器PLIC（Platform Level Interrupt Controller），可用于多个外部中断源的优先级仲裁和派发</p>
+<p>PLIC可以将多个外部中断源仲裁为一个bit的中断信号送入处理器核，处理器核接收到中断进入异常服务程序后可以通过读PLIC的相关寄存器查看中断源的编号和信息，在处理完响应中断服务程序后可以通过写PLIC的相关九年起和外部中断源寄存器来清除中断源</p>
+<p>PLIC就相当于RISC-V上的弱化版NVIC</p>
+<p>RISC-V规定系统平台至少有一个定时器，并应配由2个64位寄存器mtime（反映当前定时器的计数值）和mtimecmp（设置计时器比较值），当mtime中的计数值大于等于mtimecmp中设置的比较值时，计时器就会产生计时器中断，中断期间会一直拉高直到重写mtimecmp的值大于mtime中的值</p>
+<p>特别地，两个定时器寄存器不归属于CSR寄存器，而是定义为存储器地址映射的系统寄存器，由配套SoC控制，这样就使得位于内核中的定时器变成了“一半外设”</p>
+<p>这个定时器的时钟必须是为低速（意味着省电）的电源常开（意味着准确稳定）的时钟，它是一种实时计时器。</p>
+<h2 id="ECLIC"><a href="#ECLIC" class="headerlink" title="ECLIC"></a>ECLIC</h2><p>eclic的设计是芯来科技设计的一种中断处理方式。</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/o4YBAGB31wmAUvWWAABTpScNtJw692.png" alt="2dbc5852-9d0e-11eb-8b86-12bb97331649.png"></p>
+<p>eclic目前也是众多芯来科技core采用的中断控制器，也包括<a target="_blank" rel="noopener" href="https://bbs.elecfans.com/group_1508">gd32</a>vf103系列的芯片。</p>
+<p>3号中断是内核TIMER单元生成的软件中断。</p>
+<p>7号中断是内核TIMER单元生成的计时器中断。</p>
+<p>而从19~4095中断号都是外部中断，其中断的编号与中断的优先级其实没有关系。</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/o4YBAGB31wmALc2vAAKME4-z1Es208.png" alt="2dcb96f0-9d0e-11eb-8b86-12bb97331649.png"></p>
+<p>而对于ECLIC的寄存器布局，可见上图。</p>
+<p>cliccfg是中断全局配置寄存器，可以结合clicintctl[i]配置</p>
+<p>clicinfo也是全局寄存器中的数据，对于使用上来说，是只读的</p>
+<p>mth中断的阈值级别寄存器</p>
+<p>clicintip[i]是中断等待寄存器，也相当于pending寄存器</p>
+<p>clicintie[i]为中断使能寄存器</p>
+<p>clicintattr[i]为中断的属性，可以设置中断的上升沿触发或者下降沿触发，同时也可以设置中断从处理是向量中断还是非向量中断。</p>
+<p>clicintctl[i] 设置中断优先级级别和优先级，需要配合cliccfg设置阈。</p>
+<h3 id="关于jalmnxti"><a href="#关于jalmnxti" class="headerlink" title="关于jalmnxti"></a>关于jalmnxti</h3><p>这个也是eclic为了减少中断延时，加速中断咬尾的自定义指令。</p>
+<p>该指令是配合eclic处理机制设计的，其指令功能比较多</p>
+<p>开启中断使能，处理下一个中断</p>
+<p>返回下一个中断入口地址</p>
+<p>跳转至中断handler</p>
+<p>中断处理后返回</p>
+<p>由于<a target="_blank" rel="noopener" href="http://www.elecfans.com/tags/csr/">csr</a>rw ra， CSR_JALMNXTI， ra一条指令可以达到JAL（Jump and Link）的效果，同时硬件上更新Link寄存器作为该指令的PC作为函数调用的返回值，因此从中断服务程序返回后，又会重新回到csrrw ra， CSR_JALMNXTI， ra指令再次执行，可以重新判断是否有中断pending，如果有则跳转到中断处理函数，从而实现中断的咬尾处理，如果没有中断等待，则jalmnxti实际上并不会做任何事情。</p>
+<h2 id="在rt-thread中的一个中断流程"><a href="#在rt-thread中的一个中断流程" class="headerlink" title="在rt-thread中的一个中断流程"></a>在rt-thread中的一个中断流程</h2><p>在startup_cm32m4xxr.S中定义eclic_msip_hander中断。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">.section .vtable</span><br><span class="line"></span><br><span class="line">    .weak  eclic_msip_handler   <span class="comment">// 用户级软件中断</span></span><br><span class="line">    .weak  eclic_mtip_handler </span><br><span class="line">	</span><br><span class="line">	<span class="comment">/* CM32M4xxR interrupt handlers */</span></span><br><span class="line">    .weak  WWDG_IRQHandler</span><br><span class="line">    .weak  PVD_IRQHandler</span><br><span class="line">    .weak  TAMPER_IRQHandler</span><br><span class="line">    .weak  RTC_IRQHandler</span><br><span class="line">    .weak  FLASH_IRQHandler</span><br><span class="line">    .weak  RCC_IRQHandler</span><br><span class="line">    .weak  EXTI0_IRQHandle</span><br></pre></td></tr></table></figure>
+
+<p>中断入口函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Set ECLIC non-vector entry to be controlled</span></span><br><span class="line"><span class="comment"> * by mtvt2 CSR register.</span></span><br><span class="line"><span class="comment"> * Intialize ECLIC non-vector interrupt</span></span><br><span class="line"><span class="comment"> * base address mtvt2 to irq_entry.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">la t0, irq_entry</span><br><span class="line">csrw CSR_MTVT2, t0</span><br><span class="line">csrs CSR_MTVT2, <span class="number">0x1</span></span><br></pre></td></tr></table></figure>
+
+<p>在interrupt_gcc.S中完成了中断入口函数的实现</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">.global irq_entry</span><br><span class="line"><span class="comment">/* This label will be set to MTVT2 register */</span></span><br><span class="line">irq_entry:</span><br><span class="line">    <span class="comment">/* Save the caller saving registers (context) */</span></span><br><span class="line">    SAVE_CONTEXT</span><br><span class="line">    <span class="comment">/* Save the necessary CSR registers */</span></span><br><span class="line">    SAVE_CSR_CONTEXT</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* This special CSR read/write operation, which is actually</span></span><br><span class="line"><span class="comment">     * claim the CLIC to find its pending highest ID, if the ID</span></span><br><span class="line"><span class="comment">     * is not 0, then automatically enable the mstatus.MIE, and</span></span><br><span class="line"><span class="comment">     * jump to its vector-entry-label, and update the link register</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">       <span class="comment">/* 跳转到具体中断函数的语句，功能如上所述*/</span></span><br><span class="line">    csrrw ra, CSR_JALMNXTI, ra</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Critical section with interrupts disabled */</span></span><br><span class="line">    DISABLE_MIE</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Restore the necessary CSR registers */</span></span><br><span class="line">    RESTORE_CSR_CONTEXT</span><br><span class="line">    <span class="comment">/* Restore the caller saving registers (context) */</span></span><br><span class="line">    RESTORE_CONTEXT</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Return to regular code */</span></span><br><span class="line">    mret</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Default Handler for Exceptions / Interrupts */</span></span><br></pre></td></tr></table></figure>
+
+<p>上下文保存的结构体：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">rt_hw_stack_frame</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> epc;        <span class="comment">/*!&lt; epc - epc    - program counter                     */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> ra;         <span class="comment">/*!&lt; x1  - ra     - return address for jumps            */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> t0;         <span class="comment">/*!&lt; x5  - t0     - temporary register 0                */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> t1;         <span class="comment">/*!&lt; x6  - t1     - temporary register 1                */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> t2;         <span class="comment">/*!&lt; x7  - t2     - temporary register 2                */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s0_fp;      <span class="comment">/*!&lt; x8  - s0/fp  - saved register 0 or frame pointer   */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s1;         <span class="comment">/*!&lt; x9  - s1     - saved register 1                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a0;         <span class="comment">/*!&lt; x10 - a0     - return value or function argument 0 */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a1;         <span class="comment">/*!&lt; x11 - a1     - return value or function argument 1 */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a2;         <span class="comment">/*!&lt; x12 - a2     - function argument 2                 */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a3;         <span class="comment">/*!&lt; x13 - a3     - function argument 3                 */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a4;         <span class="comment">/*!&lt; x14 - a4     - function argument 4                 */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a5;         <span class="comment">/*!&lt; x15 - a5     - function argument 5                 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __riscv_32e</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a6;         <span class="comment">/*!&lt; x16 - a6     - function argument 6                 */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> a7;         <span class="comment">/*!&lt; x17 - s7     - function argument 7                 */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s2;         <span class="comment">/*!&lt; x18 - s2     - saved register 2                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s3;         <span class="comment">/*!&lt; x19 - s3     - saved register 3                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s4;         <span class="comment">/*!&lt; x20 - s4     - saved register 4                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s5;         <span class="comment">/*!&lt; x21 - s5     - saved register 5                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s6;         <span class="comment">/*!&lt; x22 - s6     - saved register 6                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s7;         <span class="comment">/*!&lt; x23 - s7     - saved register 7                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s8;         <span class="comment">/*!&lt; x24 - s8     - saved register 8                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s9;         <span class="comment">/*!&lt; x25 - s9     - saved register 9                    */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s10;        <span class="comment">/*!&lt; x26 - s10    - saved register 10                   */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> s11;        <span class="comment">/*!&lt; x27 - s11    - saved register 11                   */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> t3;         <span class="comment">/*!&lt; x28 - t3     - temporary register 3                */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> t4;         <span class="comment">/*!&lt; x29 - t4     - temporary register 4                */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> t5;         <span class="comment">/*!&lt; x30 - t5     - temporary register 5                */</span></span><br><span class="line">    <span class="type">rt_ubase_t</span> t6;         <span class="comment">/*!&lt; x31 - t6     - temporary register 6                */</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="type">rt_ubase_t</span> mstatus;    <span class="comment">/*!&lt;              - machine status register             */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>当我们新建一个线程，初始化线程时，会为其开辟一个线程栈（程序中通常设置一个数组），即对上述结构体做初始化，在rt-thread中的代码如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">rt_err_t</span> _rt_thread_init(<span class="keyword">struct</span> rt_thread *thread,</span><br><span class="line">                                <span class="type">const</span> <span class="type">char</span>       *name,</span><br><span class="line">                                <span class="type">void</span> (*entry)(<span class="type">void</span> *parameter),</span><br><span class="line">                                <span class="type">void</span>             *parameter,</span><br><span class="line">                                <span class="type">void</span>             *stack_start,</span><br><span class="line">                                <span class="type">rt_uint32_t</span>       stack_size,</span><br><span class="line">                                <span class="type">rt_uint8_t</span>        priority,</span><br><span class="line">                                <span class="type">rt_uint32_t</span>       tick)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* init thread list */</span></span><br><span class="line">    rt_list_init(&amp;(thread-&gt;tlist));</span><br><span class="line"></span><br><span class="line">    thread-&gt;entry = (<span class="type">void</span> *)entry;</span><br><span class="line">    thread-&gt;parameter = parameter;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* stack init */</span></span><br><span class="line">    thread-&gt;stack_addr = stack_start;</span><br><span class="line">    thread-&gt;stack_size = stack_size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* init thread stack */</span></span><br><span class="line">    rt_memset(thread-&gt;stack_addr, <span class="string">&#x27;#&#x27;</span>, thread-&gt;stack_size);</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> ARCH_CPU_STACK_GROWS_UPWARD</span></span><br><span class="line">    thread-&gt;sp = (<span class="type">void</span> *)rt_hw_stack_init(thread-&gt;entry, thread-&gt;parameter,</span><br><span class="line">                                          (<span class="type">void</span> *)((<span class="type">char</span> *)thread-&gt;stack_addr),</span><br><span class="line">                                          (<span class="type">void</span> *)rt_thread_exit);</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">    thread-&gt;sp = (<span class="type">void</span> *)rt_hw_stack_init(thread-&gt;entry, thread-&gt;parameter,</span><br><span class="line">                                          (<span class="type">rt_uint8_t</span> *)((<span class="type">char</span> *)thread-&gt;stack_addr + thread-&gt;stack_size - <span class="keyword">sizeof</span>(<span class="type">rt_ubase_t</span>)),</span><br><span class="line">                                          (<span class="type">void</span> *)rt_thread_exit);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">	............</span><br><span class="line">        </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">rt_uint8_t</span> *<span class="title function_">rt_hw_stack_init</span><span class="params">(<span class="type">void</span>       *tentry,</span></span><br><span class="line"><span class="params">                             <span class="type">void</span>       *parameter,</span></span><br><span class="line"><span class="params">                             <span class="type">rt_uint8_t</span> *stack_addr,</span></span><br><span class="line"><span class="params">                             <span class="type">void</span>       *texit)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rt_hw_stack_frame</span> *<span class="title">frame</span>;</span></span><br><span class="line">    <span class="type">rt_uint8_t</span>         *stk;</span><br><span class="line">    <span class="type">int</span>                i;</span><br><span class="line"></span><br><span class="line">    stk  = stack_addr + <span class="keyword">sizeof</span>(<span class="type">rt_ubase_t</span>);</span><br><span class="line">    stk  = (<span class="type">rt_uint8_t</span> *)RT_ALIGN_DOWN((<span class="type">rt_ubase_t</span>)stk, REGBYTES);</span><br><span class="line">    stk -= <span class="keyword">sizeof</span>(<span class="keyword">struct</span> rt_hw_stack_frame);</span><br><span class="line"></span><br><span class="line">    frame = (<span class="keyword">struct</span> rt_hw_stack_frame *)stk;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(<span class="keyword">struct</span> rt_hw_stack_frame) / <span class="keyword">sizeof</span>(<span class="type">rt_ubase_t</span>); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ((<span class="type">rt_ubase_t</span> *)frame)[i] = <span class="number">0xdeadbeef</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    frame-&gt;ra      = (<span class="type">rt_ubase_t</span>)texit;</span><br><span class="line">    frame-&gt;a0      = (<span class="type">rt_ubase_t</span>)parameter;</span><br><span class="line">    frame-&gt;epc     = (<span class="type">rt_ubase_t</span>)tentry;</span><br><span class="line"></span><br><span class="line">    frame-&gt;mstatus = RT_INITIAL_MSTATUS;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> stk;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从堆栈初始化程序*rt_hw_stack_init中可以看出，其先将堆栈顶部地址对齐，然后向下偏移一个rt_hw_stack_frame结构体的大小，用于存储图1中需要存储的寄存器，并对该部分空间进行了初始化。其中把线程的入口地址给了mepc，线程输入参数给a0，mstatus初始值（MPP、MPIE、FS、MIE），即强制机器模式，使能浮点，MPIE为1，MIE为0。如果不带硬件浮点，可将该值设置为0x1880。另外设置ra为线程的返回地址，一般情况下一个线程我们希望一直运行的，当需要返回时说明该线程不再需要运行，所以返回地址一般是一段将该线程从线程列表中删除并切换至下一个线程的一段程序，即上面中调用的函数_rt_thread_exit。</p>
+<p><strong>rt-thread的详细的启动流程。</strong>rt-thread定义一个rt_thread类型的全局指针rt_current_thread，用于实时获取当前运行的线程。从图9可知，硬件启动后进rtthread_startup，其开始进行了必要的初始化，如系统滴答定时器、堆、串口、调度器、定时器、main线程、空闲idle线程等等，最后执行了rt_system_scheduler_start后转交调度器执行。</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/image-20221028110054550.png" alt="image-20221028110054550"></p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/image-20221028110132550.png" alt="image-20221028110132550"></p>
+<p>由图2可知，其会查找优先级较高的就绪组优先级，并根据该优先级查找就绪链表，获取优先级较高的任务并得到控制块to_thread，然后调用rt_hw_context_switch_to切换至该任务。其是一段汇编实现的代码，传入的参数为该任务的sp指针。由前文可知，我们可以根据to_thread-&gt;sp得到该任务的堆栈位置，该堆栈的顶部空间存储了执行该任务时cpu寄存器的值，由此也可推测该部分汇编代码主要完成的就是从sp处恢复cpu寄存器值，并转而执行该任务。其代码如下图3所示，详见注释。</p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/v2-2a3cd8c82045fccaf5b278e5d1c3a759_1440w.webp" alt="img"></p>
+<p><img src="/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/v2-3672e11c8f2cc78763d2f598bc1c0ac9_1440w.webp" alt="img"></p>
+<p>由上注释分析可知，rt_hw_context_switch_to通过传入的sp，恢复cpu寄存器，其中mepc寄存器任务初始化时设置为任务的入口地址，ra寄存器设置为返回地址，其指向公用函数_rt_thread_exit。当mret返回后，pc更新为mepc值，即转向执行任务函数，若其不是一个持续执行的[while(1)]函数，那么其返回至_rt_thread_exit，删除该任务，并切换至其他任务。由此也可理解图2中，最后一句注释“never come back”的含义了，一旦开始执行任务，pc值被改变，再不会回到调用的地方。</p>
+<p>rt_schedule()函数切换上下文的过程，则是挂起一个中断，然后在中断服务函数中实现上下文切换。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">rt_hw_context_switch</span><span class="params">(<span class="type">rt_ubase_t</span> from, <span class="type">rt_ubase_t</span> to)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (rt_thread_switch_interrupt_flag == <span class="number">0</span>)</span><br><span class="line">        rt_interrupt_from_thread = from;</span><br><span class="line"></span><br><span class="line">    rt_interrupt_to_thread = to;</span><br><span class="line">    rt_thread_switch_interrupt_flag = <span class="number">1</span>;</span><br><span class="line">    RT_YIELD();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Scheduler utilities. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> RT_YIELD()                                                              \</span></span><br><span class="line"><span class="meta">&#123;                                                                               \</span></span><br><span class="line"><span class="meta">    <span class="comment">/* Set a software interrupt(SWI) request to request a context switch. */</span>    \</span></span><br><span class="line"><span class="meta">    SysTimer_SetSWIRQ();                                                        \</span></span><br><span class="line"><span class="meta">    <span class="comment">/* Barriers are normally not required but do ensure the code is completely  \</span></span></span><br><span class="line"><span class="comment"><span class="meta">    within the specified behaviour for the architecture. */</span>                     \</span></span><br><span class="line"><span class="meta">    __RWMB();                                                                   \</span></span><br><span class="line"><span class="meta">    __FENCE_I();                                                                \</span></span><br><span class="line"><span class="meta">&#125;</span></span><br><span class="line"></span><br><span class="line">__STATIC_FORCEINLINE <span class="type">void</span> <span class="title function_">SysTimer_SetSWIRQ</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> hartid = __RV_CSR_READ(CSR_MHARTID);</span><br><span class="line">    <span class="keyword">if</span> (hartid == <span class="number">0</span>) &#123;</span><br><span class="line">        SysTimer-&gt;MSIP |= SysTimer_MSIP_MSIP_Msk;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">uint8_t</span> *addr = (<span class="type">uint8_t</span> *)(SysTimer_CLINT_MSIP_BASE(hartid));</span><br><span class="line">        __SW(addr, SysTimer_MSIP_MSIP_Msk);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>中断服务函数实体：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line">.global eclic_msip_handler</span><br><span class="line">eclic_msip_handler:</span><br><span class="line">    addi sp, sp, -RT_CONTEXT_SIZE</span><br><span class="line">    STORE x1,  <span class="number">1</span>  * REGBYTES(sp)    <span class="comment">/* RA */</span></span><br><span class="line">    STORE x5,  <span class="number">2</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x6,  <span class="number">3</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x7,  <span class="number">4</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x8,  <span class="number">5</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x9,  <span class="number">6</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x10, <span class="number">7</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x11, <span class="number">8</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x12, <span class="number">9</span>  * REGBYTES(sp)</span><br><span class="line">    STORE x13, <span class="number">10</span> * REGBYTES(sp)</span><br><span class="line">    STORE x14, <span class="number">11</span> * REGBYTES(sp)</span><br><span class="line">    STORE x15, <span class="number">12</span> * REGBYTES(sp)</span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __riscv_32e</span></span><br><span class="line">    STORE x16, <span class="number">13</span> * REGBYTES(sp)</span><br><span class="line">    STORE x17, <span class="number">14</span> * REGBYTES(sp)</span><br><span class="line">    STORE x18, <span class="number">15</span> * REGBYTES(sp)</span><br><span class="line">    STORE x19, <span class="number">16</span> * REGBYTES(sp)</span><br><span class="line">    STORE x20, <span class="number">17</span> * REGBYTES(sp)</span><br><span class="line">    STORE x21, <span class="number">18</span> * REGBYTES(sp)</span><br><span class="line">    STORE x22, <span class="number">19</span> * REGBYTES(sp)</span><br><span class="line">    STORE x23, <span class="number">20</span> * REGBYTES(sp)</span><br><span class="line">    STORE x24, <span class="number">21</span> * REGBYTES(sp)</span><br><span class="line">    STORE x25, <span class="number">22</span> * REGBYTES(sp)</span><br><span class="line">    STORE x26, <span class="number">23</span> * REGBYTES(sp)</span><br><span class="line">    STORE x27, <span class="number">24</span> * REGBYTES(sp)</span><br><span class="line">    STORE x28, <span class="number">25</span> * REGBYTES(sp)</span><br><span class="line">    STORE x29, <span class="number">26</span> * REGBYTES(sp)</span><br><span class="line">    STORE x30, <span class="number">27</span> * REGBYTES(sp)</span><br><span class="line">    STORE x31, <span class="number">28</span> * REGBYTES(sp)</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="comment">/* Push mstatus to stack */</span></span><br><span class="line">    csrr t0, CSR_MSTATUS</span><br><span class="line">    STORE t0,  (RT_SAVED_REGNUM - <span class="number">1</span>)  * REGBYTES(sp)</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Push additional registers */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Store sp to task stack */</span></span><br><span class="line">    LOAD t0, rt_interrupt_from_thread</span><br><span class="line">    STORE sp, <span class="number">0</span>(t0)</span><br><span class="line"></span><br><span class="line">    csrr t0, CSR_MEPC</span><br><span class="line">    STORE t0, <span class="number">0</span>(sp)</span><br><span class="line"></span><br><span class="line">    jal rt_hw_taskswitch</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Switch task context */</span></span><br><span class="line">    LOAD t0, rt_interrupt_to_thread</span><br><span class="line">    LOAD sp, <span class="number">0x0</span>(t0)</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Pop PC from stack and set MEPC */</span></span><br><span class="line">    LOAD t0,  <span class="number">0</span>  * REGBYTES(sp)</span><br><span class="line">    csrw CSR_MEPC, t0</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Pop additional registers */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Pop mstatus from stack and set it */</span></span><br><span class="line">    LOAD t0,  (RT_SAVED_REGNUM - <span class="number">1</span>)  * REGBYTES(sp)</span><br><span class="line">    csrw CSR_MSTATUS, t0</span><br><span class="line">    <span class="comment">/* Interrupt still disable here */</span></span><br><span class="line">    <span class="comment">/* Restore Registers from Stack */</span></span><br><span class="line">    LOAD x1,  <span class="number">1</span>  * REGBYTES(sp)    <span class="comment">/* RA */</span></span><br><span class="line">    LOAD x5,  <span class="number">2</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x6,  <span class="number">3</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x7,  <span class="number">4</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x8,  <span class="number">5</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x9,  <span class="number">6</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x10, <span class="number">7</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x11, <span class="number">8</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x12, <span class="number">9</span>  * REGBYTES(sp)</span><br><span class="line">    LOAD x13, <span class="number">10</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x14, <span class="number">11</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x15, <span class="number">12</span> * REGBYTES(sp)</span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __riscv_32e</span></span><br><span class="line">    LOAD x16, <span class="number">13</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x17, <span class="number">14</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x18, <span class="number">15</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x19, <span class="number">16</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x20, <span class="number">17</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x21, <span class="number">18</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x22, <span class="number">19</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x23, <span class="number">20</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x24, <span class="number">21</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x25, <span class="number">22</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x26, <span class="number">23</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x27, <span class="number">24</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x28, <span class="number">25</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x29, <span class="number">26</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x30, <span class="number">27</span> * REGBYTES(sp)</span><br><span class="line">    LOAD x31, <span class="number">28</span> * REGBYTES(sp)</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    addi sp, sp, RT_CONTEXT_SIZE</span><br><span class="line">    mret</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/10/28/rtos%E4%B8%AD%E6%96%AD%E6%B5%81%E7%A8%8B/" data-id="cl9rwxhuj0000rgmjfkqo7gpe" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-数据结构位图" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/10/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%BD%8D%E5%9B%BE/" class="article-date">
@@ -745,54 +1018,6 @@
 
 
   
-    <article id="post-CM32实验：外部中断控制" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/" class="article-date">
-  <time datetime="2022-09-23T08:56:09.000Z" itemprop="datePublished">2022-09-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/">CM32实验:外部中断控制</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="实验：外部中断控制"><a href="#实验：外部中断控制" class="headerlink" title="实验：外部中断控制"></a>实验：外部中断控制</h2><p>​        CM32外部中断/事件控制器框图：</p>
-<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/image-20220923165924674.png" class="">
-
-<h3 id="1、初始化用来中断的GPIO"><a href="#1、初始化用来中断的GPIO" class="headerlink" title="1、初始化用来中断的GPIO"></a>1、初始化用来中断的GPIO</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Initialize Led1 and Led2 as output pushpull mode */</span></span><br><span class="line">LedInit(LED1_PORT, LED1_PIN);</span><br><span class="line">LedInit(LED2_PORT, LED2_PIN);</span><br></pre></td></tr></table></figure>
-
-<h3 id="2、初始化EXTI-并配置ECLIC"><a href="#2、初始化EXTI-并配置ECLIC" class="headerlink" title="2、初始化EXTI 并配置ECLIC"></a>2、初始化EXTI 并配置ECLIC</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">KeyInputExtiInit</span><span class="params">(GPIO_Module* GPIOx, <span class="type">uint16_t</span> Pin)</span></span><br><span class="line">&#123;</span><br><span class="line">    GPIO_InitType GPIO_InitStructure;</span><br><span class="line">    EXTI_InitType EXTI_InitStructure;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Check the parameters */</span></span><br><span class="line">    assert_param(IS_GPIO_ALL_PERIPH(GPIOx));</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Enable the GPIO Clock */</span></span><br><span class="line">    <span class="keyword">if</span> (GPIOx == GPIOA)</span><br><span class="line">    &#123;</span><br><span class="line">        RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOA, ENABLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (GPIOx == GPIOB)</span><br><span class="line">    &#123;</span><br><span class="line">        RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (GPIOx == GPIOC)</span><br><span class="line">    &#123;</span><br><span class="line">        RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (GPIOx == GPIOD)</span><br><span class="line">    &#123;</span><br><span class="line">        RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOD, ENABLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (GPIOx == GPIOE)</span><br><span class="line">    &#123;</span><br><span class="line">        RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOE, ENABLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (GPIOx == GPIOF)</span><br><span class="line">    &#123;</span><br><span class="line">        RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOF, ENABLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (GPIOx == GPIOG)</span><br><span class="line">        &#123;</span><br><span class="line">            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOG, ENABLE);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//开启AFIO时钟</span></span><br><span class="line">    <span class="comment">//当片上外设输出时，输入并没有与IO端口断开，我们仍然可以读取IO端口电平。AF是没有复用输入模式的，只有输入模式。</span></span><br><span class="line">	<span class="comment">//理论上当需要使用片上外设时候，都需要开启AFIO时钟</span></span><br><span class="line">    RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_AFIO, ENABLE);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 将按键的输入模式设置为浮空输入 */</span></span><br><span class="line">    <span class="keyword">if</span> (Pin &lt;= GPIO_PIN_ALL)</span><br><span class="line">    &#123;</span><br><span class="line">        GPIO_InitStructure.Pin        = Pin;</span><br><span class="line">        GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN_FLOATING;</span><br><span class="line">        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;</span><br><span class="line">        GPIO_Init(GPIOx, &amp;GPIO_InitStructure);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*选择EXTI的信号源 */</span></span><br><span class="line">    GPIO_ConfigEXTILine(KEY_INPUT_PORT_SOURCE, KEY_INPUT_PIN_SOURCE);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Configure key EXTI line */</span></span><br><span class="line">    EXTI_InitStructure.EXTI_Line    = KEY_INPUT_EXTI_LINE;  </span><br><span class="line">    EXTI_InitStructure.EXTI_Mode    = EXTI_Mode_Interrupt;  <span class="comment">// EXTI为中断模式</span></span><br><span class="line">    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;  <span class="comment">// 上升沿中断</span></span><br><span class="line">    EXTI_InitStructure.EXTI_LineCmd = ENABLE;    <span class="comment">// 使能中断</span></span><br><span class="line">    EXTI_Init(&amp;EXTI_InitStructure);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//cfg寄存器置1</span></span><br><span class="line">    ECLIC_SetCfgNlbits(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 设置ELCIC 也是 NVIC */</span></span><br><span class="line">	<span class="comment">// 配置响应优先级</span></span><br><span class="line">    ECLIC_SetLevelIRQ(KEY_INPUT_IRQn, <span class="number">1</span>);</span><br><span class="line">	<span class="comment">// 配置中断优先级</span></span><br><span class="line">	ECLIC_SetPriorityIRQ(KEY_INPUT_IRQn, <span class="number">1</span>);</span><br><span class="line">	<span class="comment">// 配置中断源 按键</span></span><br><span class="line">	ECLIC_SetTrigIRQ(KEY_INPUT_IRQn, ECLIC_LEVEL_TRIGGER);   </span><br><span class="line">	<span class="comment">// 使能中断通道</span></span><br><span class="line">	ECLIC_EnableIRQ(KEY_INPUT_IRQn);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3、编写中断服务程序"><a href="#3、编写中断服务程序" class="headerlink" title="3、编写中断服务程序"></a>3、编写中断服务程序</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">pin_status = GPIO_ReadInputDataBit(KEY_INPUT_PORT1, KEY_INPUT_PIN1); <span class="comment">//读取当前电频状态</span></span><br><span class="line"></span><br><span class="line">  	<span class="keyword">if</span>(pin_status)</span><br><span class="line">  	&#123;</span><br><span class="line">  	    LedOn(LED1_PORT, LED1_PIN);</span><br><span class="line">  	&#125;</span><br><span class="line">  	<span class="keyword">else</span></span><br><span class="line">  	&#123;</span><br><span class="line">  	    LedOff(LED1_PORT, LED1_PIN);</span><br><span class="line">  	&#125;</span><br><span class="line"></span><br><span class="line">  	delay_ms(<span class="number">100</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="实验说明"><a href="#实验说明" class="headerlink" title="实验说明"></a>实验说明</h3><p>​        1、SystemClock：144MHz<br>​        2、GPIO：PA0 选择作为外部中断入口，设置为上升沿触发中断，PB5 控制 LED6，PB6 控制 LED7 。</p>
-<h3 id="测试步骤和现象"><a href="#测试步骤和现象" class="headerlink" title="测试步骤和现象"></a>测试步骤和现象</h3><p>​    1、编译后下载程序复位运行；</p>
-<p>​    2、第一次按下按键 WKUP（PA0接地），LED6和LED7熄灭；<br>​    第一次松开按键WKUP（PA0接3.3V），LED6和LED7保持常量；<br>​    第二次按下按键WKUP（PA0接地），LED6熄灭，LED7亮起；<br>​    第二次松开按键WKUP（PA0接3.3V），LED6亮起，LED7熄灭。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/" data-id="cl92id4oj0000ggmj5jb45e03" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -816,7 +1041,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
     </div>
   </div>
 
@@ -827,6 +1052,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">redis的通信协议</a>
+          </li>
         
           <li>
             <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
@@ -844,10 +1073,6 @@
             <a href="/2022/12/02/%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%E7%9A%84%E5%B0%81%E8%A3%85/">线程同步机制的封装</a>
           </li>
         
-          <li>
-            <a href="/2022/11/28/qemu%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0/">qemu相关配置参数</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -860,7 +1085,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 John Doe<br>
+      &copy; 2023 John Doe<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

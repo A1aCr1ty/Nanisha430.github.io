@@ -64,6 +64,81 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-c语言复习day3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/07/25/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day3/" class="article-date">
+  <time datetime="2022-07-25T01:11:55.000Z" itemprop="datePublished">2022-07-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/07/25/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day3/">c语言复习day3</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1、指针的兼容性"><a href="#1、指针的兼容性" class="headerlink" title="1、指针的兼容性"></a>1、指针的兼容性</h2><img src="/2022/07/25/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day3/100309_af2b66c8_8442788.png" class="">
+
+<p>​    指针类型不一样，不能直接赋值。 例如ar1是指向由3个int值构成的数组，而pa也是指向3个int值构成的数组 ，因此pa和ar1的类型是一致的，和ar2的类型不一致。</p>
+<p>​    在函数中声明二维数据的方式：</p>
+<p>​    <code>void somefunction(int (*p)[4]);</code>   p是一个指向由4个int值构成的数组的指针</p>
+<p>​    <code>void somefunction(int p[][4]);</code>     空的方括号表示p是一个指针</p>
+<h2 id="2、数组与指针的区别"><a href="#2、数组与指针的区别" class="headerlink" title="2、数组与指针的区别"></a>2、数组与指针的区别</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> heart[<span class="number">20</span>] =<span class="string">&quot;i love you&quot;</span>;</span><br><span class="line"><span class="type">char</span> *head = <span class="string">&quot;i love you&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>​    其主要区别在于heart是一个常量，而head是一个变量。两者都可以使用数组符号，也都可以使用指针加法，但是只有指针可已使用自增运算符。而且 head = heart 是正确的，但是heart = head是错误的。</p>
+<h2 id="3、常见的字符串函数"><a href="#3、常见的字符串函数" class="headerlink" title="3、常见的字符串函数"></a>3、常见的字符串函数</h2><p>​    strlen：得到字符串的长度。</p>
+<p>​    strcat：拼接两个字符串，strcat（str1，str2）</p>
+<p>​    strncat: 在strcat的基础上限制了长度，因为strcat没有考虑第一个字符数组是否能够容纳下第二个数组。 strncat(str1,str2,21)</p>
+<p>​    strcmp和strncmp: 比较连个字符串的内容，strncmp可以比较字符串的前n个字符。</p>
+<p>​    strcpy和strncpy： 赋值字符串到一个数组中。 strcmp(str,temp) ,strncpy可以限定复制内容的长度，比较安全。</p>
+<p>​    sprintf: 将几个字符串格式化的写入一个字符串中，</p>
+<p>​    atoi和strtol: 将字符串转化为帧数。 value = strtol(str,end,10)  // 以十进制转化str，end是转化后剩余的字符串 </p>
+<h2 id="4、fseek-和ftell-寻找文件中的位置"><a href="#4、fseek-和ftell-寻找文件中的位置" class="headerlink" title="4、fseek()和ftell() 寻找文件中的位置"></a>4、fseek()和ftell() 寻找文件中的位置</h2><p>​    fseek() 由三个参数，fp文件指针，offset偏移量，还有一个起始点。</p>
+<p>​    <strong>SEEK_SET 文件开始位置</strong></p>
+<p>​    <strong>SEEK_CUR 文件当前位置</strong></p>
+<p>​    <strong>SEEK_END 文件结尾位置</strong></p>
+<p>​    ftell() 返回一个long类型，他是用来寻找文件当前位置。</p>
+<h2 id="5、在结构中存储字符串，要用字符数组而不是指针。"><a href="#5、在结构中存储字符串，要用字符数组而不是指针。" class="headerlink" title="5、在结构中存储字符串，要用字符数组而不是指针。"></a>5、在结构中存储字符串，要用字符数组而不是指针。</h2><p>​    结构体不会给指针事先分配空间，他只是存储指针地址，指针没有初始化，这个地址可能是任何值。给结构体中的字符指针赋值，输入的内容可能会存储在内存的任何地方。</p>
+<h2 id="6、联合体（union）是一个能在统一个存储空间里（但不同时）存储不同类型的数据类型。"><a href="#6、联合体（union）是一个能在统一个存储空间里（但不同时）存储不同类型的数据类型。" class="headerlink" title="6、联合体（union）是一个能在统一个存储空间里（但不同时）存储不同类型的数据类型。"></a>6、联合体（union）是一个能在统一个存储空间里（但不同时）存储不同类型的数据类型。</h2><h2 id="7、c语言中奇特的声明"><a href="#7、c语言中奇特的声明" class="headerlink" title="7、c语言中奇特的声明"></a>7、c语言中奇特的声明</h2><img src="/2022/07/25/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day3/image-20220727141703474.png" class="">
+
+<h2 id="8、位运算的用处"><a href="#8、位运算的用处" class="headerlink" title="8、位运算的用处"></a>8、位运算的用处</h2><h3 id="8-1、掩码"><a href="#8-1、掩码" class="headerlink" title="8.1、掩码"></a>8.1、掩码</h3><p>​            设置一个mask与你想要进行运算的数进行与运算。最后得到结果。</p>
+<p>​            mask = 0x3ff（11111111）</p>
+<p>​            ch &amp;= mask 无论最初的ch是8位还是16位，最终都会被修整成一个字节。</p>
+<h3 id="8-2、关闭位"><a href="#8-2、关闭位" class="headerlink" title="8.2、关闭位"></a>8.2、关闭位</h3><p>​            mask = 2 （00000010）</p>
+<p>​            flag &amp;= ~mask (11111101)</p>
+<p>​            把flag中的位1变成0 </p>
+<h3 id="8-3、转置位"><a href="#8-3、转置位" class="headerlink" title="8.3、转置位"></a>8.3、转置位</h3><p>​             mask = 2 （00000010）</p>
+<p>​             flag  ^= mask </p>
+<h3 id="8-4、查看一位"><a href="#8-4、查看一位" class="headerlink" title="8.4、查看一位"></a>8.4、查看一位</h3><p>​            mask = 2 （00000010）</p>
+<p>​            if((flag&amp;mask)==mask){</p>
+<p>​                puts(“wow!”);    </p>
+<p>​            }</p>
+<h3 id="8-5、右移运算符-gt-gt"><a href="#8-5、右移运算符-gt-gt" class="headerlink" title="8.5、右移运算符 &gt;&gt;"></a>8.5、右移运算符 &gt;&gt;</h3><p>​        在负数&gt;&gt;的情况： -2 右移两位。 在计算机中 数据都是用补码进行计算的。</p>
+<p>​        -2 1000 0010 补码为 1111 1110  。</p>
+<p>​        右移两位变成 1111 1111 原码为1000 0001 所以 结果为 -1。 </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/07/25/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day3/" data-id="cl92id4ou0008ggmjes0uc35a" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-c语言复习day2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/07/22/c%E8%AF%AD%E8%A8%80%E5%A4%8D%E4%B9%A0day2/" class="article-date">
@@ -222,7 +297,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
     </div>
   </div>
 
@@ -233,6 +308,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">redis的通信协议</a>
+          </li>
         
           <li>
             <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
@@ -250,10 +329,6 @@
             <a href="/2022/12/02/%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%E7%9A%84%E5%B0%81%E8%A3%85/">线程同步机制的封装</a>
           </li>
         
-          <li>
-            <a href="/2022/11/28/qemu%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0/">qemu相关配置参数</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -266,7 +341,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 John Doe<br>
+      &copy; 2023 John Doe<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
