@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>跳表实现sortedset | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="跳表（skiplist）当我们要实现一个sortedset, 普通的实现方法是用一个有序链表来作为底层的数据结构。 但是在链表中查询的时间复杂度是o(n),还存在可以提升的空间。  跳表的结构，如下图所示：  假设底层链表的长度为n , 则y  &#x3D; n&#x2F;x, x+y 的最小值为2sqrt(n)，若有三层则为x + y + z &gt; 3(n)^(1&#x2F;3),依次类推，跳表的查找效率可以达到0(lo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="跳表实现sortedset">
+<meta property="og:url" content="http://example.com/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="跳表（skiplist）当我们要实现一个sortedset, 普通的实现方法是用一个有序链表来作为底层的数据结构。 但是在链表中查询的时间复杂度是o(n),还存在可以提升的空间。  跳表的结构，如下图所示：  假设底层链表的长度为n , 则y  &#x3D; n&#x2F;x, x+y 的最小值为2sqrt(n)，若有三层则为x + y + z &gt; 3(n)^(1&#x2F;3),依次类推，跳表的查找效率可以达到0(lo">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/image-20230113135338272.png">
+<meta property="og:image" content="http://example.com/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/image-20230113135642407.png">
+<meta property="og:image" content="http://example.com/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/image-20230113141355619.png">
+<meta property="article:published_time" content="2023-01-13T01:52:31.000Z">
+<meta property="article:modified_time" content="2023-01-13T06:20:55.751Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/image-20230113135338272.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-跳表实现sortedset" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/" class="article-date">
+  <time datetime="2023-01-13T01:52:31.000Z" itemprop="datePublished">2023-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      跳表实现sortedset
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="跳表（skiplist）"><a href="#跳表（skiplist）" class="headerlink" title="跳表（skiplist）"></a>跳表（skiplist）</h2><p>当我们要实现一个sortedset, 普通的实现方法是用一个有序链表来作为底层的数据结构。</p>
+<p>但是在链表中查询的时间复杂度是o(n),还存在可以提升的空间。</p>
+<p><img src="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/image-20230113135338272.png" alt="image-20230113135338272"></p>
+<p>跳表的结构，如下图所示：</p>
+<p><img src="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/image-20230113135642407.png" alt="image-20230113135642407"></p>
+<p>假设底层链表的长度为n , 则y  = n/x, x+y 的最小值为2sqrt(n)，若有三层则为x + y + z &gt; 3(n)^(1/3),依次类推，跳表的查找效率可以达到0(log n)</p>
+<p><strong>数据结构定义</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对外的元素抽象</span></span><br><span class="line"><span class="keyword">type</span> Element <span class="keyword">struct</span> &#123;</span><br><span class="line">    Member <span class="type">string</span></span><br><span class="line">    Score  <span class="type">float64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Node <span class="keyword">struct</span> &#123;</span><br><span class="line">    Element <span class="comment">// 元素的名称和 score</span></span><br><span class="line">    backward *Node <span class="comment">// 后向指针</span></span><br><span class="line">    level []*Level <span class="comment">// 前向指针, level[0] 为最下层</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 节点中每一层的抽象 </span></span><br><span class="line"><span class="keyword">type</span> Level <span class="keyword">struct</span> &#123;</span><br><span class="line">    forward *Node <span class="comment">// 指向同层中的下一个节点</span></span><br><span class="line">    span <span class="type">int64</span> <span class="comment">// 到 forward 跳过的节点数</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 跳表的定义</span></span><br><span class="line"><span class="keyword">type</span> skiplist <span class="keyword">struct</span> &#123;</span><br><span class="line">    header *Node</span><br><span class="line">    tail *Node</span><br><span class="line">    length <span class="type">int64</span></span><br><span class="line">    level <span class="type">int16</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一个图来表示：</p>
+<p><img src="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/image-20230113141355619.png" alt="image-20230113141355619"></p>
+<h3 id="查找结点"><a href="#查找结点" class="headerlink" title="查找结点"></a>查找结点</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 寻找排名为 rank 的节点, rank 从1开始</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(skiplist *skiplist)</span></span> getByRank(rank <span class="type">int64</span>)*Node &#123;</span><br><span class="line">    <span class="keyword">var</span> i <span class="type">int64</span> = <span class="number">0</span></span><br><span class="line">    n := skiplist.header</span><br><span class="line">    <span class="comment">// 从顶层向下查询</span></span><br><span class="line">    <span class="keyword">for</span> level := skiplist.level - <span class="number">1</span>; level &gt;= <span class="number">0</span>; level-- &#123;</span><br><span class="line">        <span class="comment">// 从当前层向前搜索</span></span><br><span class="line">        <span class="comment">// 若当前层的下一个节点已经超过目标 (i+n.level[level].span &gt; rank)，则结束当前层搜索进入下一层</span></span><br><span class="line">        <span class="keyword">for</span> n.level[level].forward != <span class="literal">nil</span> &amp;&amp; (i+n.level[level].span) &lt;= rank &#123;</span><br><span class="line">            i += n.level[level].span</span><br><span class="line">            n = n.level[level].forward</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> i == rank &#123;</span><br><span class="line">            <span class="keyword">return</span> n</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>ZRangeByScore</code> 命令需要 <code>getFirstInScoreRange</code> 函数找到分数范围内第一个节点:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(skiplist *skiplist)</span></span> getFirstInScoreRange(min *ScoreBorder, max *ScoreBorder) *Node &#123;</span><br><span class="line">    <span class="comment">// 判断跳表和范围是否有交集，若无交集提早返回</span></span><br><span class="line">    <span class="keyword">if</span> !skiplist.hasInRange(min, max) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    n := skiplist.header</span><br><span class="line">    <span class="comment">// 从顶层向下查询</span></span><br><span class="line">    <span class="keyword">for</span> level := skiplist.level - <span class="number">1</span>; level &gt;= <span class="number">0</span>; level-- &#123;</span><br><span class="line">        <span class="comment">// 若 forward 节点仍未进入范围则继续向前(forward)</span></span><br><span class="line">        <span class="comment">// 若 forward 节点已进入范围，当 level &gt; 0 时 forward 节点不能保证是 *第一个* 在 min 范围内的节点， 因此需进入下一层查找</span></span><br><span class="line">        <span class="keyword">for</span> n.level[level].forward != <span class="literal">nil</span> &amp;&amp; !min.less(n.level[level].forward.Score) &#123;</span><br><span class="line">            n = n.level[level].forward</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 当从外层循环退出时 level=0 (最下层), n.level[0].forward 一定是 min 范围内的第一个节点</span></span><br><span class="line">    n = n.level[<span class="number">0</span>].forward</span><br><span class="line">    <span class="keyword">if</span> !max.greater(n.Score) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> n</span><br></pre></td></tr></table></figure>
+
+<h3 id="插入节点"><a href="#插入节点" class="headerlink" title="插入节点"></a>插入节点</h3><p>插入节点的操作比较多，我们以注释的方式进行说明:</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(skiplist *skiplist)</span></span>insert(member <span class="type">string</span>, score <span class="type">float64</span>)*Node &#123;</span><br><span class="line">    <span class="comment">// 寻找新节点的先驱节点，它们的 forward 将指向新节点</span></span><br><span class="line">    <span class="comment">// 因为每层都有一个 forward 指针, 所以每层都会对应一个先驱节点</span></span><br><span class="line">    <span class="comment">// 找到这些先驱节点并保存在 update 数组中</span></span><br><span class="line">    update := <span class="built_in">make</span>([]*Node, maxLevel)</span><br><span class="line">    rank := <span class="built_in">make</span>([]<span class="type">int64</span>, maxLevel) <span class="comment">// 保存各层先驱节点的排名，用于计算span</span></span><br><span class="line"></span><br><span class="line">    node := skiplist.header</span><br><span class="line">    <span class="keyword">for</span> i := skiplist.level - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i-- &#123; <span class="comment">// 从上层向下寻找</span></span><br><span class="line">        <span class="comment">// 初始化 rank</span></span><br><span class="line">        <span class="keyword">if</span> i == skiplist.level - <span class="number">1</span> &#123;</span><br><span class="line">            rank[i] = <span class="number">0</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            rank[i] = rank[i + <span class="number">1</span>]</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> node.level[i] != <span class="literal">nil</span> &#123;</span><br><span class="line">            <span class="comment">// 遍历搜索</span></span><br><span class="line">            <span class="keyword">for</span> node.level[i].forward != <span class="literal">nil</span> &amp;&amp;</span><br><span class="line">                (node.level[i].forward.Score &lt; score ||</span><br><span class="line">                    (node.level[i].forward.Score == score &amp;&amp; node.level[i].forward.Member &lt; member)) &#123; <span class="comment">// same score, different key</span></span><br><span class="line">                rank[i] += node.level[i].span</span><br><span class="line">                node = node.level[i].forward</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        update[i] = node</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    level := randomLevel() <span class="comment">// 随机决定新节点的层数</span></span><br><span class="line">    <span class="comment">// 可能需要创建新的层</span></span><br><span class="line">    <span class="keyword">if</span> level &gt; skiplist.level &#123;</span><br><span class="line">        <span class="keyword">for</span> i := skiplist.level; i &lt; level; i++ &#123;</span><br><span class="line">            rank[i] = <span class="number">0</span></span><br><span class="line">            update[i] = skiplist.header</span><br><span class="line">            update[i].level[i].span = skiplist.length</span><br><span class="line">        &#125;</span><br><span class="line">        skiplist.level = level</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建新节点并插入跳表</span></span><br><span class="line">    node = makeNode(level, score, member)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="type">int16</span>(<span class="number">0</span>); i &lt; level; i++ &#123;</span><br><span class="line">        <span class="comment">// 新节点的 forward 指向先驱节点的 forward</span></span><br><span class="line">        node.level[i].forward = update[i].level[i].forward</span><br><span class="line">        <span class="comment">// 先驱节点的 forward 指向新节点</span></span><br><span class="line">        update[i].level[i].forward = node</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 计算先驱节点和新节点的 span</span></span><br><span class="line">        node.level[i].span = update[i].level[i].span - (rank[<span class="number">0</span>] - rank[i])</span><br><span class="line">        update[i].level[i].span = (rank[<span class="number">0</span>] - rank[i]) + <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 新节点可能不会包含所有层</span></span><br><span class="line">    <span class="comment">// 对于没有层，先驱节点的 span 会加1 (后面插入了新节点导致span+1)</span></span><br><span class="line">    <span class="keyword">for</span> i := level; i &lt; skiplist.level; i++ &#123;</span><br><span class="line">        update[i].level[i].span++</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 更新后向指针</span></span><br><span class="line">    <span class="keyword">if</span> update[<span class="number">0</span>] == skiplist.header &#123;</span><br><span class="line">        node.backward = <span class="literal">nil</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        node.backward = update[<span class="number">0</span>]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> node.level[<span class="number">0</span>].forward != <span class="literal">nil</span> &#123;</span><br><span class="line">        node.level[<span class="number">0</span>].forward.backward = node</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        skiplist.tail = node</span><br><span class="line">    &#125;</span><br><span class="line">    skiplist.length++</span><br><span class="line">    <span class="keyword">return</span> node</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>randomLevel 用于随机决定新节点包含的层数，随机结果出现2的概率是出现1的25%， 出现3的概率是出现2的25%:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">randomLevel</span><span class="params">()</span></span> <span class="type">int16</span> &#123;</span><br><span class="line">    level := <span class="type">int16</span>(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">for</span> <span class="type">float32</span>(rand.Int31()&amp;<span class="number">0xFFFF</span>) &lt; (<span class="number">0.25</span> * <span class="number">0xFFFF</span>) &#123;</span><br><span class="line">        level++</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> level &lt; maxLevel &#123;</span><br><span class="line">        <span class="keyword">return</span> level</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> maxLevel</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="删除节点"><a href="#删除节点" class="headerlink" title="删除节点"></a>删除节点</h3><p>删除节点的思路与插入节点基本一致:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 删除操作可能一次删除多个节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(skiplist *skiplist)</span></span> RemoveRangeByRank(start <span class="type">int64</span>, stop <span class="type">int64</span>)(removed []*Element) &#123;</span><br><span class="line">    <span class="keyword">var</span> i <span class="type">int64</span> = <span class="number">0</span>  <span class="comment">// 当前指针的排名</span></span><br><span class="line">    update := <span class="built_in">make</span>([]*Node, maxLevel)</span><br><span class="line">    removed = <span class="built_in">make</span>([]*Element, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从顶层向下寻找目标的先驱节点</span></span><br><span class="line">    node := skiplist.header</span><br><span class="line">    <span class="keyword">for</span> level := skiplist.level - <span class="number">1</span>; level &gt;= <span class="number">0</span>; level-- &#123;</span><br><span class="line">        <span class="keyword">for</span> node.level[level].forward != <span class="literal">nil</span> &amp;&amp; (i+node.level[level].span) &lt; start &#123;</span><br><span class="line">            i += node.level[level].span</span><br><span class="line">            node = node.level[level].forward</span><br><span class="line">        &#125;</span><br><span class="line">        update[level] = node</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    i++</span><br><span class="line">    node = node.level[<span class="number">0</span>].forward <span class="comment">// node 是目标范围内第一个节点</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 删除范围内的所有节点</span></span><br><span class="line">    <span class="keyword">for</span> node != <span class="literal">nil</span> &amp;&amp; i &lt; stop &#123;</span><br><span class="line">        next := node.level[<span class="number">0</span>].forward</span><br><span class="line">        removedElement := node.Element</span><br><span class="line">        removed = <span class="built_in">append</span>(removed, &amp;removedElement)</span><br><span class="line">        skiplist.removeNode(node, update)</span><br><span class="line">        node = next</span><br><span class="line">        i++</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> removed</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来分析一下执行具体节点删除操作的removeNode函数:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 传入目标节点和删除后的先驱节点</span></span><br><span class="line"><span class="comment">// 在批量删除时我们传入的 update 数组是相同的</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(skiplist *skiplist)</span></span> removeNode(node *Node, update []*Node) &#123;</span><br><span class="line">    <span class="keyword">for</span> i := <span class="type">int16</span>(<span class="number">0</span>); i &lt; skiplist.level; i++ &#123;</span><br><span class="line">        <span class="comment">// 如果先驱节点的forward指针指向了目标节点，则需要修改先驱的forward指针跳过要删除的目标节点</span></span><br><span class="line">        <span class="comment">// 同时更新先驱的 span</span></span><br><span class="line">        <span class="keyword">if</span> update[i].level[i].forward == node &#123;</span><br><span class="line">            update[i].level[i].span += node.level[i].span - <span class="number">1</span></span><br><span class="line">            update[i].level[i].forward = node.level[i].forward</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            update[i].level[i].span--</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 修改目标节点后继节点的backward指针</span></span><br><span class="line">    <span class="keyword">if</span> node.level[<span class="number">0</span>].forward != <span class="literal">nil</span> &#123;</span><br><span class="line">        node.level[<span class="number">0</span>].forward.backward = node.backward</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        skiplist.tail = node.backward</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 必要时删除空白的层</span></span><br><span class="line">    <span class="keyword">for</span> skiplist.level &gt; <span class="number">1</span> &amp;&amp; skiplist.header.level[skiplist.level<span class="number">-1</span>].forward == <span class="literal">nil</span> &#123;</span><br><span class="line">        skiplist.level--</span><br><span class="line">    &#125;</span><br><span class="line">    skiplist.length--</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">原文地址：https://www.cnblogs.com/Finley/p/12854599.html</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/" data-id="clcu4s5x00000igmj64aefgl1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">redis的通信协议</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/">跳表实现sortedset</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">redis的通信协议</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/23/csapp-proxyLab/">csapp:proxyLab</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/07/csapp-ShellLab%E5%AE%9E%E9%AA%8C/">csapp:ShellLab实验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
