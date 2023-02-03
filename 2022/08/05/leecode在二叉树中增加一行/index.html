@@ -14,13 +14,13 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="623. 在二叉树中增加一行难度中等178 给定一个二叉树的根 root 和两个整数 val 和 depth ，在给定的深度 depth 处添加一个值为 val 的节点行。 注意，根节点 root 位于深度 1 。 加法规则如下:  给定整数 depth，对于深度为 depth - 1 的每个非空树节点 cur ，创建两个值为 val 的树节点作为 cur 的左子树根和右子树根。 cur 原来的左">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/addrow-tree.jpg">
-<meta property="og:image" content="http://example.com/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/add2-tree.jpg">
+<meta property="og:image" content="http://example.com/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/addrow-tree.jpg">
+<meta property="og:image" content="http://example.com/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/add2-tree.jpg">
 <meta property="article:published_time" content="2022-08-05T12:14:09.000Z">
-<meta property="article:modified_time" content="2022-08-08T07:37:11.446Z">
+<meta property="article:modified_time" content="2023-02-03T03:27:58.682Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/addrow-tree.jpg">
+<meta name="twitter:image" content="http://example.com/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/addrow-tree.jpg">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -75,6 +75,10 @@
   <time datetime="2022-08-05T12:14:09.000Z" itemprop="datePublished">2022-08-05</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -102,12 +106,12 @@
 <li>如果 <code>depth == 1 </code>意味着 <code>depth - 1</code> 根本没有深度，那么创建一个树节点，值 <code>val </code>作为整个原始树的新根，而原始树就是新根的左子树。</li>
 </ul>
 <p><strong>示例 1:</strong></p>
-<img src="/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/addrow-tree.jpg" class="">
+<img src="/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/addrow-tree.jpg" class>
 
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: root = [4,2,6,3,1,5], val = 1, depth = 2</span><br><span class="line">输出: [4,1,1,2,null,null,6,3,1,5]</span><br></pre></td></tr></table></figure>
 
 <p><strong>示例 2:</strong></p>
-<img src="/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/add2-tree.jpg" class="">
+<img src="/2022/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/08/05/leecode%E5%9C%A8%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E8%A1%8C/add2-tree.jpg" class>
 
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: root = [4,2,null,3,1], val = 1, depth = 3</span><br><span class="line">输出:  [4,2,null,1,1,3,null,null,1]</span><br></pre></td></tr></table></figure>
 
@@ -152,6 +156,13 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rtos/">rtos</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rvcc/">rvcc</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">网络编程</a></li></ul>
+    </div>
+  </div>
+
 
   
     
@@ -176,6 +187,10 @@
       <ul>
         
           <li>
+            <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/">csi中对rtos移植的适配</a>
+          </li>
+        
+          <li>
             <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/">RTOS移植</a>
           </li>
         
@@ -189,10 +204,6 @@
         
           <li>
             <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
-          </li>
-        
-          <li>
-            <a href="/2022/12/23/csapp-proxyLab/">csapp:proxyLab</a>
           </li>
         
       </ul>

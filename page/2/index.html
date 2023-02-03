@@ -64,12 +64,113 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-编译nuclei-qemu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/11/15/%E7%BC%96%E8%AF%91nuclei-qemu/" class="article-date">
+  <time datetime="2022-11-15T05:26:16.000Z" itemprop="datePublished">2022-11-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/11/15/%E7%BC%96%E8%AF%91nuclei-qemu/">编译nuclei-qemu</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Windows-上编译qemu"><a href="#Windows-上编译qemu" class="headerlink" title="Windows 上编译qemu"></a>Windows 上编译qemu</h2><h3 id="1、安装msys2"><a href="#1、安装msys2" class="headerlink" title="1、安装msys2"></a>1、安装msys2</h3><p>msys2官网网址<a target="_blank" rel="noopener" href="http://www.msys2.org/">http://www.msys2.org/</a></p>
+<h3 id="2、运行msys2-exe"><a href="#2、运行msys2-exe" class="headerlink" title="2、运行msys2.exe"></a>2、运行msys2.exe</h3><p>a.) 执行pacman -Syu更新系统到最新，更新完后系统会要求重启，关掉msys2 shell.</p>
+<p>b.)重新启动msys2.exe<br>   执行pacman -Su，看是否还有更新，如果有则更新。</p>
+<h3 id="3、替换软件源"><a href="#3、替换软件源" class="headerlink" title="3、替换软件源"></a>3、替换软件源</h3><p>配置一下pacman使用清华大学的<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=%5Bhttps://mirror.tuna.tsinghua.edu.cn/help/msys2/%5D(https://mirror.tuna.tsinghua.edu.cn/help/msys2/)">镜像</a>（PS：其实安装包也可以从清华大学镜像站中下载）。修改方法如下：</p>
+<p>编辑 <code>/etc/pacman.d/mirrorlist.mingw32</code> ，在文件开头添加：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Server = https:<span class="comment">//mirrors.tuna.tsinghua.edu.cn/msys2/mingw/i686</span></span><br></pre></td></tr></table></figure>
+
+<p>编辑 <code>/etc/pacman.d/mirrorlist.mingw64</code> ，在文件开头添加：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Server = https:<span class="comment">//mirrors.tuna.tsinghua.edu.cn/msys2/mingw/x86_64</span></span><br></pre></td></tr></table></figure>
+
+<p>编辑 <code>/etc/pacman.d/mirrorlist.msys</code> ，在文件开头添加：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Server = <span class="symbol">https:</span>/<span class="regexp">/mirrors.tuna.tsinghua.edu.cn/msys</span>2/msys/$arch</span><br></pre></td></tr></table></figure>
+
+<p>然后执行<code>pacman -Syu</code>刷新软件包并且更新mysys2系统组件即可，然后重启shell。</p>
+<p>上面的/etc/是指mysys的安装目录下的etc目录。</p>
+<p><strong>安装ninja</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/ninja-build/ninja.git</span><br><span class="line">./configure.py --bootstrap   #在ninja目录中执行</span><br><span class="line">cp ./ninja  /usr/bin  #在ninja目录中执行，这样即可任意位置使用ninja</span><br><span class="line">ninja --version</span><br></pre></td></tr></table></figure>
+
+<h3 id="4、快速安装所有mingw"><a href="#4、快速安装所有mingw" class="headerlink" title="4、快速安装所有mingw"></a>4、快速安装所有mingw</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pacman -S  mingw-w64-i686-toolchain</span><br><span class="line">pacman -S  mingw-w64-x86_64-toolchain</span><br></pre></td></tr></table></figure>
+
+<h3 id="5、msys2启动入口"><a href="#5、msys2启动入口" class="headerlink" title="5、msys2启动入口"></a>5、msys2启动入口</h3><p>安装Msys2后，或解压Msys2后，第一次运行下msys2_shell.cmd，提示第一次设置初始化完毕后，就可以运行Msys2.exe、mingw64.exe或mingw32.exe，主要区别：</p>
+<ul>
+<li>mingw32 优先使用 msys64/mingw32 下的工具;</li>
+<li>mingw64 优先使用 msys64/mingw64 下的工具;</li>
+<li>msys2 两个都不使用，只用自身 msys 的工具;82</li>
+</ul>
+<h3 id="6、其它常用软件或库"><a href="#6、其它常用软件或库" class="headerlink" title="6、其它常用软件或库"></a>6、其它常用软件或库</h3><p><code>pacman -S base-devel git wget p7zip perl ruby python2</code> ，不过有些上面安装过程中已经安装了。</p>
+<h3 id="7、拉取nuclei-qemu源代码"><a href="#7、拉取nuclei-qemu源代码" class="headerlink" title="7、拉取nuclei-qemu源代码"></a>7、拉取nuclei-qemu源代码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone -b plct-nuclei-rebase https://github.com/plctlab/plct-qemu.git</span><br><span class="line">cd plct-nuclei</span><br><span class="line">mkdir build </span><br><span class="line">cd build</span><br><span class="line">git submodule init</span><br><span class="line">git submodule update --remote --recursive</span><br></pre></td></tr></table></figure>
+
+<p>只编译riscv32位的qemu，在configure中指定target-list=riscv32-softmmu</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">../configure --target-list=riscv32-softmmu --disable-werror</span><br><span class="line">make -j8</span><br></pre></td></tr></table></figure>
+
+<h3 id="8、验证qemu编译是否成功"><a href="#8、验证qemu编译是否成功" class="headerlink" title="8、验证qemu编译是否成功"></a>8、验证qemu编译是否成功</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./qemu-system-riscv32.exe --version</span><br></pre></td></tr></table></figure>
+
+<p>结果</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">QEMU emulator version 5.2.90 (v5.0.0-rc2-9705-geaabfc7ea0)</span><br><span class="line">Copyright (c) 2003-2021 Fabrice Bellard and the QEMU Project developers</span><br></pre></td></tr></table></figure>
+
+<p>说明编译成功，但是此时的qemu在用图形化界面时，会发生错误，因为它依赖于mingw64的环境，缺少了一些dll库，将msys2根目录下的mingw64的bin目录下的文件全部复制到qemu-system-riscv32的同级目录下，即可运行。</p>
+<p><img src="/2022/11/15/%E7%BC%96%E8%AF%91nuclei-qemu/image-20221115135341921.png" alt="image-20221115135341921"></p>
+<h3 id="9、使用nuclei-qemu运行helloworld例程"><a href="#9、使用nuclei-qemu运行helloworld例程" class="headerlink" title="9、使用nuclei-qemu运行helloworld例程"></a>9、使用nuclei-qemu运行helloworld例程</h3><p>例程是nuclei studio上的helloworld程序，可以通过nuclei ide的qemu上运行的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">D:\mysys2\home\Administrator\plct-qemu\build\qemu-system-riscv32.exe -M ?</span><br><span class="line">Supported machines are:</span><br><span class="line">gd32vf103_eval       RISC-V Nuclei GD32VF103 Eval Board</span><br><span class="line">gd32vf103_rvstar     RISC-V Nuclei GD32VF103 Rvstar Board</span><br><span class="line">hbird_fpga           Nuclei HummingBird Evaluation Kit</span><br><span class="line">none                 empty machine</span><br><span class="line">opentitan            RISC-V Board compatible with OpenTitan</span><br><span class="line">sifive_e             RISC-V Board compatible with SiFive E SDK</span><br><span class="line">sifive_u             RISC-V Board compatible with SiFive U SDK</span><br><span class="line">spike                RISC-V Spike board (default)</span><br><span class="line">virt                 RISC-V VirtIO board</span><br></pre></td></tr></table></figure>
+
+<p>运行程序：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">D:\mysys2\home\Administrator\plct-qemu\build\qemu-system-riscv32.exe -M gd32vf103_eval -nographic -kernel 5_helloworld.elf</span><br><span class="line">Nuclei SDK Build Time: Nov 15 2022, 10:26:49</span><br><span class="line">Download Mode: FLASHXIP</span><br><span class="line">CPU Frequency 269500000 Hz</span><br><span class="line">Hart 0, MISA: 0x40101105</span><br><span class="line">MISA: RV32IMACU</span><br><span class="line">0: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">1: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">2: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">3: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">4: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">5: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">6: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">7: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">8: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">9: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">10: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">11: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">12: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">13: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">14: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">15: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">16: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">17: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">18: Hello World From Nuclei RISC-V Processor!</span><br><span class="line">19: Hello World From Nuclei RISC-V Processor!</span><br></pre></td></tr></table></figure>
+
+<p>在ide中其实就是给qemu发送了命令，实现的<strong>运行仿真</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D:\mysys2\home\Administrator\plct-qemu\build\qemu-system-riscv32.exe -M gd32vf103_eval -nographic -kernel 5_helloworld.elf</span><br></pre></td></tr></table></figure>
+
+<p>  -M：指定模拟哪个目标板，这个一定得是qemu支持的，否则会提示错误。从上面我们可以知道，RT-Thread的生态里qemu是支持了这个stm32f407-atk-explorer板子的了</p>
+<p>-nographic：告诉qemu无界面启动（因为默认有一个类似VMware那样的界面），这个非常重要，这样程序中串口打印信息（printf）才能输出到控制台来，否则不会有任何输出。（qemu help的解释：-nographic      disable graphical output and redirect serial I/Os to console），所以我们别去调用什么-serial stdio啥的命令，否则也不会输出。</p>
+<p>-kernel：指定程序镜像文件，这个可以是bin文件，elf文件（含有调试信息）都可以<br>如果是<strong>调试仿真</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D:\mysys2\home\Administrator\plct-qemu\build\qemu-system-riscv32.exe -M gd32vf103_eval -nographic -S -s -kernel 5_helloworld.elf</span><br></pre></td></tr></table></figure>
+
+<p>-S：代表不自动运行模拟（需要gdb连接之后进行操作）</p>
+<p>-s：代表开放tcp1234作为远程调试端口</p>
+<p>nuclei-studio中有关qemu的配置</p>
+<p><img src="/2022/11/15/%E7%BC%96%E8%AF%91nuclei-qemu/image-20221115140543751.png" alt="image-20221115140543751"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/11/15/%E7%BC%96%E8%AF%91nuclei-qemu/" data-id="clahtazjr00008kmjfoowgfhv" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-spike相关理解1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/11/03/spike%E7%9B%B8%E5%85%B3%E7%90%86%E8%A7%A31/" class="article-date">
   <time datetime="2022-11-03T08:36:54.000Z" itemprop="datePublished">2022-11-03</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -152,6 +253,10 @@
   <time datetime="2022-11-02T05:25:32.000Z" itemprop="datePublished">2022-11-02</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -225,6 +330,10 @@
   <time datetime="2022-10-28T01:43:49.000Z" itemprop="datePublished">2022-10-28</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -498,6 +607,10 @@
   <time datetime="2022-10-24T01:57:27.000Z" itemprop="datePublished">2022-10-24</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -606,6 +719,10 @@
   <time datetime="2022-10-20T08:12:07.000Z" itemprop="datePublished">2022-10-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -659,6 +776,10 @@
   <time datetime="2022-10-18T05:29:45.000Z" itemprop="datePublished">2022-10-18</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -737,6 +858,10 @@
   <time datetime="2022-10-12T07:54:40.000Z" itemprop="datePublished">2022-10-12</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -828,6 +953,10 @@
   <time datetime="2022-10-11T09:30:07.000Z" itemprop="datePublished">2022-10-11</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">网络编程</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -892,82 +1021,6 @@
 
 
   
-    <article id="post-学习Linux内核基础组件MemPool" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" class="article-date">
-  <time datetime="2022-10-10T07:11:59.000Z" itemprop="datePublished">2022-10-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/">学习Linux内核基础组件MemPool</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="内存管理方式"><a href="#内存管理方式" class="headerlink" title="内存管理方式"></a>内存管理方式</h2><p>分配内存方式的时候，分配的大小和何时分配何时释放都是不确定的，所以不同的情况有不同的处理方式。</p>
-<h3 id="1、内存块固定大小"><a href="#1、内存块固定大小" class="headerlink" title="1、内存块固定大小"></a>1、内存块固定大小</h3><p>不管内存的大小，每次分配固定大小的内存，这样可以有效避免内存碎片，但是内存的利用率很低。</p>
-<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010160601650.png" alt="image-20221010160601650"></p>
-<h3 id="2、以2的n次方累计内存池（伙伴算法）"><a href="#2、以2的n次方累计内存池（伙伴算法）" class="headerlink" title="2、以2的n次方累计内存池（伙伴算法）"></a>2、以2的n次方累计内存池（伙伴算法）</h3><p>这种方式可以提升内存的利用率，但是回收是一个很困难的操作，没有办法把两块相邻的内存绑到一块。</p>
-<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010163633866.png" alt="image-20221010163633866"></p>
-<h3 id="3、大小块"><a href="#3、大小块" class="headerlink" title="3、大小块"></a>3、大小块</h3><p>内存池中分大小块，申请内存块的大小大于某个值定为大块，否则为小块，内部是链表串联。</p>
-<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010163901784.png" alt="image-20221010163901784"></p>
-<h3 id="Linux内核SLAB原理图："><a href="#Linux内核SLAB原理图：" class="headerlink" title="Linux内核SLAB原理图："></a>Linux内核SLAB原理图：</h3><p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221012163015552.png" alt="image-20221012163015552"></p>
-<h2 id="malloc-alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix-memalign函数。"><a href="#malloc-alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix-memalign函数。" class="headerlink" title="malloc / alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix_memalign函数。"></a><strong>malloc / alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix_memalign函数。</strong></h2><p><strong>posix_memalign函数原型：</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">posix_memalign</span><span class="params">(<span class="type">void</span> **memptr, <span class="type">size_t</span> alignment, <span class="type">size_t</span> size)</span>;</span><br><span class="line"><span class="type">void</span> *<span class="title function_">aligned_alloc</span><span class="params">(<span class="type">size_t</span> alignment, <span class="type">size_t</span> size)</span>;</span><br><span class="line"><span class="type">void</span> *<span class="title function_">valloc</span><span class="params">(<span class="type">size_t</span> size)</span>;</span><br></pre></td></tr></table></figure>
-
-<p><strong>描述：</strong></p>
-<p>调用posix_memalign( )成功时会返回size字节的动态内存，并且这块内存的地址是alignment的倍数。参数alignment必须是2的幂，还是void指针的大小的倍数。返回的内存块的地址放在了memptr里面，函数返回值是0.由posix_memalign( )获得的内存通过free( )释放。</p>
-<h2 id="内存池的具体实现"><a href="#内存池的具体实现" class="headerlink" title="内存池的具体实现"></a>内存池的具体实现</h2><h3 id="内存池结构体"><a href="#内存池结构体" class="headerlink" title="内存池结构体"></a>内存池结构体</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mp_large_s</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mp_large_s</span> *<span class="title">next</span>;</span></span><br><span class="line">	<span class="type">void</span> *alloc;</span><br><span class="line"></span><br><span class="line">&#125;<span class="type">mp_large_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mp_node_s</span> &#123;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> *last; <span class="comment">// last之前为已使用的内存</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> *end; <span class="comment">// last到end之间为可分配内存</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mp_node_s</span> *<span class="title">next</span>;</span></span><br><span class="line">	<span class="type">size_t</span> failed;</span><br><span class="line">&#125;<span class="type">mp_node_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mp_pool_s</span> &#123;</span></span><br><span class="line">	<span class="type">size_t</span> max;</span><br><span class="line">	<span class="type">mp_node_t</span>* current;</span><br><span class="line">	<span class="type">mp_large_t</span>* large;</span><br><span class="line">	<span class="type">mp_node_t</span> head[<span class="number">0</span>];</span><br><span class="line">&#125;<span class="type">mp_pool_t</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="动态创建内存池"><a href="#动态创建内存池" class="headerlink" title="动态创建内存池"></a>动态创建内存池</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">mp_pool_t</span> *<span class="title function_">mp_create_pool</span><span class="params">(<span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">mp_pool_t</span> *p;</span><br><span class="line">	<span class="comment">// malloc无法分配超过4k的内存,size + sizeof(mp_pool_t) + sizeof(mp_node_t)保证有size大小可用</span></span><br><span class="line">	<span class="type">int</span> ret = posix_memalign((<span class="type">void</span>*)&amp;p, MP_ALIGNMENT, size + <span class="keyword">sizeof</span>(<span class="type">mp_pool_t</span>) + <span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>));</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	p-&gt;max = size;</span><br><span class="line">	p-&gt;current = p-&gt;head;</span><br><span class="line">	p-&gt;large = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// (unsigned char*)(p + 1)</span></span><br><span class="line">	<span class="comment">// (unsigned char*)p + sizeof(mp_pool_t)</span></span><br><span class="line">	p-&gt;head-&gt;last = (<span class="type">unsigned</span> <span class="type">char</span>*)p + <span class="keyword">sizeof</span>(<span class="type">mp_pool_t</span>)+<span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>);</span><br><span class="line">	p-&gt;head-&gt;end = p-&gt;head-&gt;last + size;</span><br><span class="line">	p-&gt;head-&gt;failed = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>size = 512 ,创建后的内存：</p>
-<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221011153241309.png" alt="image-20221011153241309"></p>
-<p>前24个字节是内存池，后面32个字节是head[0],还有大小为size内存块的空间。</p>
-<h3 id="内存池的销毁"><a href="#内存池的销毁" class="headerlink" title="内存池的销毁"></a>内存池的销毁</h3><p>销毁内存池，释放所有申请的内存空间。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mp_destory_pool</span><span class="params">(<span class="type">mp_pool_t</span> *pool)</span> </span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">mp_node_t</span> *h, *n;</span><br><span class="line">	<span class="type">mp_large_t</span> *l;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (l = pool-&gt;large; l; l = l-&gt;next) &#123;</span><br><span class="line">		<span class="keyword">if</span> (l-&gt;alloc) &#123;</span><br><span class="line">			<span class="built_in">free</span>(l-&gt;alloc);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	h = pool-&gt;head-&gt;next;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (h) &#123;</span><br><span class="line">		n = h-&gt;next;</span><br><span class="line">		<span class="built_in">free</span>(h);</span><br><span class="line">		h = n;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">free</span>(pool);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="申请内存"><a href="#申请内存" class="headerlink" title="申请内存"></a>申请内存</h3><p>内存申请，首先要判断要申请的内存是小块内存还是，大块内存。如果是大块内存直接调用mp_alloc_large(),其中调用系统的malloc分配空间。如果是内存空间，首先遍历已有的小内存块，查找是否有空间能够分配给这个申请，如果有直接分配，没有则调用mp_alloc_small(),创建一个新的页。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mp_malloc</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (size &gt; pool-&gt;max)</span><br><span class="line">		<span class="keyword">return</span> mp_alloc_large(pool, size);</span><br><span class="line">	<span class="type">mp_node_t</span> *p = pool-&gt;current;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (p)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">if</span> (p-&gt;end - p-&gt;last &lt; size)</span><br><span class="line">		&#123;</span><br><span class="line">			p = p-&gt;next;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="type">unsigned</span> <span class="type">char</span> *m = mp_align_ptr(p-&gt;last, MP_ALIGNMENT);</span><br><span class="line">		p-&gt;last = m + size;</span><br><span class="line">		<span class="keyword">return</span> m;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> mp_alloc_small(pool, size);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">mp_calloc</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span> </span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	<span class="type">void</span> *p = mp_malloc(pool, size);</span><br><span class="line">	<span class="keyword">if</span> (p) &#123;</span><br><span class="line">		<span class="built_in">memset</span>(p, <span class="number">0</span>, size);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> p;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="申请小内存"><a href="#申请小内存" class="headerlink" title="申请小内存"></a>申请小内存</h3><p>函数中优化的算法在于，内存池的current指针，多次分配小内存失败，说明它内存快满了，此时将current指向下一个内存块，这样能提高遍历的效率。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mp_alloc_small</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> *m;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mp_node_s</span> *<span class="title">h</span> =</span> pool-&gt;head;</span><br><span class="line">	<span class="type">size_t</span> psize = (<span class="type">size_t</span>)(h-&gt;end - (<span class="type">unsigned</span> <span class="type">char</span> *)h);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 分配一个head大小的空间给m</span></span><br><span class="line">	<span class="type">int</span> ret = posix_memalign((<span class="type">void</span>*)&amp;m, MP_ALIGNMENT, psize);</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="type">mp_node_t</span> *p, *new_node, *current;</span><br><span class="line">	<span class="comment">//创建新的结点 小内存块 起始地址为m</span></span><br><span class="line">	new_node = (<span class="type">mp_node_t</span> *)m;</span><br><span class="line">	new_node-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">	new_node-&gt;end = m + psize;</span><br><span class="line">	<span class="comment">// 分配失败的次数</span></span><br><span class="line">	new_node-&gt;failed = <span class="number">0</span>;</span><br><span class="line">	<span class="comment">// 指向下一个 内存块</span></span><br><span class="line">	m += <span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>);</span><br><span class="line">	m = mp_align_ptr(m, MP_ALIGNMENT);</span><br><span class="line">	<span class="comment">// 分配size大小空间</span></span><br><span class="line">	new_node-&gt;last += size;</span><br><span class="line">	<span class="comment">// current指向当前空闲小内存块</span></span><br><span class="line">	current = pool-&gt;current;</span><br><span class="line">	<span class="keyword">for</span> (p = current; p-&gt;next; p = p-&gt;next)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 如存在多次分配失败，current不再指向此node</span></span><br><span class="line">		<span class="keyword">if</span> (p-&gt;failed++ &gt; <span class="number">4</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			current = p-&gt;next;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	p-&gt;next = new_node;</span><br><span class="line">	pool-&gt;current = current ? current : new_node;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="申请大内存"><a href="#申请大内存" class="headerlink" title="申请大内存"></a>申请大内存</h3><p>大内存作为一个链表，串联在一起，头作为小内存块，存在内存池中。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> *<span class="title function_">mp_alloc_large</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span> </span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">void</span> *p = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="type">int</span> ret = posix_memalign((<span class="type">void</span>*)&amp;p, MP_ALIGNMENT, size);</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="type">mp_large_t</span> *large;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 查找是否有已经释放的large，在large list里面找到一个 null的节点</span></span><br><span class="line">	<span class="type">size_t</span> n = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (large = pool-&gt;large; large; large = large-&gt;next)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (large-&gt;alloc == <span class="literal">NULL</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			large-&gt;alloc = p;</span><br><span class="line">			<span class="keyword">return</span> p;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 避免遍历链条太长</span></span><br><span class="line">		<span class="keyword">if</span> (n++ &gt; <span class="number">3</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 大内存块的头作为小块保存在small中</span></span><br><span class="line">	large = mp_alloc_small(pool, <span class="keyword">sizeof</span>(<span class="type">mp_large_t</span>));</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 头插法</span></span><br><span class="line">	large-&gt;alloc = p;</span><br><span class="line">	large-&gt;next = pool-&gt;large;</span><br><span class="line">	pool-&gt;large = large;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>效果图：</p>
-<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221011163237140.png" alt="image-20221011163237140"></p>
-<p>申请的内存地址为0x0000 5636 0fc6 87c0，大内存块的头存在0x0000 5636 0fc6 a0 87。</p>
-<h3 id="内存释放"><a href="#内存释放" class="headerlink" title="内存释放"></a>内存释放</h3><p>指的是释放大内存，</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mp_free</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">void</span> *p)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">mp_large_t</span> *l;</span><br><span class="line">	<span class="keyword">for</span> (l = pool-&gt;large; l; l = l-&gt;next)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (p == l-&gt;alloc)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">free</span>(l-&gt;alloc);</span><br><span class="line">			l-&gt;alloc = <span class="literal">NULL</span>;</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="内存池重置"><a href="#内存池重置" class="headerlink" title="内存池重置"></a>内存池重置</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mp_reset_pool</span><span class="params">(<span class="type">mp_pool_t</span> *pool)</span> </span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	<span class="type">mp_node_t</span> *h;</span><br><span class="line">	<span class="type">mp_large_t</span> *l;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (l = pool-&gt;large; l; l = l-&gt;next) &#123;</span><br><span class="line">		<span class="keyword">if</span> (l-&gt;alloc) &#123;</span><br><span class="line">			<span class="built_in">free</span>(l-&gt;alloc);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	pool-&gt;large = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (h = pool-&gt;head; h; h = h-&gt;next) &#123;</span><br><span class="line">		h-&gt;last = (<span class="type">unsigned</span> <span class="type">char</span> *)h + <span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" data-id="cl92id4pi001iggmj9g5m4xf7" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -980,6 +1033,13 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rtos/">rtos</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rvcc/">rvcc</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">网络编程</a></li></ul>
+    </div>
+  </div>
+
 
   
     
@@ -1004,6 +1064,10 @@
       <ul>
         
           <li>
+            <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/">csi中对rtos移植的适配</a>
+          </li>
+        
+          <li>
             <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/">RTOS移植</a>
           </li>
         
@@ -1017,10 +1081,6 @@
         
           <li>
             <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
-          </li>
-        
-          <li>
-            <a href="/2022/12/23/csapp-proxyLab/">csapp:proxyLab</a>
           </li>
         
       </ul>

@@ -14,14 +14,14 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="OneOS内存池的基本结构OneOS内存池的实现原理是Freelist，其本质为一个空闲链表块，其原理图如下图所示：    其关键在于：链表管理信息的存储，Pool初始化，申请和释放过程。 申请的过程很简单，但是free过程中存在问题。如何通过指针确定内存块的大小？ 通常做法：实现简单，但是对于小内存分配来说浪费了空间。   OneOS做法：  将分配后的的内存块指向内存池。 改进的做法：page">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png">
-<meta property="og:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png">
-<meta property="og:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png">
+<meta property="og:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png">
+<meta property="og:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png">
+<meta property="og:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png">
 <meta property="article:published_time" content="2022-10-07T07:19:45.000Z">
-<meta property="article:modified_time" content="2022-10-09T07:34:15.137Z">
+<meta property="article:modified_time" content="2023-02-03T03:15:21.471Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png">
+<meta name="twitter:image" content="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -76,6 +76,10 @@
   <time datetime="2022-10-07T07:19:45.000Z" itemprop="datePublished">2022-10-07</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -93,18 +97,18 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="OneOS内存池的基本结构"><a href="#OneOS内存池的基本结构" class="headerlink" title="OneOS内存池的基本结构"></a>OneOS内存池的基本结构</h2><p>OneOS内存池的实现原理是Freelist，其本质为一个空闲链表块，其原理图如下图所示：</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class=""> 
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class> 
 
 <p>其关键在于：链表管理信息的存储，Pool初始化，申请和释放过程。</p>
 <p>申请的过程很简单，但是free过程中存在问题。<strong>如何通过指针确定内存块的大小？</strong></p>
 <h3 id="通常做法："><a href="#通常做法：" class="headerlink" title="通常做法："></a><strong>通常做法：</strong></h3><p>实现简单，但是对于小内存分配来说浪费了空间。</p>
 
 
-<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class="">
+<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class>
 
 <p>将分配后的的内存块指向内存池。</p>
 <h3 id="改进的做法："><a href="#改进的做法：" class="headerlink" title="改进的做法："></a>改进的做法：</h3><p>page是由pool来维护的，所有的page都会指向pool，而block都是由page维护的，传来的的block地址经过处理可以的得到page地址，从而知道pool的信息。</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class="">
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class>
 
 <ul>
 <li>将第一个page的地址设为4KB的倍数。</li>
@@ -236,6 +240,13 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rtos/">rtos</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rvcc/">rvcc</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">网络编程</a></li></ul>
+    </div>
+  </div>
+
 
   
     
@@ -260,6 +271,10 @@
       <ul>
         
           <li>
+            <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/">csi中对rtos移植的适配</a>
+          </li>
+        
+          <li>
             <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/">RTOS移植</a>
           </li>
         
@@ -273,10 +288,6 @@
         
           <li>
             <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
-          </li>
-        
-          <li>
-            <a href="/2022/12/23/csapp-proxyLab/">csapp:proxyLab</a>
           </li>
         
       </ul>

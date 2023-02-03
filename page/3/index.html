@@ -64,12 +64,96 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-学习Linux内核基础组件MemPool" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" class="article-date">
+  <time datetime="2022-10-10T07:11:59.000Z" itemprop="datePublished">2022-10-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/">学习Linux内核基础组件MemPool</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="内存管理方式"><a href="#内存管理方式" class="headerlink" title="内存管理方式"></a>内存管理方式</h2><p>分配内存方式的时候，分配的大小和何时分配何时释放都是不确定的，所以不同的情况有不同的处理方式。</p>
+<h3 id="1、内存块固定大小"><a href="#1、内存块固定大小" class="headerlink" title="1、内存块固定大小"></a>1、内存块固定大小</h3><p>不管内存的大小，每次分配固定大小的内存，这样可以有效避免内存碎片，但是内存的利用率很低。</p>
+<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010160601650.png" alt="image-20221010160601650"></p>
+<h3 id="2、以2的n次方累计内存池（伙伴算法）"><a href="#2、以2的n次方累计内存池（伙伴算法）" class="headerlink" title="2、以2的n次方累计内存池（伙伴算法）"></a>2、以2的n次方累计内存池（伙伴算法）</h3><p>这种方式可以提升内存的利用率，但是回收是一个很困难的操作，没有办法把两块相邻的内存绑到一块。</p>
+<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010163633866.png" alt="image-20221010163633866"></p>
+<h3 id="3、大小块"><a href="#3、大小块" class="headerlink" title="3、大小块"></a>3、大小块</h3><p>内存池中分大小块，申请内存块的大小大于某个值定为大块，否则为小块，内部是链表串联。</p>
+<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221010163901784.png" alt="image-20221010163901784"></p>
+<h3 id="Linux内核SLAB原理图："><a href="#Linux内核SLAB原理图：" class="headerlink" title="Linux内核SLAB原理图："></a>Linux内核SLAB原理图：</h3><p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221012163015552.png" alt="image-20221012163015552"></p>
+<h2 id="malloc-alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix-memalign函数。"><a href="#malloc-alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix-memalign函数。" class="headerlink" title="malloc / alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix_memalign函数。"></a><strong>malloc / alloc分配内存是有限制的，可能不能分配超过4k的内存的，为了内分配大内存，需要使用posix_memalign函数。</strong></h2><p><strong>posix_memalign函数原型：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">posix_memalign</span><span class="params">(<span class="type">void</span> **memptr, <span class="type">size_t</span> alignment, <span class="type">size_t</span> size)</span>;</span><br><span class="line"><span class="type">void</span> *<span class="title function_">aligned_alloc</span><span class="params">(<span class="type">size_t</span> alignment, <span class="type">size_t</span> size)</span>;</span><br><span class="line"><span class="type">void</span> *<span class="title function_">valloc</span><span class="params">(<span class="type">size_t</span> size)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>描述：</strong></p>
+<p>调用posix_memalign( )成功时会返回size字节的动态内存，并且这块内存的地址是alignment的倍数。参数alignment必须是2的幂，还是void指针的大小的倍数。返回的内存块的地址放在了memptr里面，函数返回值是0.由posix_memalign( )获得的内存通过free( )释放。</p>
+<h2 id="内存池的具体实现"><a href="#内存池的具体实现" class="headerlink" title="内存池的具体实现"></a>内存池的具体实现</h2><h3 id="内存池结构体"><a href="#内存池结构体" class="headerlink" title="内存池结构体"></a>内存池结构体</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mp_large_s</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mp_large_s</span> *<span class="title">next</span>;</span></span><br><span class="line">	<span class="type">void</span> *alloc;</span><br><span class="line"></span><br><span class="line">&#125;<span class="type">mp_large_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mp_node_s</span> &#123;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> *last; <span class="comment">// last之前为已使用的内存</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> *end; <span class="comment">// last到end之间为可分配内存</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mp_node_s</span> *<span class="title">next</span>;</span></span><br><span class="line">	<span class="type">size_t</span> failed;</span><br><span class="line">&#125;<span class="type">mp_node_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">mp_pool_s</span> &#123;</span></span><br><span class="line">	<span class="type">size_t</span> max;</span><br><span class="line">	<span class="type">mp_node_t</span>* current;</span><br><span class="line">	<span class="type">mp_large_t</span>* large;</span><br><span class="line">	<span class="type">mp_node_t</span> head[<span class="number">0</span>];</span><br><span class="line">&#125;<span class="type">mp_pool_t</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="动态创建内存池"><a href="#动态创建内存池" class="headerlink" title="动态创建内存池"></a>动态创建内存池</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">mp_pool_t</span> *<span class="title function_">mp_create_pool</span><span class="params">(<span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">mp_pool_t</span> *p;</span><br><span class="line">	<span class="comment">// malloc无法分配超过4k的内存,size + sizeof(mp_pool_t) + sizeof(mp_node_t)保证有size大小可用</span></span><br><span class="line">	<span class="type">int</span> ret = posix_memalign((<span class="type">void</span>*)&amp;p, MP_ALIGNMENT, size + <span class="keyword">sizeof</span>(<span class="type">mp_pool_t</span>) + <span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>));</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	p-&gt;max = size;</span><br><span class="line">	p-&gt;current = p-&gt;head;</span><br><span class="line">	p-&gt;large = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// (unsigned char*)(p + 1)</span></span><br><span class="line">	<span class="comment">// (unsigned char*)p + sizeof(mp_pool_t)</span></span><br><span class="line">	p-&gt;head-&gt;last = (<span class="type">unsigned</span> <span class="type">char</span>*)p + <span class="keyword">sizeof</span>(<span class="type">mp_pool_t</span>)+<span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>);</span><br><span class="line">	p-&gt;head-&gt;end = p-&gt;head-&gt;last + size;</span><br><span class="line">	p-&gt;head-&gt;failed = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>size = 512 ,创建后的内存：</p>
+<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221011153241309.png" alt="image-20221011153241309"></p>
+<p>前24个字节是内存池，后面32个字节是head[0],还有大小为size内存块的空间。</p>
+<h3 id="内存池的销毁"><a href="#内存池的销毁" class="headerlink" title="内存池的销毁"></a>内存池的销毁</h3><p>销毁内存池，释放所有申请的内存空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mp_destory_pool</span><span class="params">(<span class="type">mp_pool_t</span> *pool)</span> </span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">mp_node_t</span> *h, *n;</span><br><span class="line">	<span class="type">mp_large_t</span> *l;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (l = pool-&gt;large; l; l = l-&gt;next) &#123;</span><br><span class="line">		<span class="keyword">if</span> (l-&gt;alloc) &#123;</span><br><span class="line">			<span class="built_in">free</span>(l-&gt;alloc);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	h = pool-&gt;head-&gt;next;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (h) &#123;</span><br><span class="line">		n = h-&gt;next;</span><br><span class="line">		<span class="built_in">free</span>(h);</span><br><span class="line">		h = n;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">free</span>(pool);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="申请内存"><a href="#申请内存" class="headerlink" title="申请内存"></a>申请内存</h3><p>内存申请，首先要判断要申请的内存是小块内存还是，大块内存。如果是大块内存直接调用mp_alloc_large(),其中调用系统的malloc分配空间。如果是内存空间，首先遍历已有的小内存块，查找是否有空间能够分配给这个申请，如果有直接分配，没有则调用mp_alloc_small(),创建一个新的页。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mp_malloc</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (size &gt; pool-&gt;max)</span><br><span class="line">		<span class="keyword">return</span> mp_alloc_large(pool, size);</span><br><span class="line">	<span class="type">mp_node_t</span> *p = pool-&gt;current;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (p)</span><br><span class="line">	&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">if</span> (p-&gt;end - p-&gt;last &lt; size)</span><br><span class="line">		&#123;</span><br><span class="line">			p = p-&gt;next;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="type">unsigned</span> <span class="type">char</span> *m = mp_align_ptr(p-&gt;last, MP_ALIGNMENT);</span><br><span class="line">		p-&gt;last = m + size;</span><br><span class="line">		<span class="keyword">return</span> m;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> mp_alloc_small(pool, size);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">mp_calloc</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span> </span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	<span class="type">void</span> *p = mp_malloc(pool, size);</span><br><span class="line">	<span class="keyword">if</span> (p) &#123;</span><br><span class="line">		<span class="built_in">memset</span>(p, <span class="number">0</span>, size);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> p;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="申请小内存"><a href="#申请小内存" class="headerlink" title="申请小内存"></a>申请小内存</h3><p>函数中优化的算法在于，内存池的current指针，多次分配小内存失败，说明它内存快满了，此时将current指向下一个内存块，这样能提高遍历的效率。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mp_alloc_small</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> *m;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mp_node_s</span> *<span class="title">h</span> =</span> pool-&gt;head;</span><br><span class="line">	<span class="type">size_t</span> psize = (<span class="type">size_t</span>)(h-&gt;end - (<span class="type">unsigned</span> <span class="type">char</span> *)h);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 分配一个head大小的空间给m</span></span><br><span class="line">	<span class="type">int</span> ret = posix_memalign((<span class="type">void</span>*)&amp;m, MP_ALIGNMENT, psize);</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="type">mp_node_t</span> *p, *new_node, *current;</span><br><span class="line">	<span class="comment">//创建新的结点 小内存块 起始地址为m</span></span><br><span class="line">	new_node = (<span class="type">mp_node_t</span> *)m;</span><br><span class="line">	new_node-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">	new_node-&gt;end = m + psize;</span><br><span class="line">	<span class="comment">// 分配失败的次数</span></span><br><span class="line">	new_node-&gt;failed = <span class="number">0</span>;</span><br><span class="line">	<span class="comment">// 指向下一个 内存块</span></span><br><span class="line">	m += <span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>);</span><br><span class="line">	m = mp_align_ptr(m, MP_ALIGNMENT);</span><br><span class="line">	<span class="comment">// 分配size大小空间</span></span><br><span class="line">	new_node-&gt;last += size;</span><br><span class="line">	<span class="comment">// current指向当前空闲小内存块</span></span><br><span class="line">	current = pool-&gt;current;</span><br><span class="line">	<span class="keyword">for</span> (p = current; p-&gt;next; p = p-&gt;next)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 如存在多次分配失败，current不再指向此node</span></span><br><span class="line">		<span class="keyword">if</span> (p-&gt;failed++ &gt; <span class="number">4</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			current = p-&gt;next;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	p-&gt;next = new_node;</span><br><span class="line">	pool-&gt;current = current ? current : new_node;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="申请大内存"><a href="#申请大内存" class="headerlink" title="申请大内存"></a>申请大内存</h3><p>大内存作为一个链表，串联在一起，头作为小内存块，存在内存池中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> *<span class="title function_">mp_alloc_large</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">size_t</span> size)</span> </span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">void</span> *p = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="type">int</span> ret = posix_memalign((<span class="type">void</span>*)&amp;p, MP_ALIGNMENT, size);</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="type">mp_large_t</span> *large;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 查找是否有已经释放的large，在large list里面找到一个 null的节点</span></span><br><span class="line">	<span class="type">size_t</span> n = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (large = pool-&gt;large; large; large = large-&gt;next)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (large-&gt;alloc == <span class="literal">NULL</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			large-&gt;alloc = p;</span><br><span class="line">			<span class="keyword">return</span> p;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 避免遍历链条太长</span></span><br><span class="line">		<span class="keyword">if</span> (n++ &gt; <span class="number">3</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 大内存块的头作为小块保存在small中</span></span><br><span class="line">	large = mp_alloc_small(pool, <span class="keyword">sizeof</span>(<span class="type">mp_large_t</span>));</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 头插法</span></span><br><span class="line">	large-&gt;alloc = p;</span><br><span class="line">	large-&gt;next = pool-&gt;large;</span><br><span class="line">	pool-&gt;large = large;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>效果图：</p>
+<p><img src="/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/image-20221011163237140.png" alt="image-20221011163237140"></p>
+<p>申请的内存地址为0x0000 5636 0fc6 87c0，大内存块的头存在0x0000 5636 0fc6 a0 87。</p>
+<h3 id="内存释放"><a href="#内存释放" class="headerlink" title="内存释放"></a>内存释放</h3><p>指的是释放大内存，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mp_free</span><span class="params">(<span class="type">mp_pool_t</span> *pool, <span class="type">void</span> *p)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">mp_large_t</span> *l;</span><br><span class="line">	<span class="keyword">for</span> (l = pool-&gt;large; l; l = l-&gt;next)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (p == l-&gt;alloc)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">free</span>(l-&gt;alloc);</span><br><span class="line">			l-&gt;alloc = <span class="literal">NULL</span>;</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="内存池重置"><a href="#内存池重置" class="headerlink" title="内存池重置"></a>内存池重置</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mp_reset_pool</span><span class="params">(<span class="type">mp_pool_t</span> *pool)</span> </span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	<span class="type">mp_node_t</span> *h;</span><br><span class="line">	<span class="type">mp_large_t</span> *l;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (l = pool-&gt;large; l; l = l-&gt;next) &#123;</span><br><span class="line">		<span class="keyword">if</span> (l-&gt;alloc) &#123;</span><br><span class="line">			<span class="built_in">free</span>(l-&gt;alloc);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	pool-&gt;large = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (h = pool-&gt;head; h; h = h-&gt;next) &#123;</span><br><span class="line">		h-&gt;last = (<span class="type">unsigned</span> <span class="type">char</span> *)h + <span class="keyword">sizeof</span>(<span class="type">mp_node_t</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" data-id="cl92id4pi001iggmj9g5m4xf7" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ONEOS内存池实现及改进" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" class="article-date">
   <time datetime="2022-10-07T07:19:45.000Z" itemprop="datePublished">2022-10-07</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -87,18 +171,18 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="OneOS内存池的基本结构"><a href="#OneOS内存池的基本结构" class="headerlink" title="OneOS内存池的基本结构"></a>OneOS内存池的基本结构</h2><p>OneOS内存池的实现原理是Freelist，其本质为一个空闲链表块，其原理图如下图所示：</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class=""> 
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007152436647.png" class> 
 
 <p>其关键在于：链表管理信息的存储，Pool初始化，申请和释放过程。</p>
 <p>申请的过程很简单，但是free过程中存在问题。<strong>如何通过指针确定内存块的大小？</strong></p>
 <h3 id="通常做法："><a href="#通常做法：" class="headerlink" title="通常做法："></a><strong>通常做法：</strong></h3><p>实现简单，但是对于小内存分配来说浪费了空间。</p>
 
 
-<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class="">
+<h3 id="OneOS做法："><a href="#OneOS做法：" class="headerlink" title="OneOS做法："></a><strong>OneOS做法：</strong></h3><img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161351659.png" class>
 
 <p>将分配后的的内存块指向内存池。</p>
 <h3 id="改进的做法："><a href="#改进的做法：" class="headerlink" title="改进的做法："></a>改进的做法：</h3><p>page是由pool来维护的，所有的page都会指向pool，而block都是由page维护的，传来的的block地址经过处理可以的得到page地址，从而知道pool的信息。</p>
-<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class="">
+<img src="/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/image-20221007161306193.png" class>
 
 <ul>
 <li>将第一个page的地址设为4KB的倍数。</li>
@@ -212,6 +296,10 @@
   <time datetime="2022-09-27T05:58:31.000Z" itemprop="datePublished">2022-09-27</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -239,17 +327,17 @@
 <h3 id="4、内存池的设计与实现"><a href="#4、内存池的设计与实现" class="headerlink" title="4、内存池的设计与实现"></a>4、内存池的设计与实现</h3><h4 id="4-1、目的："><a href="#4-1、目的：" class="headerlink" title="4.1、目的："></a>4.1、目的：</h4><p>​        使用内存池，就是为一段内存buffer建立一个内存管理机制。让用户能在buffer上根据需求分配和回收内存。</p>
 <h4 id="4-2、要求："><a href="#4-2、要求：" class="headerlink" title="4.2、要求："></a>4.2、要求：</h4><p>​        减少内存碎片，执行的效率要高于C语言的malloc和free。</p>
 <h4 id="4-3、设计思路："><a href="#4-3、设计思路：" class="headerlink" title="4.3、设计思路："></a>4.3、设计思路：</h4><p>​        将buffer分为四部分，第1部分是mem_pool结构体；第2部分是内存映射表；第3部分是内存chunk结构体缓冲区；第4部分是实际可分配的内存区。整个buffer结构图如图1所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png" class="">
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154055209.png" class>
 
 <p>​                                                                                                                    图1 内存buffer结构图</p>
 <p>​        第1部分的作用是可以通过该mem_pool结构体控制整个内存池。</p>
 <p>​        第2部分的作用是记录第4部分，即实际可分配的内存区的使用情况。表中的每一个单元表示一个固定大小的内存块（block），多个连续的block组成一个chunk，每个block的详细结构如图2所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png" class="">
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/image-20220927154256262.png" class>
 
 <p>​                                                                                                                    图2 memory block结构图</p>
 <p>​        其中count表示该block后面的与该block同属于一个chunk的blokc的个数，start表示该block所在的chunk的起始block索引。其实start这个域只有在每个chunk的最后一个block中才会用到（用于从当前chunk寻找前一个chunk的起始位置），而pmem_chunk则是一个指针，指向一个mem_chunk结构体。任意一块大小的内存都会被取向上整到block大小的整数倍。</p>
 <p>​        第3部分是一个mem_chunk pool，其作用是存储整个程序可用的mem_chunk结构体。mem_chunk pool中的mem_chunk被组织成双向链表结构（快速插入和删除）。每个mem_chunk结构图如图3所示：</p>
-<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg" class="">
+<img src="/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/v2-d7a26809321db2490252059d0577541e_1440w.jpg" class>
 
 <p>​                                                                                                                    图3 memory chunk结构图</p>
 <p>​        其中pmem_block指向该chunk在内存映射表中的位置，others表示其他一些域，不同的实现对应该域的内容略有不同。</p>
@@ -275,6 +363,10 @@
   <time datetime="2022-09-23T08:56:09.000Z" itemprop="datePublished">2022-09-23</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -292,7 +384,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="实验：外部中断控制"><a href="#实验：外部中断控制" class="headerlink" title="实验：外部中断控制"></a>实验：外部中断控制</h2><p>​        CM32外部中断/事件控制器框图：</p>
-<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/image-20220923165924674.png" class="">
+<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/image-20220923165924674.png" class>
 
 <h3 id="1、初始化用来中断的GPIO"><a href="#1、初始化用来中断的GPIO" class="headerlink" title="1、初始化用来中断的GPIO"></a>1、初始化用来中断的GPIO</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Initialize Led1 and Led2 as output pushpull mode */</span></span><br><span class="line">LedInit(LED1_PORT, LED1_PIN);</span><br><span class="line">LedInit(LED2_PORT, LED2_PIN);</span><br></pre></td></tr></table></figure>
 
@@ -323,6 +415,10 @@
   <time datetime="2022-09-23T02:33:17.000Z" itemprop="datePublished">2022-09-23</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -340,7 +436,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="实验：设置系统时钟"><a href="#实验：设置系统时钟" class="headerlink" title="实验：设置系统时钟"></a>实验：设置系统时钟</h2><p>​    CM32芯片有3个不同时钟源可以驱动系统时钟，HSE，HSI， PLL（锁相环倍频）</p>
-<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/image-20220923131722385.png" class="">
+<img src="/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/image-20220923131722385.png" class>
 
 <p>​            <em>1．当 HSI 被用于作为 PLL 时钟的输入时，系统时钟能得到的最大频率是 128MHz。</em></p>
 <p>​        用户可通过多个预分频器配置 AHB、高速 APB（APB2）和低速 APB（APB1）域的频率。AHB 域的 最大频率是 144MHz，APB2 域的最大频率是 72MHz，APB1 域的最大允许频率是 36MHz。</p>
@@ -472,6 +568,10 @@
   <time datetime="2022-09-21T09:20:49.000Z" itemprop="datePublished">2022-09-21</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -519,6 +619,10 @@
   <time datetime="2022-09-21T06:25:10.000Z" itemprop="datePublished">2022-09-21</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -565,6 +669,10 @@
   <time datetime="2022-09-21T05:05:13.000Z" itemprop="datePublished">2022-09-21</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rvcc/">rvcc</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -629,6 +737,10 @@
   <time datetime="2022-09-20T08:59:22.000Z" itemprop="datePublished">2022-09-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -646,7 +758,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="实验：编写一个固件库雏形点亮LED小灯"><a href="#实验：编写一个固件库雏形点亮LED小灯" class="headerlink" title="实验：编写一个固件库雏形点亮LED小灯"></a>实验：编写一个固件库雏形点亮LED小灯</h2><p>​    首先查看LED灯原理图：</p>
-<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920170054642.png" class="">
+<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920170054642.png" class>
 
 <p>​    从其中可以知道控制绿灯的亮和暗是通过PB0引脚的。</p>
 <p>​    点亮这个小灯，需要配置GPIOB的某些寄存器，通过地址访问寄存器和复杂的位操作可以实现，但是程序的可读性太差了，所以固件库的编写很有必要，它可以简化编程，提高程序可读性。</p>
@@ -661,17 +773,17 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_0    ((uint16_t)0x0001)  <span class="comment">/*!&lt; 选择Pin0 */</span>    <span class="comment">//(00000000 00000001)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_1    ((uint16_t)0x0002)  <span class="comment">/*!&lt; 选择Pin1 */</span>    <span class="comment">//(00000000 00000010)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_2    ((uint16_t)0x0004)  <span class="comment">/*!&lt; 选择Pin2 */</span>    <span class="comment">//(00000000 00000100)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_3    ((uint16_t)0x0008)  <span class="comment">/*!&lt; 选择Pin3 */</span>    <span class="comment">//(00000000 00001000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_4    ((uint16_t)0x0010)  <span class="comment">/*!&lt; 选择Pin4 */</span>    <span class="comment">//(00000000 00010000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_5    ((uint16_t)0x0020)  <span class="comment">/*!&lt; 选择Pin5 */</span>    <span class="comment">//(00000000 00100000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_6    ((uint16_t)0x0040)  <span class="comment">/*!&lt; 选择Pin6 */</span>    <span class="comment">//(00000000 01000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_7    ((uint16_t)0x0080)  <span class="comment">/*!&lt; 选择Pin7 */</span>    <span class="comment">//(00000000 10000000)b</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_8    ((uint16_t)0x0100)  <span class="comment">/*!&lt; 选择Pin8 */</span>    <span class="comment">//(00000001 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_9    ((uint16_t)0x0200)  <span class="comment">/*!&lt; 选择Pin9 */</span>    <span class="comment">//(00000010 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_10   ((uint16_t)0x0400)  <span class="comment">/*!&lt; 选择Pin10 */</span>   <span class="comment">//(00000100 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_11   ((uint16_t)0x0800)  <span class="comment">/*!&lt; 选择Pin11 */</span>   <span class="comment">//(00001000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_12   ((uint16_t)0x1000)  <span class="comment">/*!&lt; 选择Pin12 */</span>   <span class="comment">//(00010000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_13   ((uint16_t)0x2000)  <span class="comment">/*!&lt; 选择Pin13 */</span>   <span class="comment">//(00100000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_14   ((uint16_t)0x4000)  <span class="comment">/*!&lt; 选择Pin14 */</span>   <span class="comment">//(01000000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_15   ((uint16_t)0x8000)  <span class="comment">/*!&lt; 选择Pin15 */</span>   <span class="comment">//(10000000 00000000)b</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIO_Pin_All  ((uint16_t)0xFFFF)  <span class="comment">/*!&lt; 选择全部引脚*/</span> <span class="comment">//(11111111 11111111)b</span></span></span><br></pre></td></tr></table></figure>
 
 <p>​    选择正确的引脚之后就是要设置相应的寄存器了，GPIOB_ODR用来控制输出，其中高16位没用，低16位决定16个引脚。</p>
-<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172817324.png" class="">
+<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172817324.png" class>
 
 <p>​    其次是设置GPIO的模式，他是通过GPIOB_CRL和GPIOB_CRH两个寄存器来控制的。其中CRL是控制0-7八个引脚，CRH用来控制8-15的引脚。每四位控制一个引脚，前两位是CNF用来控制输入输出模式，后两位是mode用来控制速度。</p>
-<p>​    <img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172633548.png" class=""></p>
+<p>​    <img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920172633548.png" class></p>
 <p>​    定义下列枚举类，方便我们使用：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span></span></span><br><span class="line"><span class="class">&#123;</span> </span><br><span class="line">  GPIO_Speed_10MHz = <span class="number">1</span>,         <span class="comment">// 10MHZ        (01)b</span></span><br><span class="line">  GPIO_Speed_2MHz,              <span class="comment">// 2MHZ         (10)b</span></span><br><span class="line">  GPIO_Speed_50MHz              <span class="comment">// 50MHZ        (11)b</span></span><br><span class="line">&#125;GPIOSpeed_TypeDef;</span><br></pre></td></tr></table></figure>
 
 
 
 <p>其中输入和输出模式的定义按照：</p>
-<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920174940417.png" class="">
+<img src="/2022/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/09/20/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E5%8E%9F%E7%90%86%E5%88%9D%E6%8E%A2/image-20220920174940417.png" class>
 
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span></span></span><br><span class="line"><span class="class">&#123;</span> GPIO_Mode_AIN = <span class="number">0x0</span>,           <span class="comment">// 模拟输入     (0000 0000)b</span></span><br><span class="line">  GPIO_Mode_IN_FLOATING = <span class="number">0x04</span>,  <span class="comment">// 浮空输入     (0000 0100)b</span></span><br><span class="line">  GPIO_Mode_IPD = <span class="number">0x28</span>,          <span class="comment">// 下拉输入     (0010 1000)b</span></span><br><span class="line">  GPIO_Mode_IPU = <span class="number">0x48</span>,          <span class="comment">// 上拉输入     (0100 1000)b</span></span><br><span class="line"></span><br><span class="line">  GPIO_Mode_Out_OD = <span class="number">0x14</span>,       <span class="comment">// 开漏输出     (0001 0100)b</span></span><br><span class="line">  GPIO_Mode_Out_PP = <span class="number">0x10</span>,       <span class="comment">// 推挽输出     (0001 0000)b</span></span><br><span class="line">  GPIO_Mode_AF_OD = <span class="number">0x1C</span>,        <span class="comment">// 复用开漏输出 (0001 1100)b</span></span><br><span class="line">  GPIO_Mode_AF_PP = <span class="number">0x18</span>         <span class="comment">// 复用推挽输出 (0001 1000)b</span></span><br><span class="line">&#125;GPIOMode_TypeDef;</span><br></pre></td></tr></table></figure>
 
@@ -702,69 +814,6 @@
 
 
   
-    <article id="post-rvcc学习笔记20" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/20/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B020/" class="article-date">
-  <time datetime="2022-09-20T05:02:23.000Z" itemprop="datePublished">2022-09-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/20/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B020/">rvcc学习笔记20</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="支持指针的算术运算"><a href="#支持指针的算术运算" class="headerlink" title="支持指针的算术运算"></a>支持指针的算术运算</h2><p>​    为了实现指针的运算，引入一个类型系统来识别指针和整形运算的算术运算。*(&amp;x+8) 这是之前寻找下一个变量的方法，并不符合c语言的实际语法，要修改成</p>
-<p>*(&amp;x+1)。首先增加AST结点的结构，Type Ty，用来描述当前结点类型。</p>
-<p>​    类型的种类：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span>&#123;</span></span><br><span class="line">	TY_INT, <span class="comment">// 种类</span></span><br><span class="line">	TY_PTR, <span class="comment">// 指针</span></span><br><span class="line">&#125; TypeKind;</span><br></pre></td></tr></table></figure>
-
-<p>​    类型的结构体</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Type</span>&#123;</span></span><br><span class="line">	TypeKind Kind;</span><br><span class="line">	Type *Base;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p> 类型系统，新增加一个type.c文件：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;rvcc.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//变量类型系统</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// &#123;TY_INT&#125;构造了一个数据结构，&#123;Type&#125;强制类型转换struct，然后&amp;取地址</span></span><br><span class="line"><span class="comment">// 全局变量TyInt , 用来将Type赋值为int类型</span></span><br><span class="line">Type *TyInt = &amp;(Type)&#123;TY_INT&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断type是否为int类型</span></span><br><span class="line"><span class="type">bool</span> <span class="title function_">isInteger</span><span class="params">(Type *Ty)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Ty-&gt;Kind == TY_INT;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 指针类型，并且指向基类 ,转换为指针类型</span></span><br><span class="line">Type *<span class="title function_">pointerTo</span><span class="params">(Type *Base)</span> &#123;</span><br><span class="line">  Type *Ty = <span class="built_in">calloc</span>(<span class="number">1</span>, <span class="keyword">sizeof</span>(Type));</span><br><span class="line">  Ty-&gt;Kind = TY_PTR;</span><br><span class="line">  Ty-&gt;Base = Base;</span><br><span class="line">  <span class="keyword">return</span> Ty;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//为节点内的所有结点添加类型</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">addType</span><span class="params">(Node *Nd)</span>&#123;</span><br><span class="line">    <span class="comment">// 判断 结点是否为空 或者 结点类型已经有值，那么就直接返回</span></span><br><span class="line">    <span class="keyword">if</span>(!Nd || Nd-&gt;Ty)</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 递归访问所有节点以增加类型</span></span><br><span class="line">    addType(Nd-&gt;LHS);</span><br><span class="line">    addType(Nd-&gt;RHS);</span><br><span class="line">    addType(Nd-&gt;Cond);</span><br><span class="line">    addType(Nd-&gt;Then);</span><br><span class="line">    addType(Nd-&gt;Els);</span><br><span class="line">    addType(Nd-&gt;init);</span><br><span class="line">    addType(Nd-&gt;Inc);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 访问链表内的所有节点以增加类型</span></span><br><span class="line">    <span class="keyword">for</span> (Node *N = Nd-&gt;Body; N; N = N-&gt;Next)</span><br><span class="line">        addType(N);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (Nd-&gt;Kind) &#123;</span><br><span class="line">    <span class="comment">// 将节点类型设为 节点左部的类型 ， 类型转换</span></span><br><span class="line">    <span class="keyword">case</span> ND_ADD:</span><br><span class="line">    <span class="keyword">case</span> ND_SUB:</span><br><span class="line">    <span class="keyword">case</span> ND_MUL:</span><br><span class="line">    <span class="keyword">case</span> ND_DIV:</span><br><span class="line">    <span class="keyword">case</span> ND_NEG:</span><br><span class="line">    <span class="keyword">case</span> ND_ASSIGN:</span><br><span class="line">        Nd-&gt;Ty = Nd-&gt;LHS-&gt;Ty;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="comment">// 将节点类型设为 int</span></span><br><span class="line">    <span class="keyword">case</span> ND_EQ:</span><br><span class="line">    <span class="keyword">case</span> ND_NE:</span><br><span class="line">    <span class="keyword">case</span> ND_LT:</span><br><span class="line">    <span class="keyword">case</span> ND_LE:</span><br><span class="line">    <span class="keyword">case</span> ND_VAR:</span><br><span class="line">    <span class="keyword">case</span> ND_NUM:</span><br><span class="line">        Nd-&gt;Ty = TyInt;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="comment">// 将节点类型设为 指针，并指向左部的类型</span></span><br><span class="line">    <span class="keyword">case</span> ND_ADDR:</span><br><span class="line">        Nd-&gt;Ty = pointerTo(Nd-&gt;LHS-&gt;Ty);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="comment">// 节点类型：如果解引用指向的是指针，则为指针指向的类型；否则为int</span></span><br><span class="line">    <span class="keyword">case</span> ND_DEREF:</span><br><span class="line">        <span class="keyword">if</span> (Nd-&gt;LHS-&gt;Ty-&gt;Kind == TY_PTR)</span><br><span class="line">            Nd-&gt;Ty = Nd-&gt;LHS-&gt;Ty-&gt;Base;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            Nd-&gt;Ty = TyInt;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​    完成了关于type函数相关的一些操作，比如判断结点的种类是否为int，将节点设为指针类型，为结点内的所有结点添加类型。</p>
-<h2 id="语法分析"><a href="#语法分析" class="headerlink" title="语法分析"></a>语法分析</h2><p>​    在构造完AST后，应该为结点添加类型信息。见现在的编译器来说，数字结点和== ，!=,&lt;=,&lt;等关系结点，变量结点都设为int类型，而运算符结点和赋值号结点都为结点左部结点的类型，引用符结点赋值为指针类型，解引用符号结点要判断指针指向的结点类型，指向的是啥就是啥类型。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">while(!equal(Tok,&quot;&#125;&quot;))&#123;</span><br><span class="line">	Cur -&gt;Next = stmt(&amp;Tok,Tok);</span><br><span class="line">	Cur = Cur -&gt;Next;</span><br><span class="line">	addType(Cur);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​    指针的算术运算包括加法和减法，所以要修改原来的加法和减法。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析各种加法</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">newAdd</span><span class="params">(Node *LHS, Node *RHS, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// 为左右部添加类型</span></span><br><span class="line">  addType(LHS);</span><br><span class="line">  addType(RHS);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// num + num</span></span><br><span class="line">  <span class="keyword">if</span> (isInteger(LHS-&gt;Ty) &amp;&amp; isInteger(RHS-&gt;Ty))</span><br><span class="line">    <span class="keyword">return</span> newBinary(ND_ADD, LHS, RHS, Tok);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 不能解析 ptr + ptr</span></span><br><span class="line">  <span class="keyword">if</span> (LHS-&gt;Ty-&gt;Base &amp;&amp; RHS-&gt;Ty-&gt;Base)</span><br><span class="line">    errorTok(Tok, <span class="string">&quot;invalid operands&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将 num + ptr 转换为 ptr + num</span></span><br><span class="line">  <span class="keyword">if</span> (!LHS-&gt;Ty-&gt;Base &amp;&amp; RHS-&gt;Ty-&gt;Base) &#123;</span><br><span class="line">    Node *Tmp = LHS;</span><br><span class="line">    LHS = RHS;</span><br><span class="line">    RHS = Tmp;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ptr + num</span></span><br><span class="line">  <span class="comment">// 指针加法，ptr+1，这里的1不是1个字节，而是1个元素的空间，所以需要 ×8 操作</span></span><br><span class="line">  RHS = newBinary(ND_MUL, RHS, newNum(<span class="number">8</span>, Tok), Tok);</span><br><span class="line">  <span class="keyword">return</span> newBinary(ND_ADD, LHS, RHS, Tok);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​    减法，和加法不同的是，减法支持ptr-ptr,它返回两指针之间的元素个数。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 解析各种减法</span></span><br><span class="line"><span class="type">static</span> Node *<span class="title function_">newSub</span><span class="params">(Node *LHS, Node *RHS, Token *Tok)</span> &#123;</span><br><span class="line">  <span class="comment">// 为左右部添加类型</span></span><br><span class="line">  addType(LHS);</span><br><span class="line">  addType(RHS);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// num - num</span></span><br><span class="line">  <span class="keyword">if</span> (isInteger(LHS-&gt;Ty) &amp;&amp; isInteger(RHS-&gt;Ty))</span><br><span class="line">    <span class="keyword">return</span> newBinary(ND_SUB, LHS, RHS, Tok);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ptr - num</span></span><br><span class="line">  <span class="keyword">if</span> (LHS-&gt;Ty-&gt;Base &amp;&amp; isInteger(RHS-&gt;Ty)) &#123;</span><br><span class="line">    RHS = newBinary(ND_MUL, RHS, newNum(<span class="number">8</span>, Tok), Tok);</span><br><span class="line">    addType(RHS);</span><br><span class="line">    Node *Nd = newBinary(ND_SUB, LHS, RHS, Tok);</span><br><span class="line">    <span class="comment">// 节点类型为指针</span></span><br><span class="line">    Nd-&gt;Ty = LHS-&gt;Ty;</span><br><span class="line">    <span class="keyword">return</span> Nd;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ptr - ptr，返回两指针间有多少元素</span></span><br><span class="line">  <span class="keyword">if</span> (LHS-&gt;Ty-&gt;Base &amp;&amp; RHS-&gt;Ty-&gt;Base) &#123;</span><br><span class="line">    Node *Nd = newBinary(ND_SUB, LHS, RHS, Tok);</span><br><span class="line">    Nd-&gt;Ty = TyInt;</span><br><span class="line">    <span class="keyword">return</span> newBinary(ND_DIV, Nd, newNum(<span class="number">8</span>, Tok), Tok);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  errorTok(Tok, <span class="string">&quot;invalid operands&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h2><p>​    测试用例：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># [21] 支持指针的算术运算</span></span><br><span class="line">assert 3 <span class="string">&#x27;&#123; x=3; y=5; return *(&amp;y-1); &#125;&#x27;</span></span><br><span class="line">assert 5 <span class="string">&#x27;&#123; x=3; y=5; return *(&amp;x+1); &#125;&#x27;</span></span><br><span class="line">assert 7 <span class="string">&#x27;&#123; x=3; y=5; *(&amp;y-1)=7; return x; &#125;&#x27;</span></span><br><span class="line">assert 7 <span class="string">&#x27;&#123; x=3; y=5; *(&amp;x+1)=7; return y; &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>​    结果：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123; x=3; y=5; <span class="built_in">return</span> *(&amp;y-1); &#125; =&gt; 3</span><br><span class="line">&#123; x=3; y=5; <span class="built_in">return</span> *(&amp;x+1); &#125; =&gt; 5</span><br><span class="line">&#123; x=3; y=5; *(&amp;y-1)=7; <span class="built_in">return</span> x; &#125; =&gt; 7</span><br><span class="line">&#123; x=3; y=5; *(&amp;x+1)=7; <span class="built_in">return</span> y; &#125; =&gt; 7</span><br><span class="line">ok</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/20/rvcc%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B020/" data-id="cl92id4pc0017ggmja3sg21yk" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -777,6 +826,13 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rtos/">rtos</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rvcc/">rvcc</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">网络编程</a></li></ul>
+    </div>
+  </div>
+
 
   
     
@@ -801,6 +857,10 @@
       <ul>
         
           <li>
+            <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/">csi中对rtos移植的适配</a>
+          </li>
+        
+          <li>
             <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/">RTOS移植</a>
           </li>
         
@@ -814,10 +874,6 @@
         
           <li>
             <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
-          </li>
-        
-          <li>
-            <a href="/2022/12/23/csapp-proxyLab/">csapp:proxyLab</a>
           </li>
         
       </ul>

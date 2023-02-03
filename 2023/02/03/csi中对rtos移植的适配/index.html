@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>csi中对rtos移植的适配 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="线程栈初始化 (以rhino为例)port_c.c:  实现上下文切换不同rtos关于上下文切换的接口实现不同，例如ucosIII和Rhino也不同，在移植的过程中我们需要去实现这些操作系统 Rhino port_s.S  ucosIII os_cpu_a.S:  实现时钟节拍 实现时钟节拍（有了时钟节拍支持，rtos可以实现delay()等演示函数。 soc.h: 123456789101112">
+<meta property="og:type" content="article">
+<meta property="og:title" content="csi中对rtos移植的适配">
+<meta property="og:url" content="http://example.com/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="线程栈初始化 (以rhino为例)port_c.c:  实现上下文切换不同rtos关于上下文切换的接口实现不同，例如ucosIII和Rhino也不同，在移植的过程中我们需要去实现这些操作系统 Rhino port_s.S  ucosIII os_cpu_a.S:  实现时钟节拍 实现时钟节拍（有了时钟节拍支持，rtos可以实现delay()等演示函数。 soc.h: 123456789101112">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/image-20230203150549668.png">
+<meta property="og:image" content="http://example.com/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/image-20230203151348993.png">
+<meta property="og:image" content="http://example.com/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/image-20230203151657862.png">
+<meta property="article:published_time" content="2023-02-03T06:49:36.000Z">
+<meta property="article:modified_time" content="2023-02-03T07:59:58.987Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/image-20230203150549668.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-csi中对rtos移植的适配" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/" class="article-date">
+  <time datetime="2023-02-03T06:49:36.000Z" itemprop="datePublished">2023-02-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      csi中对rtos移植的适配
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="线程栈初始化-以rhino为例"><a href="#线程栈初始化-以rhino为例" class="headerlink" title="线程栈初始化 (以rhino为例)"></a>线程栈初始化 (以rhino为例)</h2><p>port_c.c:</p>
+<p><img src="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/image-20230203150549668.png" alt="image-20230203150549668"></p>
+<h2 id="实现上下文切换"><a href="#实现上下文切换" class="headerlink" title="实现上下文切换"></a>实现上下文切换</h2><p>不同rtos关于上下文切换的接口实现不同，例如ucosIII和Rhino也不同，在移植的过程中我们需要去实现这些操作系统</p>
+<p>Rhino port_s.S</p>
+<p><img src="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/image-20230203151348993.png" alt="image-20230203151348993"></p>
+<p>ucosIII os_cpu_a.S:</p>
+<p><img src="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/image-20230203151657862.png" alt="image-20230203151657862"></p>
+<h2 id="实现时钟节拍"><a href="#实现时钟节拍" class="headerlink" title="实现时钟节拍"></a>实现时钟节拍</h2><p> 实现时钟节拍（有了时钟节拍支持，rtos可以实现delay()等演示函数。</p>
+<p>soc.h:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;csi_core.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys_freq.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> IHS_VALUE</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span>  IHS_VALUE    (20000000)</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> EHS_VALUE</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span>  EHS_VALUE    (20000000)</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* -------------------------  Interrupt Number Definition  ------------------------ */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> <span class="title">IRQn</span> &#123;</span></span><br><span class="line">    NMI_EXPn                        =   <span class="number">-2</span>,      <span class="comment">/* NMI Exception */</span></span><br><span class="line">    <span class="comment">/* ----------------------  SmartL Specific Interrupt Numbers  --------------------- */</span></span><br><span class="line">    Machine_Software_IRQn           =   <span class="number">3</span>,      <span class="comment">/* Machine software interrupt */</span></span><br><span class="line">    User_Timer_IRQn                 =   <span class="number">4</span>,      <span class="comment">/* User timer interrupt */</span></span><br><span class="line">    Supervisor_Timer_IRQn           =   <span class="number">5</span>,      <span class="comment">/* Supervisor timer interrupt */</span></span><br><span class="line">    CORET_IRQn                      =   <span class="number">7</span>,      <span class="comment">/* core Timer Interrupt */</span></span><br><span class="line">    Machine_External_IRQn           =   <span class="number">11</span>,     <span class="comment">/* Machine external interrupt */</span></span><br><span class="line">    UART_IRQn                       =   <span class="number">16</span>,     <span class="comment">/* uart Interrupt */</span></span><br><span class="line">    TIM0_IRQn                       =   <span class="number">18</span>,     <span class="comment">/* timer0 Interrupt */</span></span><br><span class="line">    TIM1_IRQn                       =   <span class="number">19</span>,     <span class="comment">/* timer1 Interrupt */</span></span><br><span class="line">    TIM2_IRQn                       =   <span class="number">20</span>,     <span class="comment">/* timer2 Interrupt */</span></span><br><span class="line">    TIM3_IRQn                       =   <span class="number">21</span>,     <span class="comment">/* timer3 Interrupt */</span></span><br><span class="line">    GPIO0_IRQn                      =   <span class="number">23</span>,     <span class="comment">/* gpio0 Interrupt */</span></span><br><span class="line">    GPIO1_IRQn                      =   <span class="number">24</span>,     <span class="comment">/* gpio1 Interrupt */</span></span><br><span class="line">    GPIO2_IRQn                      =   <span class="number">25</span>,     <span class="comment">/* gpio2 Interrupt */</span></span><br><span class="line">    GPIO3_IRQn                      =   <span class="number">26</span>,     <span class="comment">/* gpio3 Interrupt */</span></span><br><span class="line">    GPIO4_IRQn                      =   <span class="number">27</span>,     <span class="comment">/* gpio4 Interrupt */</span></span><br><span class="line">    GPIO5_IRQn                      =   <span class="number">28</span>,     <span class="comment">/* gpio5 Interrupt */</span></span><br><span class="line">    GPIO6_IRQn                      =   <span class="number">29</span>,     <span class="comment">/* gpio6 Interrupt */</span></span><br><span class="line">    GPIO7_IRQn                      =   <span class="number">30</span>,     <span class="comment">/* gpio7 Interrupt */</span></span><br><span class="line">    STIM0_IRQn                      =   <span class="number">31</span>,     <span class="comment">/* stimer0 Interrupt */</span></span><br><span class="line">    STIM1_IRQn                      =   <span class="number">32</span>,     <span class="comment">/* stimer1 Interrupt */</span></span><br><span class="line">    STIM2_IRQn                      =   <span class="number">33</span>,     <span class="comment">/* stimer2 Interrupt */</span></span><br><span class="line">    STIM3_IRQn                      =   <span class="number">34</span>,     <span class="comment">/* stimer3 Interrupt */</span></span><br><span class="line">    PAD_IRQn                        =   <span class="number">35</span>,     <span class="comment">/* pad Interrupt */</span></span><br><span class="line">    TIM6_IRQn                       =   <span class="number">36</span>,     <span class="comment">/* timer6 Interrupt */</span></span><br><span class="line">    TIM7_IRQn                       =   <span class="number">37</span>,     <span class="comment">/* timer7 Interrupt */</span></span><br><span class="line">    TIM8_IRQn                       =   <span class="number">38</span>,     <span class="comment">/* timer8 Interrupt */</span></span><br><span class="line">    TIM9_IRQn                       =   <span class="number">39</span>,     <span class="comment">/* timer9 Interrupt */</span></span><br><span class="line">    TIM10_IRQn                      =   <span class="number">40</span>,     <span class="comment">/* timer10 Interrupt */</span></span><br><span class="line">    TIM11_IRQn                      =   <span class="number">41</span>,     <span class="comment">/* timer11 Interrupt */</span></span><br><span class="line">&#125;</span><br><span class="line">IRQn_Type;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ================================================================================ */</span></span><br><span class="line"><span class="comment">/* ================       Device Specific Peripheral Section       ================ */</span></span><br><span class="line"><span class="comment">/* ================================================================================ */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CONFIG_TIMER_NUM    12</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CONFIG_USART_NUM    1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CONFIG_GPIO_NUM     8</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CONFIG_GPIO_PIN_NUM 8</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* ================================================================================ */</span></span><br><span class="line"><span class="comment">/* ================              Peripheral memory map             ================ */</span></span><br><span class="line"><span class="comment">/* ================================================================================ */</span></span><br><span class="line"><span class="comment">/* --------------------------  CPU FPGA memory map  ------------------------------- */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_SRAM_BASE              (0x20000000UL)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_UART_BASE              (0x40015000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_PMU_BASE               (0x40016000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER0_BASE            (0x40011000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER1_BASE            (0x40011014UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER2_BASE            (0x40011028UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER3_BASE            (0x4001103cUL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER4_BASE            (0x40021000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER5_BASE            (0x40021014UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER6_BASE            (0x40021028UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER7_BASE            (0x4002103cUL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER8_BASE            (0x40031000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER9_BASE            (0x40031014UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER10_BASE           (0x40031028UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER11_BASE           (0x4003103cUL)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_TIMER_CONTROL_BASE     (0x400110a0UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_CLK_GEN_BASE           (0x40017000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_STIMER0_BASE           (0x40018000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_STIMER1_BASE           (0x40018014UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_STIMER2_BASE           (0x40018028UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_STIMER3_BASE           (0x4001803cUL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_STIMER_CONTROL_BASE    (0x400110a0UL)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_GPIOA_BASE             (0x40019000UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_GPIOA_CONTROL_BASE     (0x40019030UL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_SMPU_BASE              (0x4001a000UL)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* ================================================================================ */</span></span><br><span class="line"><span class="comment">/* ================             Peripheral declaration             ================ */</span></span><br><span class="line"><span class="comment">/* ================================================================================ */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CSKY_UART                  ((   CSKY_UART_TypeDef *)    CSKY_UART_BASE)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span>  <span class="comment">/* _SOC_H_ */</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>systick_handler:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;k_api.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;csi_config.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;soc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;drv_timer.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">uint64_t</span> g_sys_tick_count;</span><br><span class="line"><span class="type">void</span> <span class="title function_">systick_handler</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    g_sys_tick_count++;</span><br><span class="line">    krhino_tick_proc();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>实现 SysTick 的中断处理函数即可实现时钟节拍功能。</p>
+<p>在芯来的cpu中，需要实现eclic_mtip_handler和eclic_msip_handler函数</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/" data-id="cldo8wof70000u4mj1st92st8" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">RTOS移植</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rtos/">rtos</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rvcc/">rvcc</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">网络编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/">csi中对rtos移植的适配</a>
+          </li>
+        
+          <li>
+            <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/">RTOS移植</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/">跳表实现sortedset</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">redis的通信协议</a>
+          </li>
+        
+          <li>
+            <a href="/2022/12/23/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAping%E7%9A%84%E5%8A%9F%E8%83%BD/">实现一个ping的功能</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
