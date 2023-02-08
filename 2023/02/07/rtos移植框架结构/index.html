@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>rtos移植框架结构 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="目的定义了CPU内核移植接口、外围设备操作接口统一软件接口规范，消除不同芯片的差异，简化软件的使用及提高软件的移植性。 文件结构 core： 定义cpu相关的紧耦合外设的接口规范 ​    包括中断控制器，DCC，寄存器等相关设备，和cpu的类型相关。  driver：常用的驱动接口规范 ​    例如gpio，timer，具体实现和电路板相关。硬件相关的驱动实现，以及操作系统的移植框架。  ke">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rtos移植框架结构">
+<meta property="og:url" content="http://example.com/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="目的定义了CPU内核移植接口、外围设备操作接口统一软件接口规范，消除不同芯片的差异，简化软件的使用及提高软件的移植性。 文件结构 core： 定义cpu相关的紧耦合外设的接口规范 ​    包括中断控制器，DCC，寄存器等相关设备，和cpu的类型相关。  driver：常用的驱动接口规范 ​    例如gpio，timer，具体实现和电路板相关。硬件相关的驱动实现，以及操作系统的移植框架。  ke">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230208100759271.png">
+<meta property="og:image" content="http://example.com/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230207151234791.png">
+<meta property="og:image" content="http://example.com/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230207151306897.png">
+<meta property="og:image" content="http://example.com/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230208101754511.png">
+<meta property="article:published_time" content="2023-02-07T01:05:25.000Z">
+<meta property="article:modified_time" content="2023-02-08T08:13:47.416Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230208100759271.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rtos移植框架结构" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/" class="article-date">
+  <time datetime="2023-02-07T01:05:25.000Z" itemprop="datePublished">2023-02-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      rtos移植框架结构
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><p>定义了CPU内核移植接口、外围设备操作接口统一软件接口规范，消除不同芯片的差异，简化软件的使用及提高软件的移植性。</p>
+<h2 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h2><ul>
+<li><p><strong>core： 定义cpu相关的紧耦合外设的接口规范</strong></p>
+<p>​    包括中断控制器，DCC，寄存器等相关设备，和cpu的类型相关。</p>
+</li>
+<li><p><strong>driver：常用的驱动接口规范</strong></p>
+<p>​    例如gpio，timer，具体实现和电路板相关。硬件相关的驱动实现，以及操作系统的移植框架。</p>
+</li>
+<li><p><strong>kernel：rtos统一接口规范</strong></p>
+<p>​    包括rtos内核，不同的rtos通过adapter层，实现一套同一rtos接口，让上层组件可以调用统一的接口来实现功能，增加程序的可移植性。</p>
+</li>
+<li><p><strong>board：板级初始化相关的接口定义</strong></p>
+</li>
+<li><p><strong>libs：相关库和组件</strong></p>
+<p>​    例如，posix，libc，日志，ringbuffer，mm内存管理等组件库</p>
+</li>
+<li><p><strong>package：组件包（UI库。。。）</strong></p>
+</li>
+<li><p><strong>project: 业务代码</strong></p>
+<p>​    通过rtos内核统一的头文件，调用rtos接口</p>
+</li>
+</ul>
+<p>具体文件结构如图：</p>
+<p><img src="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230208100759271.png" alt="image-20230208100759271"></p>
+<p>下图是相关结构的示意图：</p>
+<h2 id><a href="#" class="headerlink" title></a><img src="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230207151234791.png" alt="image-20230207151234791"></h2><p><img src="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230207151306897.png" alt="image-20230207151306897"></p>
+<h2 id="移植框架需要实现的接口"><a href="#移植框架需要实现的接口" class="headerlink" title="移植框架需要实现的接口"></a>移植框架需要实现的接口</h2><p>startup.S:</p>
+<ul>
+<li><p>​    SystemInit(): 系统初始化函数，在调用main函数之前调用，</p>
+</li>
+<li><p>​    board_Init(): 板级初始化，主要是时钟，串口的初始化和开启。</p>
+<ul>
+<li><p>​        irq_vectors_init(); 中断向量初始化。</p>
+</li>
+<li><p>​        mm_heap_initialize(); 内存堆初始化</p>
+</li>
+<li><p>​        trap_c(): 中断陷入函数，调用中断处理函数。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>中断处理函数，通过rtos api来实现：</p>
+<ul>
+<li>​    coret_IRQHandler(): core time中断处理函数，也是systick_handler 相当与 nuclei中 eclic_mtip_handler()</li>
+<li>​    tspend_handler(): 实现上下文切换的中断处理函数。相当于nuclei中 eclic_msip_handle()</li>
+<li>​    其他外部设备的中断函数如：    USART_IRQHandle();等</li>
+</ul>
+<p>时间函数移植：</p>
+<p>时间函数用于实现系统的延时，代码实现位于chip组件的lib.c文件中。本文将介绍如何移植系统延时函数。</p>
+<p>mdelay()和_mdelay()函数</p>
+<p>系统的毫秒级延时函数如下所示，对接mdelay接口需要实现毫秒的延时单元 _mdelay()函数，该函数作用为延时1毫秒，可以使用cpu tick或者硬件timer实现。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> _mdelay(<span class="type">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> start, cur, delta;</span><br><span class="line">    <span class="type">uint32_t</span> startl = csi_coret_get_value();</span><br><span class="line">    <span class="type">uint32_t</span> starth = csi_coret_get_valueh();</span><br><span class="line">    <span class="type">uint32_t</span> curl, curh;</span><br><span class="line">    <span class="type">uint32_t</span> cnt = (drv_get_sys_freq() / <span class="number">1000</span>);</span><br><span class="line">    start = ((<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>)starth &lt;&lt; <span class="number">32</span>) | startl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        curl = csi_coret_get_value();</span><br><span class="line">        curh = csi_coret_get_valueh();</span><br><span class="line">        cur = ((<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>)curh &lt;&lt; <span class="number">32</span>) | curl;</span><br><span class="line">        delta = cur - start;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (delta &gt;= cnt) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">mdelay</span><span class="params">(<span class="type">uint32_t</span> ms)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (ms == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (ms--) &#123;</span><br><span class="line">        _mdelay();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>cpu线程栈的初始化函数：</p>
+<p>void *cpu_task_stack_init(cpu_stack_t *stack_base, size_t stack_size,<br>                          void *arg, task_entry_t entry)</p>
+<p>硬件相关的配置;</p>
+<p>​    实现soc.h，内存地址的相关宏定义，中断类型，以及相关宏定义。</p>
+<p>​    其他的硬件相关的定义。</p>
+<p>操作系统适配层：</p>
+<ul>
+<li>​    用rtos的api来实现同一的rtos调用的接口</li>
+<li>​    用rtos接口实现bsp相关函数</li>
+</ul>
+<p>应用在工程中用config文件去配置rtos的相关功能的开关，用头文件<xxx_kernel>调用接口</xxx_kernel></p>
+<p>在主函数中首先用xxx_kernel_init() 初始化rtos，xxx_kernel_start()启动rtos。</p>
+<h2 id="另一种方案"><a href="#另一种方案" class="headerlink" title="另一种方案"></a>另一种方案</h2><p><img src="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/image-20230208101754511.png" alt="image-20230208101754511"></p>
+<p>所有组件都会放在packages文件夹下，业务代码放在app文件夹下，通过include文件夹下的配置文件控制组件的功能。这种方式可以快速的自定义构建项目，但是要明确模块间的依赖关系。</p>
+<p>组件放在工作区的目录下，每一个工程都是使用组件的复制，导致组件的代码不能修改。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/" data-id="cldveb42r0000ywmje9cz6vc3" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">csi中对rtos移植的适配</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/rtos/">rtos</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rvcc/">rvcc</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">网络编程</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/">rtos移植框架结构</a>
+          </li>
+        
+          <li>
+            <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/">csi中对rtos移植的适配</a>
+          </li>
+        
+          <li>
+            <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/">RTOS移植</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/">跳表实现sortedset</a>
+          </li>
+        
+          <li>
+            <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">redis的通信协议</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
