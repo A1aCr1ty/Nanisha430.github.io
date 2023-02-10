@@ -64,6 +64,99 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-ide工程结构的几种方案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/" class="article-date">
+  <time datetime="2023-02-08T08:24:16.000Z" itemprop="datePublished">2023-02-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/">ide工程结构的几种方案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="第一种-nuclei-sdk"><a href="#第一种-nuclei-sdk" class="headerlink" title="第一种 nuclei sdk"></a>第一种 nuclei sdk</h2><p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230208162704278.png" alt="image-20230208162704278"></p>
+<p>nuclei sdk的目录结构(OneOS示例工程为例)：</p>
+<p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230208163053079.png" alt="image-20230208163053079"></p>
+<p>Application文件夹放应用层面的业务代码。</p>
+<p>arch文件夹放OneOS移植到CM32M4xxr的相关文件。</p>
+<p>board文件下放的是OneOS启动初始化相关的文件以及启动文件。</p>
+<p>kernel文件夹下放的是OneOS内核相关的代码。</p>
+<p>最外层包括OneOS的配置文件和工程的链接文件。</p>
+<p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230208165503660.png" alt="image-20230208165503660"></p>
+<p>该文件夹下是CM32相关的文件</p>
+<p>board下是CM32M433R_START实现led，log等</p>
+<p>CM32M4xxr_Algo_Library文件夹是算法库</p>
+<p>CM32M4xxr_stdPeriph_Diriver文件夹下是固件库</p>
+<p>Env 文件夹是 系统一些函数的实现，为了某些程序可以移植，</p>
+<p>NMSIS下Core 是cpu相关外设的接口。</p>
+<p>Device下是设备驱动的配置文件和链接文件等</p>
+<p>DSP和Libarry是和DSP相关的api。</p>
+<p><strong>当RTOS为FreeRTOS</strong>，文件结构如下：</p>
+<p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230209164618741.png" alt="image-20230209164618741"></p>
+<p>其中启动文件的结构也不一样，rtthread和oneos在main调用之前，会进行系统的初始化和启动，而freertos则是需要用户在main函数钟手动去初始化时钟和启动。</p>
+<p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230209164854640.png" alt="image-20230209164854640"></p>
+<h2 id="第二种-MRS"><a href="#第二种-MRS" class="headerlink" title="第二种 MRS"></a>第二种 MRS</h2><p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230208174657106.png" alt="image-20230208174657106"></p>
+<p>core： cpu相关外设的函数</p>
+<p>debug：调试相关的接口实现</p>
+<p>FreeRTOS(或者其他rtos)：包括rtos内核以及移植适配相关的所有文件</p>
+<p>Ld: 链接文件</p>
+<p>Peripheral: 固件库相关文件</p>
+<p>Startup: 启动文件</p>
+<p>User: 应用程序相关文件包括rtos的配置文件</p>
+<h2 id="第三种-CSI-SDK"><a href="#第三种-CSI-SDK" class="headerlink" title="第三种  CSI SDK"></a>第三种  CSI SDK</h2><ul>
+<li><p><strong>csi_core： 定义cpu相关的紧耦合外设的接口规范</strong></p>
+<p>​    包括中断控制器，DCC，寄存器等相关设备，和cpu的类型相关。</p>
+</li>
+<li><p><strong>csi_driver：常用的驱动接口规范</strong></p>
+<p>​    例如gpio，timer，具体实现和电路板相关。硬件相关的驱动实现，以及操作系统的移植框架。</p>
+</li>
+<li><p><strong>csi_kernel：rtos统一接口规范</strong></p>
+<p>​    包括rtos内核，不同的rtos通过adapter层，实现一套同一rtos接口，让上层组件可以调用统一的接口来实现功能，增加程序的可移植性。</p>
+</li>
+<li><p><strong>board：板级初始化相关的接口定义</strong></p>
+<p>​    包括时钟，串口的初始化和开启。</p>
+</li>
+<li><p><strong>libs：相关库和组件</strong></p>
+<p>​    例如，posix，libc，日志，ringbuffer，mm内存管理等组件库</p>
+</li>
+<li><p><strong>project: 业务代码</strong></p>
+<p>​    通过rtos内核统一的头文件，调用rtos接口</p>
+</li>
+</ul>
+<p>具体文件结构如图：</p>
+<p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230208100759271.png" alt="image-20230208100759271"></p>
+<p>下图是相关结构的示意图：</p>
+<h2 id><a href="#" class="headerlink" title></a><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230207151234791.png" alt="image-20230207151234791"></h2><h2 id="第四种-Yoc-SDK"><a href="#第四种-Yoc-SDK" class="headerlink" title="第四种 Yoc SDK"></a>第四种 Yoc SDK</h2><p>​    采用组件化的方式来构建工程，便于自定义工程，用户只需要关注业务代码。</p>
+<p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230209092405595.png" alt="image-20230209092405595"></p>
+<p>app文件夹下放业务代码，include下放配置文件用来控制组件的功能。</p>
+<p>用户选好芯片和板子还有需要的组件即可完成目标工程的创建。</p>
+<p><img src="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/image-20230209093053136.png" alt="image-20230209093053136"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/" data-id="cldxy1rkz0000nomjdbj9fyne" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rtos移植框架结构" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/" class="article-date">
@@ -92,21 +185,19 @@
       
         <h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><p>定义了CPU内核移植接口、外围设备操作接口统一软件接口规范，消除不同芯片的差异，简化软件的使用及提高软件的移植性。</p>
 <h2 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h2><ul>
-<li><p><strong>core： 定义cpu相关的紧耦合外设的接口规范</strong></p>
+<li><p><strong>csi_core： 定义cpu相关的紧耦合外设的接口规范</strong></p>
 <p>​    包括中断控制器，DCC，寄存器等相关设备，和cpu的类型相关。</p>
 </li>
-<li><p><strong>driver：常用的驱动接口规范</strong></p>
+<li><p><strong>csi_driver：常用的驱动接口规范</strong></p>
 <p>​    例如gpio，timer，具体实现和电路板相关。硬件相关的驱动实现，以及操作系统的移植框架。</p>
 </li>
-<li><p><strong>kernel：rtos统一接口规范</strong></p>
+<li><p><strong>csi_kernel：rtos统一接口规范</strong></p>
 <p>​    包括rtos内核，不同的rtos通过adapter层，实现一套同一rtos接口，让上层组件可以调用统一的接口来实现功能，增加程序的可移植性。</p>
 </li>
 <li><p><strong>board：板级初始化相关的接口定义</strong></p>
 </li>
 <li><p><strong>libs：相关库和组件</strong></p>
 <p>​    例如，posix，libc，日志，ringbuffer，mm内存管理等组件库</p>
-</li>
-<li><p><strong>package：组件包（UI库。。。）</strong></p>
 </li>
 <li><p><strong>project: 业务代码</strong></p>
 <p>​    通过rtos内核统一的头文件，调用rtos接口</p>
@@ -720,86 +811,6 @@
 
 
   
-    <article id="post-qemu相关配置参数" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/11/28/qemu%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0/" class="article-date">
-  <time datetime="2022-11-28T02:52:57.000Z" itemprop="datePublished">2022-11-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E6%A8%A1%E6%8B%9F%E5%99%A8/">模拟器</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/11/28/qemu%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0/">qemu相关配置参数</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <table>
-<thead>
-<tr>
-<th>参数</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-M</td>
-<td>设备类型</td>
-</tr>
-<tr>
-<td>-cpu</td>
-<td>cpu类型</td>
-</tr>
-<tr>
-<td>-m</td>
-<td>内存大小</td>
-</tr>
-<tr>
-<td>-smp</td>
-<td>cpu核心数</td>
-</tr>
-<tr>
-<td>-kernel</td>
-<td>内核镜像</td>
-</tr>
-<tr>
-<td>-nographic</td>
-<td>使qemu成为简单的命令行应用程序</td>
-</tr>
-<tr>
-<td>-serial stdio</td>
-<td>host设备的标准输入输出</td>
-</tr>
-<tr>
-<td>-S</td>
-<td>启动qemu后不立即执行</td>
-</tr>
-</tbody></table>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/11/28/qemu%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0/" data-id="clb2z32q50000gomjbp2f8kyf" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
@@ -843,6 +854,10 @@
       <ul>
         
           <li>
+            <a href="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/">ide工程结构的几种方案</a>
+          </li>
+        
+          <li>
             <a href="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/">rtos移植框架结构</a>
           </li>
         
@@ -856,10 +871,6 @@
         
           <li>
             <a href="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/">跳表实现sortedset</a>
-          </li>
-        
-          <li>
-            <a href="/2023/01/09/redis%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">redis的通信协议</a>
           </li>
         
       </ul>
