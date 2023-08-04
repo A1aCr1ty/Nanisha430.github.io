@@ -64,6 +64,197 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-riscv汇编语言编程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/" class="article-date">
+  <time datetime="2022-10-21T05:40:27.000Z" itemprop="datePublished">2022-10-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/">riscv汇编语言编程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ul>
+<li><p><strong>一个完整的risc-v汇编程序是由多条语句(statment)构成的</strong></p>
+</li>
+<li><p><strong>一条典型的RISC-V汇编语句是由3部分组成的：</strong></p>
+<p>[label:] [operation] [comment]</p>
+</li>
+<li><p><strong>label(标号)：GNU汇编中，任何以冒号结尾的标识符都被认为是一个标号</strong></p>
+</li>
+<li><p><strong>operation 可以有以下多种类型：</strong></p>
+<p><strong>instruction(指令)</strong>: 直接应对二进制机器指令的字符串</p>
+<p>**pseudo-instruction(伪指令)**：为了提高编写代码的效率，可以用一条伪指令指示汇编器产生多条实际的指令(instructions)</p>
+<p>**directive(指示/伪操作)**：通过类似指令的形式（”.”开头），通知汇编器如何控制代码的产生，不对应具体的指令。</p>
+<p>**macro:**采用.marco/.endm 自定义宏</p>
+</li>
+</ul>
+<h3 id="寄存器："><a href="#寄存器：" class="headerlink" title="寄存器："></a>寄存器：</h3><p>​    32个通用寄存器，x0-x31</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/" data-id="clkvz4t7m0029ggmj3uz0dro7" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-优先级任务调度实现" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/10/20/%E4%BC%98%E5%85%88%E7%BA%A7%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time datetime="2022-10-20T08:12:07.000Z" itemprop="datePublished">2022-10-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/10/20/%E4%BC%98%E5%85%88%E7%BA%A7%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9E%E7%8E%B0/">优先级任务调度实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="任务控制块的结构体以及链表结构"><a href="#任务控制块的结构体以及链表结构" class="headerlink" title="任务控制块的结构体以及链表结构"></a>任务控制块的结构体以及链表结构</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tcb_list</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_node</span> *<span class="title">head</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_node</span> *<span class="title">tail</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tcb_node</span>&#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_node</span> *<span class="title">prev</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_node</span> *<span class="title">next</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb</span> *<span class="title">tcb</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tcb</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="type">void</span>            *<span class="built_in">stack</span>;  <span class="comment">// 栈的开始地址</span></span><br><span class="line">	<span class="type">uint32_t</span>        stack_size; <span class="comment">//栈的大小</span></span><br><span class="line">	<span class="type">entry_t</span>          entry;  <span class="comment">// 绑定函数</span></span><br><span class="line">	<span class="type">uint32_t</span>         prio;   <span class="comment">//优先级</span></span><br><span class="line">	<span class="type">void</span>            *arg;    <span class="comment">// 函数参数</span></span><br><span class="line">	<span class="class"><span class="keyword">enum</span> <span class="title">thread_state</span> <span class="title">state</span>;</span></span><br><span class="line">	<span class="type">uint32_t</span>         time;</span><br><span class="line">	<span class="type">uint32_t</span>         timeout;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">context</span>   <span class="title">context</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_list</span> *<span class="title">list_sched</span>;</span>  <span class="comment">// 调度队列</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_list</span> *<span class="title">list_wait</span>;</span>   <span class="comment">// 等待队列</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_node</span>  <span class="title">node_sched</span>;</span>  <span class="comment">// 调度队列的结点</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb_node</span>  <span class="title">node_wait</span>;</span>	  <span class="comment">// 等待队列的结点</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>相关的一些接口：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">thread_t</span> <span class="title function_">thread_create</span><span class="params">(<span class="type">void</span> *(*entry)(<span class="type">void</span> *),<span class="type">void</span> *arg,<span class="type">uint32_t</span> stack_size)</span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb</span> *<span class="title">tcb</span>;</span></span><br><span class="line">	<span class="type">uint8_t</span> *stack_base;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 如果给的stack_size值为0,贼赋值为默认值1024</span></span><br><span class="line">	stack_size = stack_size?stack_size:<span class="number">1024</span>;</span><br><span class="line">	tcb = (<span class="keyword">struct</span> tcb *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> tcb)+stack_size);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(tcb != <span class="literal">NULL</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			stack_base = (<span class="type">uint8_t</span> *)(tcb + <span class="number">1</span>);</span><br><span class="line">			<span class="built_in">memset</span>(tcb, <span class="number">0</span>, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> tcb));</span><br><span class="line">			<span class="built_in">memset</span>(stack_base, <span class="number">0xCC</span>, stack_size);</span><br><span class="line">			tcb-&gt;prio  = THREAD_PRIORITY_NORMAL;</span><br><span class="line">			tcb-&gt;stack_size =  stack_size;</span><br><span class="line">			tcb-&gt;arg = arg;</span><br><span class="line">			tcb-&gt;context.ra = (<span class="type">uint32_t</span>)entry;</span><br><span class="line">			tcb-&gt;context.sp = (<span class="type">uint32_t</span>)(tcb-&gt;<span class="built_in">stack</span>)+tcb-&gt;stack_size;</span><br><span class="line">			tcb-&gt;<span class="built_in">stack</span> = (stack_base);</span><br><span class="line">			tcb-&gt;entry = entry;</span><br><span class="line">			tcb-&gt;node_wait.tcb = tcb;</span><br><span class="line">			tcb-&gt;node_sched.tcb = tcb;</span><br><span class="line">			<span class="comment">//cpu_enter_critical();</span></span><br><span class="line">			sched_tcb_ready(tcb);  <span class="comment">// 插入到就绪队列</span></span><br><span class="line">			<span class="comment">//cpu_leave_critical();</span></span><br><span class="line">		&#125;</span><br><span class="line">	<span class="keyword">return</span> (<span class="type">thread_t</span>)tcb;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">thread_yield</span><span class="params">()</span>&#123;</span><br><span class="line">	sched_switch_yield();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">thread_exit</span><span class="params">()</span>&#123;</span><br><span class="line">	sched_tcb_now= sched_tcb_next;</span><br><span class="line">	sched_tcb_remove(sched_tcb_now);</span><br><span class="line">	list_append(&amp;m_list_dead, &amp;sched_tcb_now-&gt;node_wait);</span><br><span class="line">	sched_switch();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="任务调度的一些相关的数据结构和方法"><a href="#任务调度的一些相关的数据结构和方法" class="headerlink" title="任务调度的一些相关的数据结构和方法"></a>任务调度的一些相关的数据结构和方法</h2><p>当前执行的任务，下个要执行的任务，就绪任务队列。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tcb</span>             *<span class="title">sched_tcb_now</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tcb</span>             *<span class="title">sched_tcb_next</span>;</span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">tcb_list</span>  <span class="title">m_list_ready</span>[<span class="title">THREAD_PRIORITY_HIGHEST</span> + 1];</span></span><br></pre></td></tr></table></figure>
+
+<p>用于上下文切换的接口：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 切换当前任务到下一个, tcb_context：保存主任务的上下文</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">sched_switch</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb</span> *<span class="title">tcb</span>;</span></span><br><span class="line">	tcb = m_list_ready[m_prio_highest].head-&gt;tcb;</span><br><span class="line">	list_remove(tcb-&gt;list_sched, &amp;tcb-&gt;node_sched);</span><br><span class="line">	<span class="keyword">if</span>(tcb-&gt;list_sched-&gt;head == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		m_prio_bitmap &amp;= ~(<span class="number">1</span> &lt;&lt; tcb-&gt;prio);</span><br><span class="line">		m_prio_highest = find_highest_priority(m_prio_highest);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	tcb-&gt;list_sched = <span class="literal">NULL</span>;</span><br><span class="line">	sched_tcb_next = tcb;</span><br><span class="line">	swtch(&amp;sched_tcb_now-&gt;context,&amp;sched_tcb_next-&gt;context);</span><br><span class="line">	<span class="comment">//cpu_contex_switch();</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 切换当前任务到下一个, tcb_context：保存主任务的上下文</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">sched_switch_yield</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	sched_tcb_now = sched_tcb_next;</span><br><span class="line">	sched_tcb_ready(sched_tcb_now);</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tcb</span> *<span class="title">tcb</span>;</span></span><br><span class="line">	tcb = m_list_ready[m_prio_highest].head-&gt;tcb; <span class="comment">//找到当前最高优先级，那个链表中的第一个结点就是下一个结点</span></span><br><span class="line">	list_remove(tcb-&gt;list_sched, &amp;tcb-&gt;node_sched);  <span class="comment">// 将这个结点从就绪队列移除</span></span><br><span class="line">	<span class="keyword">if</span>(tcb-&gt;list_sched-&gt;head == <span class="literal">NULL</span>)  <span class="comment">// 如果是最后一个结点，则重新寻找最高优先级</span></span><br><span class="line">	&#123;</span><br><span class="line">		m_prio_bitmap &amp;= ~(<span class="number">1</span> &lt;&lt; tcb-&gt;prio);</span><br><span class="line">		m_prio_highest = find_highest_priority(m_prio_highest); </span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	tcb-&gt;list_sched = <span class="literal">NULL</span>;</span><br><span class="line">	sched_tcb_next = tcb;</span><br><span class="line">	swtch(&amp;sched_tcb_now-&gt;context,&amp;sched_tcb_next-&gt;context); <span class="comment">// 将当前环境切换到这个任务</span></span><br><span class="line">	<span class="comment">//cpu_contex_switch();</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>实际使用，最好有一个空闲任务用来回收所有资源，并设置优先级，一直运行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//空闲线程，只需调用kernel_idle即可</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">idle</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">	kernel_idle();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//用于初始化应用程序的线程</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">init</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">//在这里完成外设和驱动初始化</span></span><br><span class="line">	<span class="comment">//并创建更多线程实现不同的功能</span></span><br><span class="line">	<span class="comment">//thread_create(...)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>程序入口：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//C语言程序入口</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">static</span> <span class="type">uint8_t</span> heap[HEAP_SIZE]; <span class="comment">/* 定义堆内存 */</span></span><br><span class="line">	kernel_init(heap, <span class="keyword">sizeof</span>(heap)); <span class="comment">/* 系统初始化 */</span></span><br><span class="line">	thread_create(idle, <span class="number">0</span>, <span class="number">0</span>); <span class="comment">/* 创建idle线程 */</span></span><br><span class="line">	thread_create(init, <span class="number">0</span>, <span class="number">0</span>); <span class="comment">/* 创建init线程 */</span></span><br><span class="line">	kernel_start(); <span class="comment">/* 启动系统 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/10/20/%E4%BC%98%E5%85%88%E7%BA%A7%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9E%E7%8E%B0/" data-id="clkvz4t88003zggmjh6ojeozs" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-基于riscv使用汇编实现简单的任务调度" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/" class="article-date">
+  <time datetime="2022-10-18T05:29:45.000Z" itemprop="datePublished">2022-10-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/rtos/">rtos</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/">基于riscv使用汇编实现简单的任务调度</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="任务调度"><a href="#任务调度" class="headerlink" title="任务调度"></a>任务调度</h2><p>本文主要通过简单的代码实现，线程的上下文保存和切换，实现一个简单的多线程框架，线程的调度只是使用了一个轮询的方法。</p>
+<h2 id="上下文"><a href="#上下文" class="headerlink" title="上下文"></a>上下文</h2><p>对于一个运行中的程序, 我们可以把它看作一个状态机, CPU每次执行一条指令会导致这个状态机从一个状态转换到另一个状态, 而这里的状态就是CPU的寄存器值和当前时刻内存的状态, 即state = (Regs, Mem). 一个程序的执行过程就是状态机状态迁移的过程, 如果希望在一个线程执行过程到某条指令时切换到另一个线程, 我们必须额外实现一段代码去完成这种切换, 并把这段代码插入到希望的切换点的后面, 这段代码必须要满足两个条件: </p>
+<p>1): 能够正确保存当前线程A的状态. 我们可以先假设完成这段切换的代码不存在, 线程A本该执行它的下一条指令, 而在执行下一条指令之前, 线程A有一个确定的状态, 即CPU的寄存器和内存中的值, <strong>具体来说包括pc指针, 栈寄存器sp, 通用寄存器等以及线程使用到的内存的状态.</strong> 线程切换代码, 首先必须能够当前线程A的状态保存起来, 以便后续调度器再切换回当前的这个线程. </p>
+<p>2): 能够正确恢复被选中的线程B的状态. 为了切换到另一个线程B去执行, 我<strong>们必须从保存线程B状态的内存地址处读取线程B的状态, 然后更新CPU寄存器以及内存的状态,</strong> 更新完成之后就可以继续线程B被中断的执行流了. 这里保存和恢复的线程状态就是线程的上下文, 在一个线程还没有运行过的情况下, 我们需要手工构造一个线程的上下文, 这个上下文的作用是使得线程一旦被调度, 就能够从创建线程时指定的入口地址处执行</p>
+<h2 id="保存上下文"><a href="#保存上下文" class="headerlink" title="保存上下文"></a>保存上下文</h2><p>真个汇编代码的逻辑就是首先保存当前线程的上下文，在切换要执行线程的上下文。</p>
+<p>以下都以RISC-V为基础进行讨论. 从线程A的角度看, 当它在自己的正常执行流中调用我们实现的上下文切换代码时, 只是相当于调用了一个普通函数, 因此编译器会根据RISC-V架构的ABI约定, 在调用这个函数之前去保存caller saved registers, 即ABI约定中应该由调用者去保存的寄存器, 并且在调用结束之后插入恢复这些寄存器的指令序列, 上下文切换代码段首先要做的就是保存ABI中约定由被调用者保存的寄存器, 我们可以在表示线程的结构体中开辟一块区域用来保存这些寄存器, 具体实现可以定义一个描述上下文的结构体, 并在线程结构体中嵌入一个上下文描述结构体.</p>
+<h2 id="切换上下文"><a href="#切换上下文" class="headerlink" title="切换上下文"></a>切换上下文</h2><p>线程切换代码段的下一个任务是恢复线程B的状态到CPU和内存, 只要使用若干load指令去恢复线程B的寄存器状态即可, 最后使用调用返回指令ret就完成了线程的切换. ret指令会根据ra寄存器的值更新pc寄存器, 从而完成跳转, 而ra寄存器保存了线程B被中断的那条指令的地址, 需要注意的是, 在RISC-V架构下, 我们无法通过类似mv这样的指令直接修改pc寄存器的值.</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><h3 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h3><p>进入到main函数之后, 首先创将两个线程, 然后调用本文实现调度模块提供的接口对线程列表中的线程进行调度, 直到没有可供调度的线程.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span> &#123;  </span><br><span class="line">	qthread_create(thread1_start);     </span><br><span class="line">	qthread_create(thread2_start);     </span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;Start to run all threads...n&quot;</span>);     </span><br><span class="line">	qthread_run_all();     </span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;All threads are done!n&quot;</span>);      </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>两个线程的入口函数分别为<code>thread1_start</code>和<code>thread2_start</code>, 线程完成的任务如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">thread1_start</span><span class="params">(<span class="type">void</span> *args)</span> &#123;     </span><br><span class="line">	<span class="type">int</span> i = <span class="number">1</span>;     </span><br><span class="line">	<span class="keyword">while</span> (i &lt; <span class="number">1000</span>)&#123;</span><br><span class="line">    	<span class="keyword">if</span> ((i % <span class="number">100</span>) == <span class="number">0</span>)&#123;</span><br><span class="line">        	<span class="built_in">printf</span>(<span class="string">&quot;Thread #1: runningn&quot;</span>);             </span><br><span class="line">        	qthread_yield();         </span><br><span class="line">        &#125;         </span><br><span class="line">        i++;     </span><br><span class="line">    &#125;     </span><br><span class="line">    qthread_exit();     </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>两个线程的入口函数功能类似, 都会在使用占用一段时间的CPU之后主动放弃使用权, 任务完成之后主动退出, 在CM32M433R开发板运行可以得到运行结果:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Start to run all threads...</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">Thread #1: running</span><br><span class="line">Thread #2: running</span><br><span class="line">All threads are done!</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程调度模块的具体接口"><a href="#线程调度模块的具体接口" class="headerlink" title="线程调度模块的具体接口"></a>线程调度模块的具体接口</h3><p>对于本文实现的线程调度模块qthread，其对外的接口主要包括创建，运行，挂起，结束。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">qthread_create</span><span class="params">(<span class="type">qthread_entry_t</span> entry)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">qthread_yield</span><span class="params">()</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">qthread_exit</span><span class="params">()</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">qthread_run_all</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程描述的结构体"><a href="#线程描述的结构体" class="headerlink" title="线程描述的结构体"></a>线程描述的结构体</h3><p>为了管理创建出来的线程, 需要一个描述线程的结构体, 记录线程的id, 调度状态, 线程上下文等信息. 需要注意的是, 每个线程的运行都需要栈的支持, 这里在线程结构体中定义了一个1024字节大小的数组, 用于线程函数运行使用的栈, 在创建线程时, 会手动设置线程上下文中的sp指针的值.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	uint64 tid;</span><br><span class="line">	<span class="class"><span class="keyword">enum</span> <span class="title">thread_state</span> <span class="title">state</span>;</span></span><br><span class="line">	<span class="type">qthread_entry_t</span> qthread_entry;</span><br><span class="line">	<span class="type">char</span> <span class="built_in">stack</span>[<span class="number">1024</span>];</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">context</span> <span class="title">context</span>;</span></span><br><span class="line">&#125; <span class="type">qthread_t</span>;</span><br></pre></td></tr></table></figure>
+
+<p>创建线程的接口实现如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">qthread_create</span><span class="params">(<span class="type">qthread_entry_t</span> entry)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> index_found = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; MAX_THREADS_NR; ++i)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (qthread_table[i].state == UNUSED)</span><br><span class="line">        &#123;</span><br><span class="line">            index_found = i;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (index_found &lt; <span class="number">0</span> || index_found &gt;= MAX_THREADS_NR)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    qthread_table[index_found].tid = get_next_tid();</span><br><span class="line">    qthread_table[index_found].state = READY;</span><br><span class="line">    qthread_table[index_found].qthread_entry = entry;</span><br><span class="line"></span><br><span class="line">    qthread_table[index_found].context.ra = (uint64)entry;</span><br><span class="line">    qthread_table[index_found].context.sp = (uint64)qthread_table[index_found].<span class="built_in">stack</span> + <span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为栈的增长方向是由高地址向低地址, 所以线程上下文中的sp指针赋值时需要加上栈的大小, 否则会出现栈溢出的问题.</p>
+<h3 id="上下文描述结构体"><a href="#上下文描述结构体" class="headerlink" title="上下文描述结构体"></a>上下文描述结构体</h3><p>对于RISC-V架构, 在进行上下文切换时需要保存ABI约定中callee维护的寄存器外加<code>ra</code>寄存器, 因为<code>ra</code>寄存器记录了调用完线程切换代码段对应的函数之后的返回地址, 即线程A被打断的指令地址. 上下文描述结构体如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">context</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    uint64 ra;  <span class="comment">// x1 </span></span><br><span class="line">    uint64 sp;  <span class="comment">// x2</span></span><br><span class="line">    uint64 s0;  <span class="comment">// x8</span></span><br><span class="line">    uint64 s1;  <span class="comment">// x9</span></span><br><span class="line">    uint64 s2;  <span class="comment">// x18 - x27</span></span><br><span class="line">    uint64 s3;  <span class="comment">// </span></span><br><span class="line">    uint64 s4;  <span class="comment">//</span></span><br><span class="line">    uint64 s5;</span><br><span class="line">    uint64 s6;</span><br><span class="line">    uint64 s7;</span><br><span class="line">    uint64 s8;</span><br><span class="line">    uint64 s9;</span><br><span class="line">    uint64 s10;</span><br><span class="line">    uint64 s11;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程切换代码段"><a href="#线程切换代码段" class="headerlink" title="线程切换代码段"></a>线程切换代码段</h3><p>如上文所述, 线程切换代码段需要保存一个上下文, 并恢复另一个上下文, 这部分代码使用汇编指令去实现，这是riscv32的指令，如果时64位则是ld和sd，并且要保存浮点寄存器:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">	.section .text</span><br><span class="line">    .global swtch</span><br><span class="line">swtch:</span><br><span class="line">    sw ra, <span class="number">0</span>(a0)</span><br><span class="line">    sw sp, <span class="number">4</span>(a0)</span><br><span class="line">    sw s0, <span class="number">8</span>(a0)</span><br><span class="line">    sw s1, <span class="number">12</span>(a0)</span><br><span class="line">    sw s2, <span class="number">16</span>(a0)</span><br><span class="line">    sw s3, <span class="number">20</span>(a0)</span><br><span class="line">   	sw s4, <span class="number">24</span>(a0)</span><br><span class="line">    sw s5, <span class="number">28</span>(a0)</span><br><span class="line">    sw s6, <span class="number">32</span>(a0)</span><br><span class="line">    sw s7, <span class="number">36</span>(a0)</span><br><span class="line">    sw s8, <span class="number">40</span>(a0)</span><br><span class="line">    sw s9, <span class="number">44</span>(a0)</span><br><span class="line">    sw s10, <span class="number">48</span>(a0)</span><br><span class="line">    sw s11, <span class="number">52</span>(a0)</span><br><span class="line"></span><br><span class="line">    lw ra, <span class="number">0</span>(a1)</span><br><span class="line">    lw sp, <span class="number">4</span>(a1)</span><br><span class="line">    lw s0, <span class="number">8</span>(a1)</span><br><span class="line">    lw s1, <span class="number">12</span>(a1)</span><br><span class="line">    lw s2, <span class="number">16</span>(a1)</span><br><span class="line">    lw s3, <span class="number">20</span>(a1)</span><br><span class="line">    lw s4, <span class="number">24</span>(a1)</span><br><span class="line">    lw s5, <span class="number">28</span>(a1)</span><br><span class="line">    lw s6, <span class="number">32</span>(a1)</span><br><span class="line">    lw s7, <span class="number">36</span>(a1)</span><br><span class="line">    lw s8, <span class="number">40</span>(a1)</span><br><span class="line">    lw s9, <span class="number">44</span>(a1)</span><br><span class="line">    lw s10, <span class="number">48</span>(a1)</span><br><span class="line">    lw s11, <span class="number">52</span>(a1)</span><br><span class="line"></span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+<p>代码的前半部分用于保存上下文, 后半部分用于恢复上下文, 按照ABI约定, 寄存器<code>a0</code>和<code>a1</code>分别用来传递函数调用的第一个和第二个参数, 这里在调用时传递的就是两段保存和恢复各自上下文的内存地址. 最后的<code>ret</code>指令, 会用寄存器<code>ra</code>的值更新寄存器<code>pc</code>, 因为<code>ra</code>已经被恢复成了线程B被中断的指令地址, 所以<code>ret</code>指令执行过后CPU就会执行线程B对应的代码. 在恢复上下文时也更新了栈指针寄存器<code>sp</code>, 所以线程B在执行时使用的时自己的栈内存. 线程主动释放CPU资源时会调用<code>qthread_yield()</code>, 在这个函数中会调用线程切换函数<code>swtch</code>:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">qthread_yield</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    current-&gt;state = READY;</span><br><span class="line">    swtch(&amp;current-&gt;context, &amp;qthread_context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于调用<code>qthread_yield()</code>的线程A来说, 当其内部调用<code>swtch</code>函数时, 实际上CPU已经切换到了另一个线程B去执行, 但线程A是不能感知到的, 当这个<code>swtch</code>函数返回之后, 对线程A来说就像调用了一个普通的函数一样, 线程A会继续自己的执行流.</p>
+<h3 id="轮询调度实现"><a href="#轮询调度实现" class="headerlink" title="轮询调度实现"></a>轮询调度实现</h3><p>调度采用轮询的方式, 每次选取一个可用线程去切换.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">qthread_run_all</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; MAX_THREADS_NR; ++i)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (qthread_table[i].state == READY)</span><br><span class="line">            &#123;</span><br><span class="line">                current = &amp;qthread_table[i];</span><br><span class="line">                current-&gt;state = RUNNING;</span><br><span class="line">                count++;</span><br><span class="line">                swtch(&amp;qthread_context, &amp;current-&gt;context);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (count == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        count = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>参考：<a target="_blank" rel="noopener" href="http://www.itfaba.com/jishufenxian/36908.html">http://www.itfaba.com/jishufenxian/36908.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/10/18/%E5%9F%BA%E4%BA%8Eriscv%E4%BD%BF%E7%94%A8%E6%B1%87%E7%BC%96%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/" data-id="clkvz4t8c004dggmj6cdx84kn" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux内存管理-slab原理以及buddy伙伴系统" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/10/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-slab%E5%8E%9F%E7%90%86%E4%BB%A5%E5%8F%8Abuddy%E4%BC%99%E4%BC%B4%E7%B3%BB%E7%BB%9F/" class="article-date">
@@ -149,7 +340,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-slab%E5%8E%9F%E7%90%86%E4%BB%A5%E5%8F%8Abuddy%E4%BC%99%E4%BC%B4%E7%B3%BB%E7%BB%9F/" data-id="cl95cpvup0000ugmj5yiydakw" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/10/12/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-slab%E5%8E%9F%E7%90%86%E4%BB%A5%E5%8F%8Abuddy%E4%BC%99%E4%BC%B4%E7%B3%BB%E7%BB%9F/" data-id="clkvz4t6s0004ggmjcbin1o13" class="article-share-link">Share</a>
       
       
     </footer>
@@ -223,7 +414,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/11/go%E8%AF%AD%E8%A8%80%E5%8D%8F%E7%A8%8B%E8%B0%83%E5%BA%A6%E5%8E%9F%E7%90%86/" data-id="cl940cwql0000qcmjgzfj2qx0" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/10/11/go%E8%AF%AD%E8%A8%80%E5%8D%8F%E7%A8%8B%E8%B0%83%E5%BA%A6%E5%8E%9F%E7%90%86/" data-id="clkvz4t77000tggmjf77g7daf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -303,7 +494,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" data-id="cl92id4pi001iggmj9g5m4xf7" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/10/10/%E5%AD%A6%E4%B9%A0Linux%E5%86%85%E6%A0%B8%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6MemPool/" data-id="clkvz4t8d004fggmjcwix7btj" class="article-share-link">Share</a>
       
       
     </footer>
@@ -449,7 +640,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="cl92id4or0002ggmj86o8fg2k" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/10/07/ONEOS%E5%86%85%E5%AD%98%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8F%8A%E6%94%B9%E8%BF%9B/" data-id="clkvz4t6s0005ggmjd3880lmb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -516,7 +707,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" data-id="cl92id4p3000nggmj8maub8lv" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/27/malloc%E4%B8%8E%E5%86%85%E5%AD%98%E6%B1%A0/" data-id="clkvz4t7j001yggmjg082hvek" class="article-share-link">Share</a>
       
       
     </footer>
@@ -568,7 +759,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/" data-id="cl92id4oj0000ggmj5jb45e03" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6/" data-id="clkvz4t6m0001ggmjdwmqcnja" class="article-share-link">Share</a>
       
       
     </footer>
@@ -630,199 +821,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/" data-id="cl92id4op0001ggmj2hunam79" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-编译器优化的常用方法" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/22/%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E7%9A%84%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/" class="article-date">
-  <time datetime="2022-09-22T01:13:54.000Z" itemprop="datePublished">2022-09-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/22/%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E7%9A%84%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/">编译器优化的常用方法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="编译器常见的8钟优化方法"><a href="#编译器常见的8钟优化方法" class="headerlink" title="编译器常见的8钟优化方法"></a>编译器常见的8钟优化方法</h2><p>​    <strong>1、常量传播</strong></p>
-<p>​        常量传播，就是说在编译期时，能够直接计算出结果（这个结果往往是常量）的变量，将被编译器由直接计算出的结果常量来替换这个变量。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">1</span>;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上例种，编译器会直接用常量1替换变量x，优化成：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    std::cout&lt;&lt;<span class="number">1</span>&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​    <strong>2、常量折叠</strong></p>
-<p>​        常量折叠，就是说在编译期间，如果有可能，多个变量的计算可以最终替换为一个变量的计算，通常是多个变量的多级冗余计算被替换为一个变量的一级计算。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> b = <span class="number">2</span>;</span><br><span class="line">    <span class="type">int</span> x = a + b;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​        常量折叠优化后：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">1</span> + <span class="number">2</span>;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​        当然，可以再进行进一步的常量替换优化：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    std::cout&lt;&lt;<span class="number">3</span>&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​    <strong>3、复写传播</strong></p>
-<p>​        复写传播，就是编译器用一个变量替换两个或多个相同的变量。</p>
-<p>例：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> y = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> x = y;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>优化后：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">1</span>;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​        上例有两个变量y和x，但是其实是两个相同的变量，并且其它地方并未区分它们两个，所以它们是重复的，可称为“复写”，编译器可以将其优化，将x“传播”给y，只剩下一个变量x，当然，反过来优化掉x只剩下一个y也是可以的。</p>
-<p>​    <strong>4、公共子表式消除</strong></p>
-<p>​        公共子表达式消除是说，如果一个表达式E已经计算过了，并且从先前的计算到现在的E中的变量都没有发生变化，那么E的此次出现就成为了公共子表达式，因此，编译器可判断其不需要再次进行计算浪费性能。</p>
-<p>例：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> b = <span class="number">2</span>;</span><br><span class="line">    <span class="type">int</span> x = （a+b) * <span class="number">2</span> + (b+a) * <span class="number">6</span>;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>优化后：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> b = <span class="number">2</span>;</span><br><span class="line">    <span class="type">int</span> E = a + b;</span><br><span class="line">    <span class="type">int</span> x = E * <span class="number">2</span> + E * <span class="number">6</span>;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​        当然，也有可能会直接变成：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> b = <span class="number">2</span>;</span><br><span class="line">    <span class="type">int</span> E = a + b;</span><br><span class="line">    <span class="type">int</span> x = E * <span class="number">8</span>;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>5、无用代码消除</strong></p>
-<p>无用代码消除指的是永远不能被执行到的代码或者没有任何意义的代码会被清除掉，比如return之后的语句，变量自己给自己赋值等等。</p>
-<p>例：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> x = x;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上例中，x变量自我赋值显然是无用代码，将会被优化掉：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">1</span>;</span><br><span class="line">    std::cout&lt;&lt;x&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>6、数组范围检查消除</strong></p>
-<p>​        如果开发语言是Java这种动态类型安全型的，那在访问数组时比如array[ ]时，Java不会像C/C++那样只是存粹的裸指针访问，而是会在运行时访问数组元素前进行一次是否越界检查，这将会带来许多开销，如果即时编译器能根据数据流分析出变量的取值范围在[0,array.length]之间，那么在循环期间就可以把数组的上下边界检查消除，以减少不必要的性能损耗。</p>
-<p><strong>7、方法内联</strong></p>
-<p>​        这种优化方法是将比较简短的函数或者方法代码直接粘贴到其调用者中，以减少函数调用时的开销，比较重要且常用，很容易理解，就比如C++的inline关键字一样，只不过inline是开发者的手动方法内联，而编译器在分析代码和数据流之后，也有可能做出自动inline的优化。</p>
-<p><strong>8、逃逸分析</strong></p>
-<p>​        一个对象如果被其声明的方法之外的一个或多个函数所引用，那就被称为逃逸，可以通俗理解为，该对象逃逸了其原本的命名空间或者作用域，使得声明（或者定义）该对象的方法结束时，该对象不能被销毁。</p>
-<p>​        通常，一个函数里的局部变量其内存空间是在栈上分配的，而对象则是在堆上分配的内存空间，在函数调用结束时，局部变量会随着栈空间销毁而自动销毁，但堆上的空间要么是依赖类似JVM的垃圾内存自动回收机制（GC），要么就得像C/C++那样的依赖开发者本身的记忆力，因此，堆上的内存分配与销毁一般开销会比栈上的大得多。</p>
-<p>​        逃逸分析的基本原理就是分析对象动态作用域。如果确定一个方法不会逃逸出方法之外，那让整个对象在栈上分配内存将会是一个很不错的主意，对象所占用的内存空间就可以随栈帧而销毁。在一般应用中，不会逃逸的局部对象所占用的比例很大，如果能在编译器优化时，为其在栈上分配内存空间，那大量的对象就会随着方法结束而自动销毁了，不用依赖前面讲的GC或者记忆力，系统的压力将会小很多。</p>
-<p>​    编译器优化是一个连贯且复杂的过程，许多步骤都是可以连贯的。</p>
-<p>​        </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/22/%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E7%9A%84%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95/" data-id="cl92id4pq001sggmj5wsxb6a9" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-stm32位带操作" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" class="article-date">
-  <time datetime="2022-09-21T09:20:49.000Z" itemprop="datePublished">2022-09-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/">stm32位带操作</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="什么是位带操作？"><a href="#什么是位带操作？" class="headerlink" title="什么是位带操作？"></a>什么是位带操作？</h2><p>​        简单来说就是通过宏定义封装一些操作，让你可以像51单片机上去操作IO口，从而不用麻烦的去配置各种寄存器，在STM32中有两个地方实现了位带。其中一个是 SRAM 区的最低 1MB 范围，第二个则是片内外设区的最低 1MB 范围。这两个区中的地址除了可以像普通的 RAM 一样使用外，它们还都有自己的“位带别名区”，位带别名区把每个比特膨胀成一个 32 位的字。当你通过位带别名区访问这些字时，就可以达到访问原始比特的目的。</p>
-<p>​        stm32上位带区的地址有两个，片上SRAM的0x2000 0000到0x2010 0000，以及片上外设的0x4000 0000 到 0x4010 0000。他们的每个地址都会膨胀成一个32位的字，通过这个地址可以控制原来的bit位。</p>
-<p>​        位带别名区：0x2200 0000到0x23FF FFFF 和 0x4200 0000 到0x43FF FFFF</p>
-<h2 id="公式"><a href="#公式" class="headerlink" title="公式"></a>公式</h2><p>​        <strong>#define BITBAND(addr, bitnum)     ((addr &amp; 0xF0000000)+0x2000000 + ((addr &amp;0xFFFFFF)&lt;&lt;5) + (bitnum&lt;&lt;2))</strong></p>
-<p>其中addr &amp; 0xF000 0000 是获取前四位，目的是整合SRAM和外设两个公式。</p>
-<p>((addr &amp; 0xF0000000)+0x2000000)是位带别名区的起始地址</p>
-<p>((addr &amp;0xFFFFF)屏蔽了前8位，因为相对于各自的位带区起始地址都是相同的，在计算得到了偏移地址，1个地址有32位，这32位都会膨胀成一个新的32位地址，所以乘以32(左移5位)得到最后1位的偏移地址。</p>
-<p>bitnum&lt;&lt;2是因为1个地址有4个字节，左移两位乘以4.</p>
-<h2 id="使用："><a href="#使用：" class="headerlink" title="使用："></a>使用：</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BITBAND(addr, bitnum) ((addr &amp; 0xF0000000)+0x2000000+((addr &amp;0xFFFFF)&lt;&lt;5)+(bitnum&lt;&lt;2))</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) </span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOA_ODR_Addr    (GPIOA_BASE+12) <span class="comment">//0x4001080C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOB_ODR_Addr    (GPIOB_BASE+12) <span class="comment">//0x40010C0C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOC_ODR_Addr    (GPIOC_BASE+12) <span class="comment">//0x4001100C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOD_ODR_Addr    (GPIOD_BASE+12) <span class="comment">//0x4001140C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOE_ODR_Addr    (GPIOE_BASE+12) <span class="comment">//0x4001180C </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOF_ODR_Addr    (GPIOF_BASE+12) <span class="comment">//0x40011A0C    </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOG_ODR_Addr    (GPIOG_BASE+12) <span class="comment">//0x40011E0C    </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOA_IDR_Addr    (GPIOA_BASE+8) <span class="comment">//0x40010808 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOB_IDR_Addr    (GPIOB_BASE+8) <span class="comment">//0x40010C08 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOC_IDR_Addr    (GPIOC_BASE+8) <span class="comment">//0x40011008 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOD_IDR_Addr    (GPIOD_BASE+8) <span class="comment">//0x40011408 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOE_IDR_Addr    (GPIOE_BASE+8) <span class="comment">//0x40011808 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOF_IDR_Addr    (GPIOF_BASE+8) <span class="comment">//0x40011A08 </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GPIOG_IDR_Addr    (GPIOG_BASE+8) <span class="comment">//0x40011E08 </span></span></span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  <span class="comment">//ÊäÈë </span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  <span class="comment">//Êä³ö </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  <span class="comment">//ÊäÈë</span></span></span><br></pre></td></tr></table></figure>
-
-<p>​    </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/21/stm32%E4%BD%8D%E5%B8%A6%E6%93%8D%E4%BD%9C/" data-id="cl92id4pe001bggmj9qhv9roa" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-stm32固件库文件分析" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" class="article-date">
-  <time datetime="2022-09-21T06:25:10.000Z" itemprop="datePublished">2022-09-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">stm32固件库文件分析</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="1-汇编编写的启动文件"><a href="#1-汇编编写的启动文件" class="headerlink" title="1-汇编编写的启动文件"></a>1-汇编编写的启动文件</h2><p><strong>startup_stm32f10x_hd.s</strong>:设置堆栈指针、设置PC指针、初始化中断向量表、配置系统时钟、对用C库函数_main最终去到C的世界</p>
-<h2 id="2-时钟配置文件"><a href="#2-时钟配置文件" class="headerlink" title="2-时钟配置文件"></a>2-时钟配置文件</h2><p><strong>system_stm32f10x.c</strong>：把外部时钟HSE=8M，经过PLL倍频为72M。</p>
-<h2 id="3-外设相关的"><a href="#3-外设相关的" class="headerlink" title="3-外设相关的"></a>3-外设相关的</h2><p><strong>stm32f10x.h</strong>：实现了内核之外的外设的寄存器映射<br>xxx：GPIO、USRAT、I2C、SPI、FSMC<br><strong>stm32f10x_xx.c</strong>：外设的驱动函数库文件<br><strong>stm32f10x_xx.h</strong>：存放外设的初始化结构体，外设初始化结构体成员的参数列表，外设固件库函数的声明</p>
-<h2 id="4-内核相关的"><a href="#4-内核相关的" class="headerlink" title="4-内核相关的"></a>4-内核相关的</h2><p>CMSIS - Cortex 微控制器软件接口标准<br><strong>core_cm3.h</strong>：实现了内核里面外设的寄存器映射<br><strong>core_cm3.c</strong>：内核外设的驱动固件库</p>
-<p>NVIC(嵌套向量中断控制器)、SysTick(系统滴答定时器)<br>misc.h<br>misc.c</p>
-<h2 id="5-头文件的配置文件"><a href="#5-头文件的配置文件" class="headerlink" title="5-头文件的配置文件"></a>5-头文件的配置文件</h2><p><strong>stm32f10x_conf.h</strong>：头文件的头文件<br>//stm32f10x_usart.h<br>//stm32f10x_i2c.h<br>//stm32f10x_spi.h<br>//stm32f10x_adc.h<br>//stm32f10x_fsmc.h<br>……</p>
-<h2 id="6-专门存放中断服务函数的C文件"><a href="#6-专门存放中断服务函数的C文件" class="headerlink" title="6-专门存放中断服务函数的C文件"></a>6-专门存放中断服务函数的C文件</h2><p><strong>stm32f10x_it.c</strong><br><strong>stm32f10x_it.h</strong></p>
-<p>中断服务函数你可以随意放在其他的地方，并不是一定要放在stm32f10x_it.c</p>
-<p>#include “stm32f10x.h”   // 相当于51单片机中的  #include &lt;reg51.h&gt;</p>
-<p>int main(void)<br>{<br>    // 来到这里的时候，系统的时钟已经被配置成72M。<br>}</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/21/stm32%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/" data-id="cl92id4pg001dggmj3c55hmv6" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/23/CM32%E5%AE%9E%E9%AA%8C%EF%BC%9A%E8%AE%BE%E7%BD%AE%E6%97%B6%E9%92%9F/" data-id="clkvz4t6p0002ggmj47ysem3y" class="article-share-link">Share</a>
       
       
     </footer>
@@ -836,7 +835,7 @@
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/2/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/">Next &amp;raquo;</a>
   </nav>
 
 </section>
@@ -862,7 +861,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">August 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">June 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">January 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">December 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">November 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">October 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">August 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">July 2022</a></li></ul>
     </div>
   </div>
 
@@ -875,23 +874,23 @@
       <ul>
         
           <li>
+            <a href="/2023/08/04/newlib%E7%9A%84%E7%A0%94%E7%A9%B6/">newlib的研究</a>
+          </li>
+        
+          <li>
+            <a href="/2023/06/20/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E6%A8%A1%E6%9D%BF/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/03/17/%E5%8F%AF%E6%89%A9%E5%B1%95hash/">可扩展hash</a>
+          </li>
+        
+          <li>
             <a href="/2023/02/08/ide%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%A1%88/">ide工程结构的几种方案</a>
           </li>
         
           <li>
             <a href="/2023/02/07/rtos%E7%A7%BB%E6%A4%8D%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84/">rtos移植框架结构</a>
-          </li>
-        
-          <li>
-            <a href="/2023/02/03/csi%E4%B8%AD%E5%AF%B9rtos%E7%A7%BB%E6%A4%8D%E7%9A%84%E9%80%82%E9%85%8D/">csi中对rtos移植的适配</a>
-          </li>
-        
-          <li>
-            <a href="/2023/02/01/RTOS%E7%A7%BB%E6%A4%8D/">RTOS移植</a>
-          </li>
-        
-          <li>
-            <a href="/2023/01/13/%E8%B7%B3%E8%A1%A8%E5%AE%9E%E7%8E%B0sortedset/">跳表实现sortedset</a>
           </li>
         
       </ul>
