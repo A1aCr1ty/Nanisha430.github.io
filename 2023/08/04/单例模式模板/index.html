@@ -5,17 +5,17 @@
   
 
   
-  <title>riscv汇编语言编程 | Hexo</title>
+  <title>单例模式模板 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="一个完整的risc-v汇编程序是由多条语句(statment)构成的  一条典型的RISC-V汇编语句是由3部分组成的： [label:] [operation] [comment]  label(标号)：GNU汇编中，任何以冒号结尾的标识符都被认为是一个标号  operation 可以有以下多种类型： instruction(指令): 直接应对二进制机器指令的字符串 **pseudo-inst">
+  <meta name="description" content="12345678910111213141516171819202122232425262728namespace asst&amp;#123;    template &lt;typename T&gt;    class SingletonHolder    &amp;#123;    public:        static T&amp; get_instance()        &amp;#123;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="riscv汇编语言编程">
-<meta property="og:url" content="http://example.com/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:title" content="单例模式模板">
+<meta property="og:url" content="http://example.com/2023/08/04/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E6%A8%A1%E6%9D%BF/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一个完整的risc-v汇编程序是由多条语句(statment)构成的  一条典型的RISC-V汇编语句是由3部分组成的： [label:] [operation] [comment]  label(标号)：GNU汇编中，任何以冒号结尾的标识符都被认为是一个标号  operation 可以有以下多种类型： instruction(指令): 直接应对二进制机器指令的字符串 **pseudo-inst">
+<meta property="og:description" content="12345678910111213141516171819202122232425262728namespace asst&amp;#123;    template &lt;typename T&gt;    class SingletonHolder    &amp;#123;    public:        static T&amp; get_instance()        &amp;#123;">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-10-21T05:40:27.000Z">
-<meta property="article:modified_time" content="2022-10-21T07:08:28.455Z">
+<meta property="article:published_time" content="2023-08-04T02:55:06.000Z">
+<meta property="article:modified_time" content="2023-08-04T02:55:32.311Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -66,10 +66,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-riscv汇编语言编程" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-单例模式模板" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/" class="article-date">
-  <time datetime="2022-10-21T05:40:27.000Z" itemprop="datePublished">2022-10-21</time>
+    <a href="/2023/08/04/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E6%A8%A1%E6%9D%BF/" class="article-date">
+  <time datetime="2023-08-04T02:55:06.000Z" itemprop="datePublished">2023-08-04</time>
 </a>
     
   </div>
@@ -80,7 +80,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      riscv汇编语言编程
+      单例模式模板
     </h1>
   
 
@@ -88,27 +88,13 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <ul>
-<li><p><strong>一个完整的risc-v汇编程序是由多条语句(statment)构成的</strong></p>
-</li>
-<li><p><strong>一条典型的RISC-V汇编语句是由3部分组成的：</strong></p>
-<p>[label:] [operation] [comment]</p>
-</li>
-<li><p><strong>label(标号)：GNU汇编中，任何以冒号结尾的标识符都被认为是一个标号</strong></p>
-</li>
-<li><p><strong>operation 可以有以下多种类型：</strong></p>
-<p><strong>instruction(指令)</strong>: 直接应对二进制机器指令的字符串</p>
-<p>**pseudo-instruction(伪指令)**：为了提高编写代码的效率，可以用一条伪指令指示汇编器产生多条实际的指令(instructions)</p>
-<p>**directive(指示/伪操作)**：通过类似指令的形式（”.”开头），通知汇编器如何控制代码的产生，不对应具体的指令。</p>
-<p>**macro:**采用.marco/.endm 自定义宏</p>
-</li>
-</ul>
-<h3 id="寄存器："><a href="#寄存器：" class="headerlink" title="寄存器："></a>寄存器：</h3><p>​    32个通用寄存器，x0-x31</p>
+        <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> asst</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">SingletonHolder</span></span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="type">static</span> T&amp; <span class="title">get_instance</span><span class="params">()</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="type">static</span> T unique_instance;</span><br><span class="line">            <span class="keyword">return</span> unique_instance;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">virtual</span> ~<span class="built_in">SingletonHolder</span>() = <span class="keyword">default</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">SingletonHolder</span>(<span class="type">const</span> SingletonHolder&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    <span class="built_in">SingletonHolder</span>(SingletonHolder&amp;&amp;) = <span class="keyword">delete</span>;</span><br><span class="line"></span><br><span class="line">    SingletonHolder&amp; <span class="keyword">operator</span>=(<span class="type">const</span> SingletonHolder&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    SingletonHolder&amp; <span class="keyword">operator</span>=(SingletonHolder&amp;&amp;) = <span class="keyword">delete</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="built_in">SingletonHolder</span>() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">concept</span> Singleton = std::is_base_of_v&lt;SingletonHolder&lt;T&gt;, T&gt;;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/10/21/riscv%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/" data-id="clkvzfvlu0029m0mj91vufoil" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2023/08/04/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E6%A8%A1%E6%9D%BF/" data-id="clkvzfvmj0048m0mj7b4x4ts4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -117,19 +103,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2022/10/24/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%BD%8D%E5%9B%BE/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          数据结构位图
-        
-      </div>
-    </a>
   
-  
-    <a href="/2022/10/20/%E4%BC%98%E5%85%88%E7%BA%A7%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%AE%9E%E7%8E%B0/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/08/04/newlib%E7%9A%84%E7%A0%94%E7%A9%B6/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">优先级任务调度实现</div>
+      <div class="article-nav-title">newlib的研究</div>
     </a>
   
 </nav>
